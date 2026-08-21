@@ -24,13 +24,13 @@ Mod ID: `mod-ObN4zEbPvC6`
 
 Open the mod's settings panel in the mod menu to change these. **Values are "displayed numbers"** — you type the number exactly as you want it shown in the game (the mod multiplies by 1000 internally to get the engine value). For example, `60000` means 60,000 food.
 
-| Setting name | Default | What it does | Example values |
-|--------------|---------|--------------|----------------|
-| CostFood | 60000 | Food needed for an aircraft to build one bomb (displayed value, so 60000 = 60,000 food) | `120000` for a pricier bomb |
-| CostWood | 60000 | Wood needed to build one bomb | `10000` for a cheaper bomb |
-| CostIron | 60000 | Iron needed to build one bomb | `60000` (default) |
-| Radius | 440 | Size of the explosion area — bigger = wider destruction | `880` for double the blast area |
-| Damage | 3500 | Damage dealt to everything hit by the blast | `3500` (default) |
+| Setting name | Default | What it does |
+|--------------|---------|--------------|
+| CostFood | 60000 | Food needed for an aircraft to build one bomb (displayed value, so 60000 = 60,000 food) |
+| CostWood | 60000 | Wood needed to build one bomb |
+| CostIron | 60000 | Iron needed to build one bomb |
+| Radius | 440 | Size of the explosion area — bigger = wider destruction |
+| Damage | 3500 | Damage dealt to everything hit by the blast |
 
 ## How it works (for modders)
 
