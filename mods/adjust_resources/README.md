@@ -1,6 +1,11 @@
 # Adjust Resources
 **Status:** Stable
 
+## Mod ID: `mod-GFwbdOCoN77`
+
+> [!TIP]
+> **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
+
 ## What does this mod do?
 
 This mod changes **how much food and raw materials sit on the map** when a game starts. "Resources" are the things your workers gather: berry bushes, fish, wheat fields, stone and iron deposits, and trees (wood). By default some are plentiful and some are scarce — this mod lets you set the exact amount for every bush, fish spot, field, and deposit on the whole map, and to grow or shrink forests by a percentage.
@@ -16,9 +21,7 @@ Want a map dripping with food but almost no stone? Set berries to 50000 and ston
 
 Full walkthrough: [docs/modding-guide/installation.md](../../docs/modding-guide/installation.md)
 
-**Already published?** If this mod has been published in-game, you can add it to your map directly by its ID instead of copying the code — see [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
-
-Mod ID: `mod-GFwbdOCoN77`
+If you prefer, use the **Mod ID** at the top of this page to add the mod directly, without copying any code.
 
 ## Settings
 

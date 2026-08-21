@@ -16,9 +16,8 @@ This mod fixes/extends a hidden part of the game rules: how the game decides **w
 
 Full walkthrough: [docs/modding-guide/installation.md](../../docs/modding-guide/installation.md)
 
-**Already published?** If this mod has been published in-game, you can add it to your map directly by its ID instead of copying the code — see [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
-
-Mod ID: `N/A — these functions already exist in the base game`. This repository keeps the source for reference and customization.
+> [!NOTE]
+> These functions already exist in the base game — there is no mod ID to add. This repository keeps the source code for reference and customization.
 
 **Important:** never enable two versions at the same time — they are alternatives, not add-ons.
 

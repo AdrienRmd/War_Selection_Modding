@@ -1,6 +1,11 @@
 # Nuclear Bomb
 **Status:** Stable
 
+## Mod ID: `mod-ObN4zEbPvC6`
+
+> [!TIP]
+> **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
+
 ## What does this mod do?
 
 This mod adds a **nuclear bomb** to the game — the most powerful weapon available. Four late-game aircraft get a new ability: for a big pile of resources, each aircraft can build and drop **one** nuclear bomb, wiping out everything in a huge area (both troops and buildings). The bomb is locked behind a late-game technology (the industrial-era aircraft tech), so it cannot be used right at the start of a match. The mod also makes the spy's nuclear bomb unlockable through its own technology instead of being free.
@@ -16,9 +21,7 @@ You control how expensive, how big, and how deadly the bomb is from the mod's se
 
 Full walkthrough: [docs/modding-guide/installation.md](../../docs/modding-guide/installation.md)
 
-**Already published?** If this mod has been published in-game, you can add it to your map directly by its ID instead of copying the code — see [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
-
-Mod ID: `mod-ObN4zEbPvC6`
+If you prefer, use the **Mod ID** at the top of this page to add the mod directly, without copying any code.
 
 ## Settings
 

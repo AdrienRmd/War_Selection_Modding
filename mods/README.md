@@ -8,8 +8,8 @@ How to read the table: **Mod** links to the mod's folder, **Description** tells 
 
 | Mod | Description | Status | Mod ID |
 |-----|-------------|--------|--------|
-| [nuclear_bomb](nuclear_bomb/) | Configurable nuclear bomb; four aircraft can build and drop one bomb each. | Stable | `mod-ObN4zEbPvC6` |
-| [adjust_resources](adjust_resources/) | Sets/scales map resource quantities (berries, fish, wheat, stone, iron, trees). | Stable | `mod-GFwbdOCoN77` |
-| [starting_resources](starting_resources/) | Configurable starting treasury resources per faction. | Stable | `KgbndOUtoob` *(in base game)* |
+| [nuclear_bomb](nuclear_bomb/) | Configurable nuclear bomb; four aircraft can build and drop one bomb each. | Stable | **`mod-ObN4zEbPvC6`** |
+| [adjust_resources](adjust_resources/) | Sets/scales map resource quantities (berries, fish, wheat, stone, iron, trees). | Stable | **`mod-GFwbdOCoN77`** |
+| [starting_resources](starting_resources/) | Configurable starting treasury resources per faction. | Stable | **`KgbndOUtoob`** *(in base game)* |
 | [default_gameplay_functions](default_gameplay_functions/) | Three variants of the age/civilization gameplay function overrides (load one). | WIP | — *(in base game)* |
 | [victory_conditions](victory_conditions/) | Alternative victory/defeat rules: team annihilation, full win/loss engine, king mode. | WIP | — |
