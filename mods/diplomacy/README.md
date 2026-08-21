@@ -1,6 +1,19 @@
 # Diplomacy
 **Status:** Stable
 
+## Mod IDs
+
+This mod is made of 3 scripts — each one has its own in-game ID. **Add all three to your map** for the mod to work.
+
+| Script | Mod ID |
+|--------|--------|
+| `diplomacy_interface.lua` | **`mod-s2u4EUGfise`** |
+| `gameplay_backend.lua` | **`mod-HmXZrJBjwM6`** |
+| `ui_framework.lua` | **`mod-KbwSsR2og7a`** |
+
+> [!TIP]
+> **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, and add each of the 3 IDs above. Save and publish the map. Full instructions: [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
+
 ## What does this mod do?
 
 This mod adds **player-to-player diplomacy** to Wars Selection. It adds **3 new buttons** in the match interface:
@@ -31,6 +44,8 @@ This mod is made of **3 script files that work together** — create three mods 
 
 Full walkthrough: [docs/modding-guide/installation.md](../../docs/modding-guide/installation.md)
 
+If you prefer, use the **3 Mod IDs** at the top of this page to add the scripts directly, without copying any code.
+
 ## Settings
 
 No in-game settings panel. Two constants can be changed at the top of `diplomacy_interface.lua`:
@@ -42,7 +57,7 @@ No in-game settings panel. Two constants can be changed at the top of `diplomacy
 
 ## How it works (for modders)
 
-- `ui_framework.lua` (originally `Alliance.lua`) — a reusable **UI widget library** (Interface/Widget/Panel/Image/Label classes, hotkey binding, sound helpers) for building custom interfaces. Comments are in Chinese.
+- `ui_framework.lua` (originally `Alliance.lua`) — a reusable **UI widget library** (Interface/Widget/Panel/Image/Label classes, hotkey binding, sound helpers) for building custom interfaces.
 - `diplomacy_interface.lua` (originally `Alliance_deuxieme.lua`) — the **frontend**. Creates a `diplomacyInterface` via `addInterface("diplomacyInterface", "/project/Tools/placingButtons", ...)`, then reuses native interface nodes every 10 ticks to draw the button menu (nodes 18, 12–16) and the three notification tracks (global announcement, system message, interaction request). Button clicks arrive through `onSpecialCommand` (`placerButton`); accepted requests are sent to the backend with `f_specialCommand(0, "command", "Diplomacy", ...)`.
 - `gameplay_backend.lua` (originally `Gameplay_alliance.lua`) — the **backend**. Maps players to factions (`getFactionOfPlayer` / `getPlayerOfFaction`), sets relations both ways with `root.scene[0].relation.f_set` (1 = ally, 2 = war, 3 = peace), handles the `Diplomacy` command, and runs the shared-victory check once per second (`winControlDiplomacy`) — when all living players are mutual allies, everyone is eliminated with the win flag and the match finishes.
 
