@@ -5,7 +5,7 @@
 
 > Bienvenue sur le hub de modding communautaire de Wars Selection ! / Welcome to the community modding hub for the game **Wars Selection**!
 
-**Wars Selection** is a real-time strategy (RTS) game. Modding it is surprisingly simple: a mod is just **a single `.lua` file** that you paste into a mod created in the game's **map editor** — no programming tools or complicated installation required.
+**Wars Selection** is a real-time strategy (RTS) game. Modding it is surprisingly simple: a mod is just **one or a few `.lua` files** that you paste into a mod created in the game's **map editor** — no programming tools or complicated installation required.
 
 This repository is a community hub with two things:
 
@@ -40,6 +40,7 @@ Save that as a `.lua` file, paste it into a mod created in the map editor (see [
 
 The [Modding Guide](docs/modding-guide/) documents how to edit unit and building parameters — speed, attacks, abilities, health/armor, resources, workers, and more:
 
+- [Installing a mod](docs/modding-guide/installation.md) — full walkthrough: create a mod in the map editor, paste the code, test it
 - [Movement and Vision](docs/modding-guide/movement-and-vision.md)
 - [Attack](docs/modding-guide/attack.md)
 - [Abilities and Upgrades](docs/modding-guide/abilities-and-upgrades.md)
@@ -59,9 +60,12 @@ wars_selection_mod/
 │   ├── diplomacy/
 │   ├── default_gameplay_functions/
 │   └── victory_conditions/
+├── assets/                # Screenshots & GIFs of the mods (one subfolder per mod)
+│   └── diplomacy/
 ├── docs/
 │   ├── modding-guide/     # The beginner-friendly modding guide (start here)
 │   └── UNIT_IDS.md        # Unit & Tech ID reference
+├── .github/               # Issue templates & CI (luacheck)
 ├── CONTRIBUTING.md
 └── LICENSE
 ```

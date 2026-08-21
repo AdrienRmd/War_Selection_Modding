@@ -29,6 +29,20 @@ Thanks for your interest in contributing! / Merci de votre intérêt !
    -----------------------------------------------------------
    ```
 
+## Screenshots
+
+A picture is worth a thousand words — mods with screenshots get used much more. If you play with a mod:
+
+1. Capture it in game (`Win + Shift + S` for a screenshot, `Win + G` for a video/GIF)
+2. Put the image in `assets/<mod_name>/` (same name as the mod's folder in `mods/`), named after what it shows — e.g. `assets/diplomacy/diplomacy_buttons.png`
+3. Reference it in the mod's `README.md`:
+
+   ```markdown
+   ![Buttons in game](../../assets/diplomacy/diplomacy_buttons.png)
+   ```
+
+See [`assets/README.md`](assets/README.md) for the full conventions.
+
 ## Improving the guide
 
 The English documentation lives in [`docs/modding-guide/`](docs/modding-guide/). Improvements are welcome:
