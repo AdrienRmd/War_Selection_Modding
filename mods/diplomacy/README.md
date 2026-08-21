@@ -1,4 +1,4 @@
-# Alliance
+# Diplomacy
 **Status:** WIP
 
 > [!NOTE]
@@ -23,7 +23,7 @@ Extra rules built in:
 - You cannot target your own faction or empty territory
 
 ## Quick install
-This mod is made of **3 script files that work together** — create three mods in the game's **map editor** (e.g. "Alliance UI", "Alliance Diplomacy", "Alliance Gameplay"), one per file, and add all three to your map.
+This mod is made of **3 script files that work together** — create three mods in the game's **map editor** (e.g. "Diplomacy UI", "Diplomacy Interface", "Diplomacy Gameplay"), one per file, and add all three to your map.
 
 1. Download the 3 `.lua` files (`ui_framework.lua`, `diplomacy_interface.lua`, `gameplay_backend.lua`) from this folder.
 2. Create the mods in the game's **map editor**: open the editor, go to **Mods** → **My mods** → **+**, give each mod a name and a description, then add them to your map.
