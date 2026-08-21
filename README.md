@@ -76,7 +76,7 @@ wars_selection_mod/
 
 ## Contributing
 
-Want to add a mod or improve the guide? Read [CONTRIBUTING.md](CONTRIBUTING.md).
+Want to add a mod or improve the guide? Read [CONTRIBUTING.md](CONTRIBUTING.md) — it starts with a **step-by-step guide for GitHub beginners** (quick edits, adding a mod, reporting ideas), followed by the project rules.
 
 ## Useful links
 
