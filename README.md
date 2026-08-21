@@ -27,6 +27,11 @@ Ready-to-use mods live in [mods/](mods/) — see its README for the full list an
 
 Want to add a mod or improve the guide? Read [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Useful links
+
+- [Unit & Tech ID Reference](docs/UNIT_IDS.md)
+- Found a bug or have a mod idea? [Open an issue](../../issues)
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
