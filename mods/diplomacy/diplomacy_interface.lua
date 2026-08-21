@@ -1,3 +1,11 @@
+-----------------------------------------------------------
+-- Mod name: Diplomacy
+-- Description: Diplomacy mod part 2/3: frontend — alliance/peace/war buttons, notifications, sounds, request handling.
+-- Author: ShiJueXiangGuan, UIXlangGuan, WaiJiaoMod
+-- English translation & republication: JSuisMort
+-- Status: Stable
+-----------------------------------------------------------
+
 local TEST_MODE = false 
 local MAX_ALLIES = 5   
 

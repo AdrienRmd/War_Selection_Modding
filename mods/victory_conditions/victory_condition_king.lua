@@ -1,5 +1,10 @@
--- ============================================================================
--- Mod: "King" victory condition (critical unit to protect)
+-----------------------------------------------------------
+-- Mod name: Victory condition King
+-- Description: Victory condition "King": players are eliminated when their king unit (VictoryConditionUnitId) dies. Enable AFTER victory_condition_2.
+-- Author: AdrienRmd
+-- Status: WIP
+-----------------------------------------------------------
+
 -- ============================================================================
 -- Principle: each player must protect their "king" unit.
 -- If a player no longer has a living king -> they are eliminated.

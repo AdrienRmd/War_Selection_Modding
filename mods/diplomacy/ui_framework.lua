@@ -1,3 +1,11 @@
+-----------------------------------------------------------
+-- Mod name: Diplomacy
+-- Description: Diplomacy mod part 1/3: reusable UI widget library (Interface/Widget/Panel/Image/Label).
+-- Author: ShiJueXiangGuan, UIXlangGuan, WaiJiaoMod
+-- English translation & republication: JSuisMort
+-- Status: Stable
+-----------------------------------------------------------
+
 if getParameter("eventId") ~= nil then 
     assert(Interface ~= nil)
     local eventId = tonumber(getParameter("eventId"))

@@ -1,6 +1,9 @@
 # War Selection Modding
 
+[![Luacheck](https://github.com/AdrienRmd/War_Selection_Modding/actions/workflows/luacheck.yml/badge.svg)](https://github.com/AdrienRmd/War_Selection_Modding/actions/workflows/luacheck.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Language: Lua](https://img.shields.io/badge/language-Lua-2C2D72.svg)](https://www.lua.org/)
+[![Game: War Selection](https://img.shields.io/badge/game-War%20Selection-e3493b.svg)](https://store.steampowered.com/app/1022450/War_Selection/)
 [![Guide](https://img.shields.io/badge/docs-modding--guide-blue)](docs/modding-guide/)
 
 > Bienvenue sur le hub de modding communautaire de War Selection ! / Welcome to the community modding hub for the game **War Selection**!

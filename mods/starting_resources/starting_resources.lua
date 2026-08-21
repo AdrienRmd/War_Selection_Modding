@@ -1,3 +1,10 @@
+-----------------------------------------------------------
+-- Mod name: Starting resources
+-- Description: Configurable starting treasury resources per faction.
+-- Author: AdrienRmd
+-- Status: Stable
+-----------------------------------------------------------
+
 initResourcesA =
 {
 	getParameterNumber("res0", 100, 0, 1000000) * 1000,

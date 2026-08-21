@@ -1,3 +1,9 @@
+-----------------------------------------------------------
+-- Mod name: Default gameplay functions 2
+-- Description: Age/civilization gameplay function overrides — variant 2 (load exactly one).
+-- Author: AdrienRmd
+-- Status: WIP
+-----------------------------------------------------------
 
 function getAgeFactionIndustrial(researchesState, default)
 	if isResearchComplete(researchesState, 93) then return {6, 8} end

@@ -1,3 +1,9 @@
+-----------------------------------------------------------
+-- Mod name: Victory condition 1
+-- Description: Victory condition: last team standing (simple version).
+-- Author: AdrienRmd
+-- Status: WIP
+-----------------------------------------------------------
 
 function onTick(var, currentMoment)
 	if currentMoment % 1000 == 0 then
