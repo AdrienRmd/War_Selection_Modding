@@ -1,5 +1,10 @@
--- ============================================================================
--- Mod: adjust resource quantities at the start of a game
+-----------------------------------------------------------
+-- Mod name: Adjust resources
+-- Description: Sets/scales map resource quantities (berries, fish, wheat, stone, iron, trees).
+-- Author: AdrienRmd
+-- Status: Stable
+-----------------------------------------------------------
+
 -- ============================================================================
 -- All values are editable IN GAME in the mod panel.
 -- The 1st number = default value, then min / max.

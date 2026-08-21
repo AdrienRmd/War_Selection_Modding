@@ -1,5 +1,11 @@
+-----------------------------------------------------------
+-- Mod name: Nuclear bomb
+-- Description: Configurable nuclear bomb: four aircraft can build and drop one bomb each. Settings panel in-game.
+-- Author: AdrienRmd
+-- Status: Stable
+-----------------------------------------------------------
+
 -- ============================================================================
--- Nuclear bomb
 -- The mod panel expects "displayed numbers" (e.g. 60000 for 60k)
 -- The code automatically multiplies × 1000 to convert to the raw engine value
 -- ============================================================================

@@ -1,3 +1,10 @@
+-----------------------------------------------------------
+-- Mod name: Victory condition 2
+-- Description: Victory condition: full win/loss engine (eliminations, leaves/kicks, server reporting).
+-- Author: AdrienRmd
+-- Status: WIP
+-----------------------------------------------------------
+
 checkWinTeam = true
 
 

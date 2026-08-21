@@ -1,3 +1,11 @@
+-----------------------------------------------------------
+-- Mod name: Diplomacy
+-- Description: Diplomacy mod part 3/3: backend — faction relations, diplomacy commands, shared allied victory.
+-- Author: ShiJueXiangGuan, UIXlangGuan, WaiJiaoMod
+-- English translation & republication: JSuisMort
+-- Status: Stable
+-----------------------------------------------------------
+
 -- Get the faction relation manager
 local function rel() return root.scene[0].relation end
 
