@@ -1,27 +1,27 @@
 -- ============================================================================
--- Mod : condition de victoire "Roi" (unité critique à protéger)
+-- Mod: "King" victory condition (critical unit to protect)
 -- ============================================================================
--- Principe : chaque joueur doit protéger son unité "roi".
--- Si un joueur n'a plus de roi vivant -> il est éliminé.
--- La dernière équipe avec un roi vivant remporte la partie.
+-- Principle: each player must protect their "king" unit.
+-- If a player no longer has a living king -> they are eliminated.
+-- The last team with a living king wins the game.
 --
--- Paramètre modifiable EN JEU dans le panneau du mod :
---   VictoryConditionUnitId : l'id de l'unité "roi" (ex : 253) = condition de victoire
---                si cette unité meurt -> le joueur est éliminé
---                0 = mode désactivé (comportement normal)
+-- Parameter editable IN GAME in the mod panel:
+--   VictoryConditionUnitId: the id of the "king" unit (e.g. 253) = victory condition
+--                if this unit dies -> the player is eliminated
+--                0 = mode disabled (normal behavior)
 --
--- IMPORTANT : activer ce mod APRÈS condition_de_victoire_2.lua
--- (il remplace sa fonction checkFactionLose)
+-- IMPORTANT: enable this mod AFTER condition_de_victoire_2.lua
+-- (it replaces its checkFactionLose function)
 -- ============================================================================
 
 -- =========================== CONFIGURATION ================================
-ROI_ID = getParameterNumber("VictoryConditionUnitId", 0, 0, 100000)   -- 0 = désactivé
+ROI_ID = getParameterNumber("VictoryConditionUnitId", 0, 0, 100000)   -- 0 = disabled
 -- ==========================================================================
 
--- Appelé par le moteur chaque seconde pour chaque faction.
--- Retourne true = la faction a perdu.
+-- Called by the engine every second for each faction.
+-- Returns true = the faction has lost.
 function checkFactionLose(factionId, faction)
-	if ROI_ID == 0 then return false end   -- mode désactivé
+	if ROI_ID == 0 then return false end   -- mode disabled
 
 	local player = getPlayerOfFaction(factionId)
 	local units = root.scene_0.unit
@@ -36,10 +36,10 @@ function checkFactionLose(factionId, faction)
 	end
 	forEachPlayerUnit(player, func)
 
-	-- Sécurité : un joueur sans aucune unité (début de partie) n'est pas éliminé
+	-- Safety: a player with no units at all (start of game) is not eliminated
 	if unitesTotales == 0 then return false end
 
-	return not roiVivant   -- plus de roi vivant = défaite
+	return not roiVivant   -- no living king left = defeat
 end
 
 function onStart(var)

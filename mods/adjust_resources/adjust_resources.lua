@@ -1,12 +1,12 @@
 -- ============================================================================
--- Mod : ajustement des quantités de ressources au démarrage d'une partie
+-- Mod: adjust resource quantities at the start of a game
 -- ============================================================================
--- Toutes les valeurs sont modifiables EN JEU dans le panneau du mod.
--- Le 1er nombre = valeur par défaut, puis min / max.
--- Le code convertit tout seul en valeur brute du moteur (× 1000).
+-- All values are editable IN GAME in the mod panel.
+-- The 1st number = default value, then min / max.
+-- The code automatically converts to the raw engine value (× 1000).
 -- ============================================================================
 
--- Quantités par ressource (nombre tel qu'affiché en jeu)
+-- Quantity per resource (number as displayed in game)
 BERRY_AMOUNT      = getParameterNumber("baies",          1000,  0, 1000000) * 1000
 SMALL_FISH_AMOUNT = getParameterNumber("petitsPoissons", 500,   0, 1000000) * 1000
 BIG_FISH_AMOUNT   = getParameterNumber("grosPoissons",   1000,  0, 1000000) * 1000
@@ -14,10 +14,10 @@ WHEAT_AMOUNT      = getParameterNumber("ble",            10000, 0, 1000000) * 10
 STONE_AMOUNT      = getParameterNumber("pierre",         10000, 0, 1000000) * 1000
 IRON_AMOUNT       = getParameterNumber("fer",            10000, 0, 1000000) * 1000
 
--- Arbres : en POURCENTAGE (100 = inchangé), pas de × 1000 ici
+-- Trees: as a PERCENTAGE (100 = unchanged), no × 1000 here
 WOOD_PCT          = getParameterNumber("arbresPourcent", 100,   1, 10000)
 
--- Tags des ressources environnementales (puissances de 2, ne pas modifier)
+-- Tags of environmental resources (powers of 2, do not change)
 TAG_BERRY      = 1
 TAG_WOOD       = 2
 TAG_SMALL_FISH = 4
@@ -26,8 +26,8 @@ TAG_IRON       = 16
 TAG_STONE      = 64
 TAG_WHEAT      = 128
 
--- Cherche tous les objets portant ce tag sur toute la carte
--- et applique la fonction transform(health) à leur quantité.
+-- Finds all objects with this tag across the whole map
+-- and applies the transform(health) function to their quantity.
 function ForEachTagged(tag, name, transform)
     local ids  = root.scene[0].envs.f_search(0, 0, 1000000000, tag)
     local envs = root.scene[0].envs.list
@@ -39,7 +39,7 @@ function ForEachTagged(tag, name, transform)
     print("[Resource] " .. name .. ": " .. count .. " objet(s) modifie(s)")
 end
 
--- Fixe la quantité à la valeur brute donnée (déjà convertie × 1000)
+-- Sets the quantity to the given raw value (already converted × 1000)
 function SetResource(tag, rawAmount, name)
     ForEachTagged(tag, name, function(health)
         return rawAmount
@@ -47,7 +47,7 @@ function SetResource(tag, rawAmount, name)
     print("[Resource] " .. name .. " fixe a " .. (rawAmount / 1000))
 end
 
--- Multiplie la quantité actuelle par un pourcentage
+-- Multiplies the current quantity by a percentage
 function ScaleResource(tag, percent, name)
     ForEachTagged(tag, name, function(health)
         return math.floor(health * percent / 100)
@@ -55,7 +55,7 @@ function ScaleResource(tag, percent, name)
     print("[Resource] " .. name .. " ajuste a " .. percent .. "%")
 end
 
--- Application au démarrage de la partie
+-- Applied at game start
 function onStart(var)
     SetResource(TAG_BERRY,      BERRY_AMOUNT,      "baies")
     ScaleResource(TAG_WOOD,     WOOD_PCT,          "arbres")
