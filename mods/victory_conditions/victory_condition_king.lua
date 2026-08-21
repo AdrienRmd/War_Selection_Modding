@@ -10,7 +10,7 @@
 --                if this unit dies -> the player is eliminated
 --                0 = mode disabled (normal behavior)
 --
--- IMPORTANT: enable this mod AFTER condition_de_victoire_2.lua
+-- IMPORTANT: enable this mod AFTER victory_condition_2.lua
 -- (it replaces its checkFactionLose function)
 -- ============================================================================
 
