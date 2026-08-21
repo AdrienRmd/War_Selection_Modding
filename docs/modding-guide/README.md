@@ -16,9 +16,8 @@ This mod changes one unit's health. You don't need to install anything except th
    ```
 
 2. **Save it** as `my_first_mod.lua` (make sure it ends in `.lua`, not `.txt`).
-3. **Install it** — place the file in the game's mod folder (TODO: confirm the exact path in your Wars Selection installation).
-4. **Enable it** — start the game, open the **mod menu**, and enable `my_first_mod`.
-5. **Test in game** — start a match with unit 1 and check its health: it now shows 200 instead of 100.
+3. **Install it** — create a mod in the game's **map editor** (**Mods** → **My mods** → **+**, then add it to your map), and paste the code with **Edit script** in a private match with **developer mode** enabled. Full walkthrough: [Installing a mod](installation.md).
+4. **Test in game** — relaunch the map and check unit 1's health: it now shows 200 instead of 100.
 
 It worked? Congratulations — every other mod in this repository follows the exact same pattern, only with different parameters changed.
 
@@ -53,6 +52,7 @@ So if you want "11 damage", write `11 * 1000 = 11000` in the code.
 
 ## Table of Contents
 
+- [Installing a mod](installation.md) — full walkthrough: create a mod in the map editor, paste the code, test
 - [Movement and Vision](movement-and-vision.md) — moveSpeed, viewRange
 - [Attack](attack.md) — unit weapons and building turrets: damage, range, recharge
 - [Abilities and Upgrades](abilities-and-upgrades.md) — ability.work, ability.enabled, production

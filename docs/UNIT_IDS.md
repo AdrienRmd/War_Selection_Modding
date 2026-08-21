@@ -18,8 +18,8 @@ A starter table of known unit, tech, and resource IDs for **Wars Selection**, co
 
 ## How to find unit IDs
 
+- **[WS Unit Stats](https://wsunitstats.com/en)** — the community site with full unit/tech stats and a [modding section](https://wsunitstats.com/en/modding). This is the easiest way to look up an ID.
 - Inspect values in-game, e.g. `gameplay.root.unitType[155].attack.weapon` (see the [Modding Guide README](modding-guide/README.md)).
-- Check the game's community stats site for a full list of units and techs: **TODO: add community stats site URL here.**
 - Grep the existing mods and guide for `unitType[<id>]` and `researchAny` / tech IDs.
 
 Once you have confirmed an ID, please open a pull request to add it to the table above.

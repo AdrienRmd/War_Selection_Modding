@@ -12,9 +12,15 @@ This mod changes **how a match is won or lost**. It contains three files; you ch
 ## Quick install
 
 1. Download the `.lua` file(s) you want from this repository — either `victory_condition_1.lua` alone, or `victory_condition_2.lua` plus `victory_condition_king.lua` for king mode.
-2. Put the file(s) in the game's mod folder: `[TODO: exact game mod folder path]`
-3. Start the game, open the mod menu, and enable "Victory Conditions".
-4. Start a game — the mod is now active.
+2. Create a mod in the game's **map editor**: open the editor, go to **Mods** → **My mods** → **+**, give your mod a name and a description, then add it to your map.
+3. Start a **private match** on your map with **developer mode** enabled, open your mod, and paste the code with **Edit script**.
+4. Relaunch the map — the mod is now active.
+
+Full walkthrough: [docs/modding-guide/installation.md](../../docs/modding-guide/installation.md)
+
+**Already published?** If this mod has been published in-game, you can add it to your map directly by its ID instead of copying the code — see [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
+
+Mod ID: `N/A — not published yet` *(edit this line with the `mod-...` ID once published)*
 
 **Important for king mode:** load order matters. Enable `victory_condition_2.lua` **first**, then `victory_condition_king.lua` (the king file must override functions from the other).
 

@@ -6,9 +6,15 @@
 
 ## Quick install
 1. Download `<mod_file>.lua` from this repository.
-2. Put the file in the game's mod folder: `[TODO: exact game mod folder path]`
-3. Start the game, open the mod menu, and enable "<Mod Name>".
-4. Start a game — the mod is now active.
+2. Create a mod in the game's **map editor**: open the editor, go to **Mods** → **My mods** → **+**, give your mod a name and a description, then add it to your map.
+3. Start a **private match** on your map with **developer mode** enabled, open your mod, and paste the code with **Edit script**.
+4. Relaunch the map — the mod is now active.
+
+Full walkthrough: [docs/modding-guide/installation.md](../../docs/modding-guide/installation.md)
+
+**Already published?** If this mod has been published in-game, add a "Mod ID" line here (in the `mod-...` form) so players can add it to their map directly — see [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
+
+Mod ID: `<mod-xxxxxxxxxxx — fill in once published, or remove this line>`
 
 ## Settings
 Only if the mod has panel parameters (`getParameterNumber`/`getParameter` in the code). Use this table and explain units and the displayed-value ×1000 convention where it applies (e.g. "60000 = 60,000 food displayed"):

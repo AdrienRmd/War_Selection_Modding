@@ -5,7 +5,7 @@
 
 > Bienvenue sur le hub de modding communautaire de Wars Selection ! / Welcome to the community modding hub for the game **Wars Selection**!
 
-**Wars Selection** is a real-time strategy (RTS) game. Modding it is surprisingly simple: a mod is just **a single `.lua` file** that you place in the game's mod folder and enable from the **in-game mod menu** — no programming tools or complicated installation required.
+**Wars Selection** is a real-time strategy (RTS) game. Modding it is surprisingly simple: a mod is just **a single `.lua` file** that you paste into a mod created in the game's **map editor** — no programming tools or complicated installation required.
 
 This repository is a community hub with two things:
 
@@ -14,11 +14,14 @@ This repository is a community hub with two things:
 
 ## I'm a player — I just want to install a mod
 
-1. **Pick a mod** from the list in [mods/README.md](mods/README.md) (e.g. [nuclear_bomb](mods/nuclear_bomb/) or [adjust_resources](mods/adjust_resources/)).
-2. **Download the `.lua` file**: open the mod's folder here on GitHub, click the `.lua` file, then the **raw** button (or use the green **Code** button → **Download ZIP** to get the whole repository, then extract the ZIP). Each mod's `README.md` also has installation notes.
-3. **Place the file in the game's mod folder and enable it**: drop the `.lua` file into the Wars Selection mod folder (TODO: confirm the exact path in your game installation — check the mod's README first), then start the game and enable the mod in the **in-game mod menu**.
+1. **Pick a mod** from the list in [mods/README.md](mods/README.md) (e.g. [nuclear_bomb](mods/nuclear_bomb/) or [adjust_resources](mods/adjust_resources/)), and **download its `.lua` file**: open the mod's folder here on GitHub, click the `.lua` file, then the **raw** button (or use the green **Code** button → **Download ZIP** to get the whole repository, then extract the ZIP). Each mod's `README.md` also has installation notes.
+2. **Create a mod in the map editor**: open the game's **map editor**, go to **Mods** → **My mods** → **+**, give your mod a name and a description, and add it to your map.
+3. **Paste the code**: start a **private match** on your map with **developer mode** enabled, open your mod via **Edit script**, and paste the downloaded code.
+4. **Relaunch the map to play** — the mod is now active.
 
-That's it — start a game and the mod is active.
+For the full walkthrough (with troubleshooting), see [Installing a mod](docs/modding-guide/installation.md).
+
+**Even simpler — add a published mod by ID:** if a mod has already been published in-game, you don't need to copy any code. Open your map in the editor → **Mods** → **Add a modification**, enter the mod's ID (in the form `mod-fBB0HwHlfzd`), save and publish the map. Published mod IDs are listed in each mod's README. See [Add an existing mod to your map](docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
 
 ## I want to make my own mod
 
@@ -31,7 +34,7 @@ end
 addMod({ onStart = onStart })
 ```
 
-Save that as a `.lua` file, place it in the game's mod folder, enable it in the mod menu, and it works. The [guide](docs/modding-guide/README.md) explains the `root` object, the value units (1000 = 1 displayed resource, etc.), and every parameter you can change.
+Save that as a `.lua` file, paste it into a mod created in the map editor (see [Installing a mod](docs/modding-guide/installation.md)), and it works. The [guide](docs/modding-guide/README.md) explains the `root` object, the value units (1000 = 1 displayed resource, etc.), and every parameter you can change.
 
 ## Modding Guide
 
