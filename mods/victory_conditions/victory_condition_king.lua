@@ -6,7 +6,8 @@
 -- La dernière équipe avec un roi vivant remporte la partie.
 --
 -- Paramètre modifiable EN JEU dans le panneau du mod :
---   idUniteRoi : l'id de l'unité "roi" (ex : 253)
+--   VictoryConditionUnitId : l'id de l'unité "roi" (ex : 253) = condition de victoire
+--                si cette unité meurt -> le joueur est éliminé
 --                0 = mode désactivé (comportement normal)
 --
 -- IMPORTANT : activer ce mod APRÈS condition_de_victoire_2.lua
@@ -14,7 +15,7 @@
 -- ============================================================================
 
 -- =========================== CONFIGURATION ================================
-ROI_ID = getParameterNumber("idUniteRoi", 0, 0, 100000)   -- 0 = désactivé
+ROI_ID = getParameterNumber("VictoryConditionUnitId", 0, 0, 100000)   -- 0 = désactivé
 -- ==========================================================================
 
 -- Appelé par le moteur chaque seconde pour chaque faction.
