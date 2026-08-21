@@ -18,9 +18,8 @@ This mod changes **how a match is won or lost**. It contains three files; you ch
 
 Full walkthrough: [docs/modding-guide/installation.md](../../docs/modding-guide/installation.md)
 
-**Already published?** If this mod has been published in-game, you can add it to your map directly by its ID instead of copying the code — see [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
-
-Mod ID: `N/A — not published yet` *(king mode is still in development)*
+> [!NOTE]
+> Not published yet — the king mode is still in development.
 
 **Important for king mode:** load order matters. Enable `victory_condition_2.lua` **first**, then `victory_condition_king.lua` (the king file must override functions from the other).
 

@@ -1,6 +1,13 @@
 # <Mod Name>
 **Status:** WIP | Stable
 
+## Mod ID: `<mod-xxxxxxxxxxx>`
+
+> [!TIP]
+> **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
+
+*(Fill in the `mod-...` ID once the mod is published. If it is not published yet, remove this section and write instead a note like: "Not published yet — work in progress." If the functions already exist in the base game, say so.)*
+
 ## What does this mod do?
 <plain-language paragraph for someone who has never installed a mod — no jargon, briefly explain any game terms used>
 
@@ -11,10 +18,6 @@
 4. Relaunch the map — the mod is now active.
 
 Full walkthrough: [docs/modding-guide/installation.md](../../docs/modding-guide/installation.md)
-
-**Already published?** If this mod has been published in-game, add a "Mod ID" line here (in the `mod-...` form) so players can add it to their map directly — see [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
-
-Mod ID: `<mod-xxxxxxxxxxx — fill in once published, or remove this line>`
 
 ## Settings
 Only if the mod has panel parameters (`getParameterNumber`/`getParameter` in the code). Use this table and explain units and the displayed-value ×1000 convention where it applies (e.g. "60000 = 60,000 food displayed"):
