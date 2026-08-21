@@ -1,23 +1,23 @@
 -- ============================================================================
--- Bombe nucléaire
--- Le panneau du mod attend des "nombres affichés" (ex : 60000 pour 60 milles)
--- Le code multiplie automatiquement × 1000 pour convertir en valeur brute du moteur
+-- Nuclear bomb
+-- The mod panel expects "displayed numbers" (e.g. 60000 for 60k)
+-- The code automatically multiplies × 1000 to convert to the raw engine value
 -- ============================================================================
 
--- Valeurs par défaut utilisées si le panneau n'a rien réglé
--- (aussi des nombres affichés, pas des valeurs brutes)
-local FOOD     = (getParameterNumber("CostFood") or 60000) * 1000  -- nourriture
-local WOOD     = (getParameterNumber("CostWood") or 60000) * 1000  -- bois
-local IRON     = (getParameterNumber("CostIron") or 60000) * 1000  -- fer
-local RADIUS   = (getParameterNumber("Radius")   or 440)   * 1000  -- rayon d'explosion
-local DAMAGE   = (getParameterNumber("Damage")   or 3500)  * 1000  -- dégâts
-local TECH_AC  = 89    -- tech du largage de bombe par avion (merveille industrielle, fixe)
-local TECH_SPY = 25    -- tech de la bombe nucléaire de l'espion (fixe)
+-- Default values used when the panel has nothing set
+-- (also displayed numbers, not raw values)
+local FOOD     = (getParameterNumber("CostFood") or 60000) * 1000  -- food
+local WOOD     = (getParameterNumber("CostWood") or 60000) * 1000  -- wood
+local IRON     = (getParameterNumber("CostIron") or 60000) * 1000  -- iron
+local RADIUS   = (getParameterNumber("Radius")   or 440)   * 1000  -- explosion radius
+local DAMAGE   = (getParameterNumber("Damage")   or 3500)  * 1000  -- damage
+local TECH_AC  = 89    -- tech for aircraft bomb drop (industrial wonder, fixed)
+local TECH_SPY = 25    -- tech of the spy's nuclear bomb (fixed)
 
--- Les 4 avions pouvant larguer la bombe nucléaire
+-- The 4 aircraft able to drop the nuclear bomb
 local AIRCRAFT = { 316, 330, 355, 361 }
 
--- La bombe nucléaire elle-même
+-- The nuclear bomb itself
 local bomb = root.unitType[377]
 bomb.ability.ability[0].data.damages[0] = DAMAGE
 bomb.ability.ability[0].data.damages[5] = DAMAGE
@@ -27,10 +27,10 @@ bomb.lifeTime = 9000
 bomb.tags[16] = true
 bomb.tags[15] = true
 
--- Tech d'origine de la bombe nucléaire de l'espion
+-- Origin tech of the spy's nuclear bomb
 root.unitType[195].ability.ability[16].requirements.researchAny[0].id = TECH_SPY
 
--- Équipe les 4 avions de la capacité de largage nucléaire
+-- Equips the 4 aircraft with the nuclear drop ability
 for _, aircraftId in ipairs(AIRCRAFT) do
     local b = root.unitType[aircraftId]
     b.ability.enabled = true
