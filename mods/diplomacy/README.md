@@ -46,6 +46,6 @@ No in-game settings panel. Two constants can be changed at the top of `diplomacy
 
 ## Known issues / notes
 
-- All in-game messages and button labels are in English (v2 of the mod — earlier published versions displayed French; republish to update).
+- All in-game messages and button labels are in English.
 - Diplomatic actions only work by clicking on a player's territory — not on neutral ground.
 - The notification system reuses native interface nodes; other interface mods touching the same nodes could conflict.
