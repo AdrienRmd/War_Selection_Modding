@@ -56,6 +56,7 @@ wars_selection_mod/
 │   ├── nuclear_bomb/
 │   ├── adjust_resources/
 │   ├── starting_resources/
+│   ├── alliance/
 │   ├── default_gameplay_functions/
 │   └── victory_conditions/
 ├── docs/
