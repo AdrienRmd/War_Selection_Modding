@@ -16,7 +16,7 @@ This mod is made of 3 scripts — each one has its own in-game ID. **Add all thr
 
 ## What does this mod do?
 
-This mod adds **player-to-player diplomacy** to Wars Selection. It adds **3 new buttons** in the match interface:
+This mod adds **player-to-player diplomacy** to War Selection. It adds **3 new buttons** in the match interface:
 
 1. **Alliance** — send an alliance request to another player
 2. **Peace** — declare yourself neutral with a player (sign peace)
