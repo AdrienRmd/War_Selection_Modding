@@ -46,7 +46,6 @@ No in-game settings panel. Two constants can be changed at the top of `diplomacy
 
 ## Known issues / notes
 
-- The in-game button labels and messages are in **French** ("Alliance", "Paix", "Guerre", "Accepter", "Refuser") — translate the strings in `diplomacy_interface.lua` if you want another language.
-- Code comments are a mix of Chinese and French.
+- All in-game messages and button labels are in English (v2 of the mod — earlier published versions displayed French; republish to update).
 - Diplomatic actions only work by clicking on a player's territory — not on neutral ground.
 - The notification system reuses native interface nodes; other interface mods touching the same nodes could conflict.

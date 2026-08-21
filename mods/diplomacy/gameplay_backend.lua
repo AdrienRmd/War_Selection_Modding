@@ -1,7 +1,7 @@
--- 获取阵营关系管理器
+-- Get the faction relation manager
 local function rel() return root.scene[0].relation end
 
--- 获取目标玩家控制的阵营ID
+-- Get the faction ID controlled by the target player
 function getFactionOfPlayer(playerId)
     local player = root.player[playerId]
     if player == nil then return nil end
@@ -11,7 +11,7 @@ function getFactionOfPlayer(playerId)
     return nil
 end
 
--- 获取控制目标阵营的玩家ID
+-- Get the player ID controlling the target faction
 function getPlayerOfFaction(factionId)
     for pid = 0, root.player.size - 1 do
         local player = root.player[pid]
@@ -20,25 +20,25 @@ function getPlayerOfFaction(factionId)
     return nil
 end
 
--- 建立双向阵营关系
+-- Set up bidirectional faction relation
 local function setRelation(fa, fb, value)
     rel().f_set(fa, fb, value)
     rel().f_set(fb, fa, value)
 end
 
--- 设置同盟状态
+-- Set ally state
 function setAlly(fa, fb)    setRelation(fa, fb, 1) end
 
--- 设置战争状态
+-- Set war state
 function declareWar(fa, fb) setRelation(fa, fb, 2) end
 
--- 设置和平状态
+-- Set peace state
 function Peace(fa, fb)      setRelation(fa, fb, 3) end
 
--- 资源支付接口
+-- Resource payment interface
 function Pay(player, player1) end
 
--- 处理后端外交指令
+-- Handle backend diplomacy command
 function ServerDiplomacyHandler(var)
     if getParameter("command") == "Diplomacy" then
         local f1 = tonumber(getParameter("player1"))
@@ -51,7 +51,7 @@ function ServerDiplomacyHandler(var)
     end
 end
 
--- 检查两阵营当前外交状态
+-- Check current diplomatic status of two factions
 function checkStatus(fa, fb)
     local status = rel().f_get(fa, fb)
     if status == 1 then return "Ally"
@@ -59,7 +59,7 @@ function checkStatus(fa, fb)
     elseif status == 3 then return "Peace" end
 end
 
--- 判定全员同盟胜利条件
+-- Check the all-allied victory condition
 function winControlDiplomacy(var, currentMoment)
     if currentMoment % 1000 == 0 then
         local players = root.player
