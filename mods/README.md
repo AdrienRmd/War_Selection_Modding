@@ -1,6 +1,10 @@
 # Mods
 
+New to mods? Start here — the [quick start guide in the root README](../README.md) explains how to install your first mod in a couple of minutes.
+
 Index of all mods in this repository. Each mod lives in its own folder with its `.lua` file(s) and a `README.md` (see `README_TEMPLATE.md`).
+
+How to read the table: **Mod** links to the mod's folder, **Description** tells you what it changes in one line, and **Status** says how mature it is — *Stable* means safe for normal games, *WIP* means work-in-progress (expect changes or rough edges).
 
 | Mod                        | Description                                                                                     | Status |
 |----------------------------|-------------------------------------------------------------------------------------------------|--------|

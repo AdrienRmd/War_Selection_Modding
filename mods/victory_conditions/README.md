@@ -1,26 +1,42 @@
 # Victory Conditions
 **Status:** WIP
 
-## Description
-A set of alternative victory/defeat rule overrides for the game engine.
+## What does this mod do?
 
-- `victory_condition_1.lua` — simple team-annihilation check: once per second, if all surviving players belong to a single team, that team wins (`winTeam`).
-- `victory_condition_2.lua` — full win/loss engine override: `checkFactionLose`, `losePlayer`, `winTeam`, handling of `leave`/`serverkick` commands, elimination bookkeeping, and server match-state reporting. `checkFactionLose` always returns `false` by default, so it is meant to be combined with an add-on rule such as the king mode.
-- `victory_condition_king.lua` — "King" victory mode: each player must keep their king unit alive; a player whose king dies is eliminated, and the last team with a living king wins. It overrides `checkFactionLose` from `victory_condition_2.lua` and must be loaded **after** it.
+This mod changes **how a match is won or lost**. It contains three files; you choose the rule set you want:
 
-## Installation
-Place the chosen `.lua` file(s) in the game's mod folder (TODO: confirm exact path in the Wars Selection installation) and enable them in the in-game mod menu. If using the king mode, load order matters: enable `victory_condition_2.lua` first, then `victory_condition_king.lua`.
+- `victory_condition_1.lua` — **"Last team standing" (simple):** the game ends and the surviving team wins as soon as only one team's players are left alive. Losing means every one of your units is destroyed.
+- `victory_condition_2.lua` — **"Last team standing" (full engine):** the same basic idea, but it also handles players leaving, being kicked, score positions, and reporting results to the server. On its own nobody can lose; it is designed to be combined with the king mode below.
+- `victory_condition_king.lua` — **"King" mode:** every player gets a special "king" unit. If your king dies, you are eliminated on the spot. The last team with a living king wins. Combine it with `victory_condition_2.lua` for a "protect your king" match type.
 
-## Parameters
-`victory_condition_1.lua` and `victory_condition_2.lua` have no panel parameters.
+## Quick install
 
-`victory_condition_king.lua`:
-| Name       | Default | Effect                                             |
-|------------|---------|----------------------------------------------------|
-| idUniteRoi | 0       | Unit id of the "king" unit (e.g. 253); 0 disables the mode (normal behavior) |
+1. Download the `.lua` file(s) you want from this repository — either `victory_condition_1.lua` alone, or `victory_condition_2.lua` plus `victory_condition_king.lua` for king mode.
+2. Put the file(s) in the game's mod folder: `[TODO: exact game mod folder path]`
+3. Start the game, open the mod menu, and enable "Victory Conditions".
+4. Start a game — the mod is now active.
 
-## Technical details
-- Engine callbacks used: `addMod({ onTick = ... })` (v1, king), `addTickFunction(onTickWinLoss, ...)` and `addScriptFunction(onScriptWinLoss, ...)` (v2); checks run every 1000 ticks.
-- Player/faction iteration helpers: `forEachPlayerLive`, `forEachPlayerFaction`, `forEachControlledFaction`, `forEachPlayerUnit`, `getPlayerOfFaction`.
-- v2 kills units of type 253 or 374 on elimination (`scene.kill`), stops other units (`scene.unitStop`), and reports match state to the server via `root.sendDataToServer = toJson(json)`.
-- King mode counts the player's units via `root.scene_0.unit` and treats a player with zero units (game start) as not eliminated.
+**Important for king mode:** load order matters. Enable `victory_condition_2.lua` **first**, then `victory_condition_king.lua` (the king file must override functions from the other).
+
+## Settings
+
+`victory_condition_1.lua` and `victory_condition_2.lua` have no settings.
+
+`victory_condition_king.lua` has one setting, changed in the mod's settings panel in-game:
+
+| Setting name | Default | What it does | Example values |
+|--------------|---------|--------------|----------------|
+| idUniteRoi (king unit id) | 0 | Which unit type counts as the "king". 0 = king mode disabled (normal rules) | `253` (a common king/leader unit), `0` to turn it off |
+
+## How it works (for modders)
+
+- v1: `addMod({ onTick = onTick })`, checks once per second (`currentMoment % 1000 == 0`) whether all surviving players share one team, then calls `winTeam(winTeamId)`.
+- v2: registers `addTickFunction(onTickWinLoss, ...)` and `addScriptFunction(onScriptWinLoss, ...)`; defines `checkFactionLose` (returns `false` by default), `losePlayer`, `winTeam`, plus `leave`/`serverkick` command handling via `getParameter("command")`/`getParameter("player")`. On elimination it kills units of type 253/374 (`scene.kill`), stops the rest (`scene.unitStop`), and reports match state via `root.sendDataToServer = toJson(json)`.
+- King mode: overrides `checkFactionLose(factionId, faction)` — returns true (faction lost) when the player has units but none of type `idUniteRoi`; players with zero units (game start) are never eliminated.
+- Iteration helpers used: `forEachPlayerLive`, `forEachPlayerFaction`, `forEachControlledFaction`, `forEachPlayerUnit`, `getPlayerOfFaction`.
+
+## Known issues / notes
+
+- King mode **must** be enabled after `victory_condition_2.lua`; otherwise the wrong `checkFactionLose` wins and king mode silently does nothing.
+- With the default `idUniteRoi = 0`, king mode is disabled — you must set a unit id in the panel for it to take effect.
+- v2's `checkFactionLose` always returns `false` on its own, so v2 without king mode never eliminates anyone by itself.
