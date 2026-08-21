@@ -1,24 +1,41 @@
 # Adjust Resources
 **Status:** Stable
 
-## Description
-Adjusts the quantities of environmental resources on the whole map at the start of a game. Berries, small fish, big fish, wheat, stone and iron deposits are set to absolute values, while trees are scaled by a percentage. All values are configurable in-game from the mod panel (displayed values; the code converts to raw engine values by multiplying by 1000).
+## What does this mod do?
 
-## Installation
-Place `adjust_resources.lua` in the game's mod folder (TODO: confirm exact path in the Wars Selection installation) and enable the mod in the in-game mod menu.
+This mod changes **how much food and raw materials sit on the map** when a game starts. "Resources" are the things your workers gather: berry bushes, fish, wheat fields, stone and iron deposits, and trees (wood). By default some are plentiful and some are scarce — this mod lets you set the exact amount for every bush, fish spot, field, and deposit on the whole map, and to grow or shrink forests by a percentage.
 
-## Parameters
-| Name             | Default | Effect                                              |
-|------------------|---------|-----------------------------------------------------|
-| baies            | 1000    | Berries amount per bush (displayed, ×1000 applied)  |
-| petitsPoissons   | 500     | Small fish amount (displayed, ×1000 applied)        |
-| grosPoissons     | 1000    | Big fish amount (displayed, ×1000 applied)          |
-| ble              | 10000   | Wheat amount per field (displayed, ×1000 applied)   |
-| pierre           | 10000   | Stone amount per deposit (displayed, ×1000 applied) |
-| fer              | 10000   | Iron amount per deposit (displayed, ×1000 applied)  |
-| arbresPourcent   | 100     | Tree amount in percent (100 = unchanged, no ×1000)  |
+Want a map dripping with food but almost no stone? Set berries to 50000 and stone to 500. Want thicker forests? Set trees to 200 (%). Everything is adjusted automatically the moment the game starts.
 
-## Technical details
-- Resource tags (powers of 2, engine constants): berry 1, wood 2, small fish 4, big fish 8, iron 16, stone 64, wheat 128.
-- Finds objects via `root.scene[0].envs.f_search(0, 0, 1000000000, tag)` and rewrites `envs[id].health`.
-- Registered with `addMod({ onStart = onStart })`.
+## Quick install
+
+1. Download `adjust_resources.lua` from this repository.
+2. Put the file in the game's mod folder: `[TODO: exact game mod folder path]`
+3. Start the game, open the mod menu, and enable "Adjust Resources".
+4. Start a game — the mod is now active.
+
+## Settings
+
+Open the mod's settings panel in the mod menu to change these. **Setting names are in French** (they come from the mod code). Amounts are "displayed numbers" — type the number exactly as you want it shown in the game (the mod multiplies by 1000 internally). For example, `10000` means 10,000 wheat per field. The trees setting is different: it is a **percentage**, where 100 = unchanged.
+
+| Setting name | Default | What it does | Example values |
+|--------------|---------|--------------|----------------|
+| baies (berries) | 1000 | Food in each berry bush | `50000` = 50,000 per bush |
+| petitsPoissons (small fish) | 500 | Food in each small fish spot | `5000` = 5,000 per spot |
+| grosPoissons (big fish) | 1000 | Food in each big fish spot | `10000` = 10,000 per spot |
+| ble (wheat) | 10000 | Food in each wheat field | `100000` = 100,000 per field |
+| pierre (stone) | 10000 | Stone in each deposit | `500` = 500 per deposit |
+| fer (iron) | 10000 | Iron in each deposit | `50000` = 50,000 per deposit |
+| arbresPourcent (trees %) | 100 | Wood in trees, as a percentage of normal (100 = unchanged; no ×1000 applied) | `200` = double wood, `50` = half wood |
+
+## How it works (for modders)
+
+- Resource tags (engine constants, powers of 2): berry 1, wood 2, small fish 4, big fish 8, iron 16, stone 64, wheat 128.
+- Reads panel values with `getParameterNumber(name, default, min, max)`; amounts ×1000, trees kept as a percentage.
+- Finds every environmental object on the map via `root.scene[0].envs.f_search(0, 0, 1000000000, tag)` and rewrites `envs[id].health` (the stored quantity): `SetResource` sets an absolute value, `ScaleResource` multiplies by percent.
+- Registered via `addMod({ onStart = onStart })`; prints a per-resource count to the log.
+
+## Known issues / notes
+
+- Applies once at game start — it does not respawn or regenerate resources during the match.
+- Sets absolute values per resource node; it cannot target specific map regions (whole map only).

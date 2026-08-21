@@ -1,25 +1,39 @@
 # Nuclear Bomb
 **Status:** Stable
 
-## Description
-Adds a configurable nuclear bomb to the game. The nuclear bomb unit (id 377) gets its damage and explosion radius set from the mod panel, and four aircraft (ids 316, 330, 355, 361) are equipped with the ability to build and drop one nuclear bomb each, unlocked by the industrial wonder aircraft-drop tech. The spy's nuclear bomb (unit 195, ability 16) is gated behind its own tech.
+## What does this mod do?
 
-The mod panel expects "displayed numbers" (e.g. 60000 for 60k); the code multiplies by 1000 to convert to raw engine values.
+This mod adds a **nuclear bomb** to the game — the most powerful weapon available. Four late-game aircraft get a new ability: for a big pile of resources, each aircraft can build and drop **one** nuclear bomb, wiping out everything in a huge area (both troops and buildings). The bomb is locked behind a late-game technology (the industrial-era aircraft tech), so it cannot be used right at the start of a match. The mod also makes the spy's nuclear bomb unlockable through its own technology instead of being free.
 
-## Installation
-Place `nuclear_bomb.lua` in the game's mod folder (TODO: confirm exact path in the Wars Selection installation) and enable the mod in the in-game mod menu.
+You control how expensive, how big, and how deadly the bomb is from the mod's settings panel in-game.
 
-## Parameters
-| Name       | Default | Effect                                                      |
-|------------|---------|-------------------------------------------------------------|
-| CostFood   | 60000   | Food cost to build a bomb (displayed value, ×1000 applied)  |
-| CostWood   | 60000   | Wood cost to build a bomb (displayed value, ×1000 applied)  |
-| CostIron   | 60000   | Iron cost to build a bomb (displayed value, ×1000 applied)  |
-| Radius     | 440     | Explosion radius (displayed value, ×1000 applied)           |
-| Damage     | 3500    | Bomb damage (displayed value, ×1000 applied)                |
+## Quick install
 
-## Technical details
-- Bomb unit type: `root.unitType[377]`; ability 0 damages slots 0 and 5, ability id 27, lifetime 9000, tags 15/16 enabled.
-- Aircraft unit types: 316, 330, 355, 361 — each gets a new ability spawning unit 377 (lifetime 10000, count 1) and a work entry (makeTime 1, reserveLimit 1, reserveTime 60000, costs from panel).
-- Tech ids: 89 (aircraft bomb drop, industrial wonder), 25 (spy nuclear bomb, set on `root.unitType[195].ability.ability[16]`).
-- Calls `root.f_recreateModifiedUnitTypes()` after modification.
+1. Download `nuclear_bomb.lua` from this repository.
+2. Put the file in the game's mod folder: `[TODO: exact game mod folder path]`
+3. Start the game, open the mod menu, and enable "Nuclear Bomb".
+4. Start a game — the mod is now active.
+
+## Settings
+
+Open the mod's settings panel in the mod menu to change these. **Values are "displayed numbers"** — you type the number exactly as you want it shown in the game (the mod multiplies by 1000 internally to get the engine value). For example, `60000` means 60,000 food.
+
+| Setting name | Default | What it does | Example values |
+|--------------|---------|--------------|----------------|
+| CostFood | 60000 | Food needed for an aircraft to build one bomb (displayed value, so 60000 = 60,000 food) | `120000` for a pricier bomb |
+| CostWood | 60000 | Wood needed to build one bomb | `10000` for a cheaper bomb |
+| CostIron | 60000 | Iron needed to build one bomb | `60000` (default) |
+| Radius | 440 | Size of the explosion area — bigger = wider destruction | `880` for double the blast area |
+| Damage | 3500 | Damage dealt to everything hit by the blast | `3500` (default) |
+
+## How it works (for modders)
+
+- Bomb unit type: `root.unitType[377]` — ability 0 gets `damages[0]`/`damages[5]` = Damage, `radius` = Radius, ability id 27, lifetime 9000, tags 15/16 enabled.
+- Aircraft unit types 316, 330, 355, 361: their ability/work lists are cleared (`f_clear`) and rebuilt with one ability spawning unit 377 (lifetime 10000, count 1) and one work entry (makeTime 1, reserveLimit 1, reserveTime 60000, `costProcess[0..2]` = Food/Wood/Iron costs).
+- Tech ids: 89 (aircraft bomb drop, industrial era) gates the aircraft ability via `requirements.researchAny`; 25 (spy nuclear bomb) is set on `root.unitType[195].ability.ability[16]`.
+- Ends with `root.f_recreateModifiedUnitTypes()`.
+
+## Known issues / notes
+
+- All panel values are "displayed numbers" multiplied by ×1000 in code — do not enter raw engine values in the panel.
+- Each aircraft can only drop a single bomb per game (`reserveLimit = 1`).
