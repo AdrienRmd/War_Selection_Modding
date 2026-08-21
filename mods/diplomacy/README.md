@@ -11,6 +11,8 @@ This mod adds **player-to-player diplomacy** to Wars Selection. It adds **3 new 
 
 To use a button, click it and then click on the territory of the player you want to target. Alliance and peace requests are **proposals**: the other player gets **Accept** / **Refuse** buttons (a request expires after 10 seconds), while a war declaration takes effect immediately. Every diplomatic event is announced to all players on screen, with sounds.
 
+![The 3 diplomacy buttons next to the minimap](../../assets/diplomacy_buttons.png)
+
 The mod also adds a **shared victory condition**: when every surviving player is allied with each other, the match ends and they win together.
 
 Extra rules built in:
