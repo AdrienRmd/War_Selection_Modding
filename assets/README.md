@@ -2,29 +2,37 @@
 
 Screenshots and GIFs of the mods in action, used by the READMEs.
 
-## Naming convention
+## Folder structure — one folder per mod
 
-`<mod_name>_<what_it_shows>.png` (or `.gif` / `.jpg`)
+```
+assets/
+├── diplomacy/
+│   └── diplomacy_buttons.png
+├── nuclear_bomb/
+├── adjust_resources/
+└── ...one folder per mod (same name as the mod folder in mods/)
+```
+
+Put each image in the subfolder matching its mod (`assets/<mod_name>/`), named after what it shows.
 
 Examples:
 
-- `diplomacy_buttons.png` — the 3 diplomacy buttons next to the minimap
-- `diplomacy_request.png` — an alliance request with Accept/Refuse buttons
-- `nuclear_bomb_explosion.png` — the explosion in game
-- `adjust_resources_before_after.png` — resource amounts comparison
+- `assets/diplomacy/diplomacy_buttons.png` — the 3 diplomacy buttons next to the minimap
+- `assets/diplomacy/diplomacy_request.png` — an alliance request with Accept/Refuse buttons
+- `assets/nuclear_bomb/nuclear_bomb_explosion.png` — the explosion in game
 
 ## How to reference in a README
 
 From a mod README (`mods/<mod>/README.md`):
 
 ```markdown
-![Buttons in game](../../assets/diplomacy_buttons.png)
+![Buttons in game](../../assets/diplomacy/diplomacy_buttons.png)
 ```
 
 From the root README:
 
 ```markdown
-![Buttons in game](assets/diplomacy_buttons.png)
+![Buttons in game](assets/diplomacy/diplomacy_buttons.png)
 ```
 
 ## How to capture
