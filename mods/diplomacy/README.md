@@ -1,8 +1,5 @@
 # Diplomacy
-**Status:** WIP
-
-> [!NOTE]
-> Not published yet — work in progress.
+**Status:** Stable
 
 ## What does this mod do?
 
