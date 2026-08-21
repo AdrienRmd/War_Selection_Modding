@@ -67,6 +67,7 @@ wars_selection_mod/
 │   └── UNIT_IDS.md        # Unit & Tech ID reference
 ├── .github/               # Issue templates & CI (luacheck)
 ├── CONTRIBUTING.md
+├── CODE_OF_CONDUCT.md
 └── LICENSE
 ```
 
