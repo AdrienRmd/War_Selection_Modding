@@ -1,6 +1,6 @@
-# Wars Selection Modding Guide — Units & Buildings
+# War Selection Modding Guide — Units & Buildings
 
-English reference for modding unit and building parameters in Wars Selection — written for total beginners. No prior modding experience needed: a mod is just a small text file with a few lines of Lua.
+English reference for modding unit and building parameters in War Selection — written for total beginners. No prior modding experience needed: a mod is just a small text file with a few lines of Lua.
 
 ## Your first mod in 5 minutes
 

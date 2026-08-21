@@ -1,6 +1,6 @@
 # Installing a mod
 
-Wars Selection mods are **not** installed by copying files into a game folder. Mods live inside the game's **map editor**: you create a mod there, attach it to a map, and paste its Lua code through an in-game script editor. No external tools are needed — everything happens inside the game.
+War Selection mods are **not** installed by copying files into a game folder. Mods live inside the game's **map editor**: you create a mod there, attach it to a map, and paste its Lua code through an in-game script editor. No external tools are needed — everything happens inside the game.
 
 This page is the complete walkthrough, in two parts: creating an (empty) mod in the map editor, then writing or pasting its code and testing it. If you downloaded a `.lua` file from this repository, you will paste its contents at step 11.
 
@@ -10,7 +10,7 @@ This page is the complete walkthrough, in two parts: creating an (empty) mod in 
 
 You do this once per mod, entirely inside the map editor.
 
-1. **Open the map editor.** Launch Wars Selection, open the **Map Editor**, then open an existing map or create a new one.
+1. **Open the map editor.** Launch War Selection, open the **Map Editor**, then open an existing map or create a new one.
 2. **Open the mods screen.** Go to **Modifications** (Mods) → **My modifications** (Mes modifications).
 3. **Create the mod.** Click the small **+** button below the **gameplay mod** (mod gameplay).
 4. **Name and describe it.** Enter a name for your mod, and a description so other players understand what it does.

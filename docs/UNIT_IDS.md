@@ -1,6 +1,6 @@
 # Unit & Tech ID Reference
 
-A starter table of known unit, tech, and resource IDs for **Wars Selection**, collected from the mods in [mods/](../mods/) and the [Modding Guide](modding-guide/).
+A starter table of known unit, tech, and resource IDs for **War Selection**, collected from the mods in [mods/](../mods/) and the [Modding Guide](modding-guide/).
 
 > **This list is incomplete.** If you discover new IDs, please add them via a pull request — one row per ID, with the source where you found it.
 

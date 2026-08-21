@@ -1,11 +1,11 @@
-# Wars Selection Modding
+# War Selection Modding
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Guide](https://img.shields.io/badge/docs-modding--guide-blue)](docs/modding-guide/)
 
-> Bienvenue sur le hub de modding communautaire de Wars Selection ! / Welcome to the community modding hub for the game **Wars Selection**!
+> Bienvenue sur le hub de modding communautaire de War Selection ! / Welcome to the community modding hub for the game **War Selection**!
 
-**Wars Selection** is a real-time strategy (RTS) game. Modding it is surprisingly simple: a mod is just **one or a few `.lua` files** that you paste into a mod created in the game's **map editor** — no programming tools or complicated installation required.
+**War Selection** is a real-time strategy (RTS) game. Modding it is surprisingly simple: a mod is just **one or a few `.lua` files** that you paste into a mod created in the game's **map editor** — no programming tools or complicated installation required.
 
 This repository is a community hub with two things:
 
