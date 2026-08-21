@@ -32,29 +32,29 @@ function getAllyCount(factionId)
 end
 
 -- ============================================================================
--- Gestionnaire de messages indépendant à trois couches
+-- Independent three-track message handler
 -- ============================================================================
 GlobalNotif  = { active = false, msg = "", expire = 0 }
 RequestNotif = { active = false, player = -1, msg = "", expire = 0 }
 SystemNotif  = { active = false, player = -1, msg = "", expire = 0 } 
 
--- Envoi d'une annonce globale (dorée)
+-- Send a global announcement (gold)
 function SendGlobalMsg(msg)
     GlobalNotif.active = true; GlobalNotif.msg = msg; GlobalNotif.expire = root.session_gameplay_gameplay_time + 8000
 end
 
--- Envoi d'un message système (couleur d'origine)
+-- Send a system message (original color)
 function SendSystemMsg(player, msg)
     SystemNotif.active = true; SystemNotif.player = player; SystemNotif.msg = msg; SystemNotif.expire = root.session_gameplay_gameplay_time + 5000
 end
 
--- Envoi d'une requête d'interaction (bleue)
+-- Send an interaction request (blue)
 function SendRequestMsg(player, msg)
     RequestNotif.active = true; RequestNotif.player = player; RequestNotif.msg = msg; RequestNotif.expire = root.session_gameplay_gameplay_time + 10000
 end
 
 -- ============================================================================
--- Moteur de rendu périodique (réquisitionne trois boutons natifs inutilisés, pour un affichage simultané parfait à l'écran)
+-- Periodic rendering engine (requisitions three unused native buttons for perfect simultaneous on-screen display)
 -- ============================================================================
 function updateGamePlay(var, currentMoment)
     if currentMoment == 1000 then SetMusicOnStart() end
@@ -69,7 +69,7 @@ function updateGamePlay(var, currentMoment)
         local curTime = root.session_gameplay_gameplay_time
 
         -- --------------------------------------------------------------------
-        -- 1. Piste supérieure : annonce globale (réquisitionne le nœud inutilisé 21 comme fond, 28 comme texte)
+        -- 1. Top track: global announcement (requisitions unused node 21 as background, 28 as text)
         -- --------------------------------------------------------------------
         if GlobalNotif.active then
             if curTime > GlobalNotif.expire then 
@@ -93,7 +93,7 @@ function updateGamePlay(var, currentMoment)
         end
 
         -- --------------------------------------------------------------------
-        -- 2. Piste intermédiaire : message système (conserve le design de l'auteur original, utilise les nœuds 17 et 8)
+        -- 2. Middle track: system message (keeps the original author's design, uses nodes 17 and 8)
         -- --------------------------------------------------------------------
         if SystemNotif.active and SystemNotif.player == myPlayer then
             if curTime > SystemNotif.expire then 
@@ -117,7 +117,7 @@ function updateGamePlay(var, currentMoment)
         end
 
         -- --------------------------------------------------------------------
-        -- 3. Piste inférieure : requête d'interaction (réquisitionne le nœud inutilisé 22 comme fond, 29 comme texte)
+        -- 3. Bottom track: interaction request (requisitions unused node 22 as background, 29 as text)
         -- --------------------------------------------------------------------
         if RequestNotif.active and RequestNotif.player == myPlayer then
             if curTime > RequestNotif.expire then 
@@ -141,10 +141,10 @@ function updateGamePlay(var, currentMoment)
         end
 
         -- ====================================================================
-        -- Ci-dessous : logique de disposition native du menu de boutons
+        -- Below: native layout logic for the button menu
         -- ====================================================================
         local buttons = { 18, 12, 13, 14, 15, 16 }; local texts = { 9, 3, 4, 5, 6, 7 }
-        local names = { "X", "Alliance", "Paix", "Guerre", "Accepter", "Refuser" }
+        local names = { "X", "Alliance", "Peace", "War", "Accept", "Refuse" }
 
         nodes[1].localLeft = 0; nodes[1].localTop = 0; nodes[1].sizeX = width; nodes[1].sizeY = height
         nodes[1].horizontalAlign = 3; nodes[1].verticalAlign = 1     
@@ -156,8 +156,8 @@ function updateGamePlay(var, currentMoment)
         nodes[14].color.r = 255; nodes[14].color.g = 0; nodes[14].color.b = 0; nodes[14].color.a = 255
 
         if currentRQ ~= 0 and currentP1 == root.session.visual.currentFaction then
-            if currentAction == 1 then nodes[12].color.r = 150; nodes[12].color.g = 150; nodes[12].color.b = 150; names[2] = "Attente"
-            elseif currentAction == 2 then nodes[13].color.r = 150; nodes[13].color.g = 150; nodes[13].color.b = 150; names[3] = "Attente" end
+            if currentAction == 1 then nodes[12].color.r = 150; nodes[12].color.g = 150; nodes[12].color.b = 150; names[2] = "Pending"
+            elseif currentAction == 2 then nodes[13].color.r = 150; nodes[13].color.g = 150; nodes[13].color.b = 150; names[3] = "Pending" end
         end
 
         if not hasInitButtonAlign then
@@ -185,7 +185,7 @@ function updateGamePlay(var, currentMoment)
                 nodes[18].visible = true; nodes[18].localLeft = minimapW + 150; nodes[18].localTop = height - minimapH // 2 - 35
                 nodes[18].sizeX = 130; nodes[18].sizeY = 50
                 
-                nodes[9].widget_text = "Menu diplomatie"; nodes[9].sizeX = 130; nodes[9].sizeY = 50
+                nodes[9].widget_text = "Diplomacy menu"; nodes[9].sizeX = 130; nodes[9].sizeY = 50
                 nodes[9].localLeft = 0; nodes[9].localTop = 0
             elseif i == 1 and hideShow then
                 nodes[18].visible = true; nodes[18].localLeft = minimapW + 150; nodes[18].localTop = height - minimapH // 2 - 35
@@ -206,7 +206,7 @@ function updateGamePlay(var, currentMoment)
 
     if currentMoment % 1000 == 0 and currentRQ ~= 0 then
         if root.session_gameplay_gameplay_time - currentRQ > 10000 then
-            SendSystemMsg(getPlayerOfFaction(currentP1), "La demande diplomatique a expiré.")
+            SendSystemMsg(getPlayerOfFaction(currentP1), "The diplomatic request has expired.")
             RequestNotif.active = false
             currentRQ = 0; currentP1 = -1; currentP2 = -1; currentAction = -1; currentWork = 0
         end
@@ -214,7 +214,7 @@ function updateGamePlay(var, currentMoment)
 end
 
 -- ============================================================================
--- Logique d'interaction diplomatique et de détermination des événements
+-- Diplomatic interaction and event determination logic
 -- ============================================================================
 function Diplomacy(var)
     local text = getParameter("text")
@@ -241,41 +241,41 @@ function Diplomacy(var)
             if player == getPlayerOfFaction(currentP2) then
                 SystemNotif.active = false; RequestNotif.active = false
                 if not TEST_MODE then root.session_visual_commands.f_specialCommand(0,"command","Diplomacy", "action",currentAction,"player1",currentP1,"player2",currentP2)
-                else SendSystemMsg(player, "[Version test] Acceptation réussie") end
+                else SendSystemMsg(player, "[Test version] Acceptance successful") end
                 
                 local name1 = getPlayerName(getPlayerOfFaction(currentP1))
                 local name2 = getPlayerName(getPlayerOfFaction(currentP2))
                 
                 if currentAction == 1 then
-                    SendGlobalMsg("Annonce mondiale : " .. name1 .. " s'est allié à " .. name2)
+                    SendGlobalMsg("Global announcement: " .. name1 .. " allied with " .. name2)
                     showPosition(currentP2, currentP1, "ally")
                 else
-                    SendGlobalMsg("Annonce mondiale : " .. name1 .. " a signé la paix avec " .. name2)
+                    SendGlobalMsg("Global announcement: " .. name1 .. " signed peace with " .. name2)
                     showPosition(currentP2, currentP1, "peace")
                 end
                 currentRQ = 0; currentP1 = -1; currentP2 = -1; currentAction = -1
             else
-                SendSystemMsg(player, "Vous n'avez aucune demande en attente.")
+                SendSystemMsg(player, "You have no pending request.")
             end
             return
         end
         
         if btn == 5 then
             if player == getPlayerOfFaction(currentP2) then
-                SendSystemMsg(getPlayerOfFaction(currentP1), "L'autre joueur a refusé votre demande.")
+                SendSystemMsg(getPlayerOfFaction(currentP1), "The other player refused your request.")
                 currentRQ = 0; currentP1 = -1; currentP2 = -1; currentAction = -1
                 RequestNotif.active = false
             else
-                SendSystemMsg(player, "Vous n'avez aucune demande en attente.")
+                SendSystemMsg(player, "You have no pending request.")
             end
             return
         end
         
-        if currentRQ ~= 0 then SendSystemMsg(player, "Une demande diplomatique est déjà en attente, veuillez patienter."); return end
-        if fac == 255 then SendSystemMsg(player, "Cette action ne peut être effectuée que sur le territoire d'un joueur."); return end
+        if currentRQ ~= 0 then SendSystemMsg(player, "A diplomatic request is already pending, please wait."); return end
+        if fac == 255 then SendSystemMsg(player, "This action can only be performed on a player's territory."); return end
         if sender == fac then
-            if not TEST_MODE then SendSystemMsg(player, "Impossible d'effectuer cette action sur votre propre faction."); return
-            else SendSystemMsg(player, "[Mode test] Clic sur son propre territoire autorisé pour la simulation") end
+            if not TEST_MODE then SendSystemMsg(player, "Cannot perform this action on your own faction."); return
+            else SendSystemMsg(player, "[Test mode] Clicking your own territory is allowed for simulation") end
         end
         
         if btn == 1 then
@@ -283,38 +283,38 @@ function Diplomacy(var)
             for i = 0, root.session.gameplay.gameplay.player.size-1 do
                 if not root.session.gameplay.gameplay.player[i].eliminated then livess = livess + 1 end
             end
-            if livess < 3 and not TEST_MODE then SendSystemMsg(player, "Au moins 3 joueurs en vie sont nécessaires pour s'allier."); return end
-            if checkStatusFrontend(sender, fac) == "Ally" and not TEST_MODE then SendSystemMsg(player, "Vous êtes déjà allié à cette cible."); return end
-            if getAllyCount(sender) >= MAX_ALLIES and not TEST_MODE then SendSystemMsg(player, "Vous avez atteint le nombre maximum d'alliés autorisé."); return end
-            if getAllyCount(fac) >= MAX_ALLIES and not TEST_MODE then SendSystemMsg(player, "Le joueur cible a atteint le nombre maximum d'alliés."); return end
+            if livess < 3 and not TEST_MODE then SendSystemMsg(player, "At least 3 living players are required to form an alliance."); return end
+            if checkStatusFrontend(sender, fac) == "Ally" and not TEST_MODE then SendSystemMsg(player, "You are already allied with this target."); return end
+            if getAllyCount(sender) >= MAX_ALLIES and not TEST_MODE then SendSystemMsg(player, "You have reached the maximum number of allowed allies."); return end
+            if getAllyCount(fac) >= MAX_ALLIES and not TEST_MODE then SendSystemMsg(player, "The target player has reached the maximum number of allies."); return end
             
             currentRQ = root.session_gameplay_gameplay_time; currentP1 = sender; currentP2 = fac; currentAction = 1
             
-            SendSystemMsg(player, "Demande d'alliance envoyée à l'autre joueur")
-            SendRequestMsg(getPlayerOfFaction(fac), "Demande d'alliance reçue de " .. getPlayerName(getPlayerOfFaction(sender)))
+            SendSystemMsg(player, "Alliance request sent to the other player")
+            SendRequestMsg(getPlayerOfFaction(fac), "Alliance request received from " .. getPlayerName(getPlayerOfFaction(sender)))
             showPosition(fac, sender, "request")
         end
         
         if btn == 2 then
-            if checkStatusFrontend(sender, fac) == "Peace" and not TEST_MODE then SendSystemMsg(player, "Vous êtes déjà en paix avec cette cible."); return end
+            if checkStatusFrontend(sender, fac) == "Peace" and not TEST_MODE then SendSystemMsg(player, "You are already at peace with this target."); return end
             currentRQ = root.session_gameplay_gameplay_time; currentP1 = sender; currentP2 = fac; currentAction = 2
             
-            SendSystemMsg(player, "Demande de paix envoyée à l'autre joueur")
-            SendRequestMsg(getPlayerOfFaction(fac), "Demande de paix reçue de " .. getPlayerName(getPlayerOfFaction(sender)))
+            SendSystemMsg(player, "Peace request sent to the other player")
+            SendRequestMsg(getPlayerOfFaction(fac), "Peace request received from " .. getPlayerName(getPlayerOfFaction(sender)))
             showPosition(fac, sender, "request")
         end
         
         if btn == 3 then
-            if checkStatusFrontend(sender, fac) == "War" and not TEST_MODE then SendSystemMsg(player, "Vous êtes déjà en guerre avec cette cible."); return end
+            if checkStatusFrontend(sender, fac) == "War" and not TEST_MODE then SendSystemMsg(player, "You are already at war with this target."); return end
             if not TEST_MODE then root.session_visual_commands.f_specialCommand(0,"command","Diplomacy", "action",3,"player1",sender,"player2",fac) end
             
-            SendGlobalMsg("Annonce mondiale : " .. getPlayerName(getPlayerOfFaction(sender)) .. " a déclaré la guerre à " .. getPlayerName(getPlayerOfFaction(fac)))
+            SendGlobalMsg("Global announcement: " .. getPlayerName(getPlayerOfFaction(sender)) .. " declared war on " .. getPlayerName(getPlayerOfFaction(fac)))
             showPosition(fac, sender, "war")
         end
     end
 end
 
--- Lecture du retour sonore
+-- Play sound feedback
 function showPosition(fac, sender, typeR)
     local soundId = 0; local volume = 0.5
     if typeR == "ally" then soundId = allySound; volume = 0.5 elseif typeR == "war" then soundId = warSound; volume = 0.5
@@ -322,13 +322,13 @@ function showPosition(fac, sender, typeR)
     DiplomacyInterface:playSound(soundId, volume)
 end
 
--- Initialisation de la configuration audio
+-- Initialize audio configuration
 function SetMusicOnStart()
     DiplomacyInterface = { playSound = function(self, sid, vol) end }
     openingSound = 0; warSound = 0; allySound = 0; peaceSound = 0; requestSound = 0; finsihSound = 0
 end
 
--- Initialisation et chargement du mod
+-- Initialize and load the mod
 function onInit()
     local isModeReplay = (root.session_gameplay_streamMode == 2)
     if not isModeReplay then
