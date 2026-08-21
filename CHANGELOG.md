@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. Format based on Keep a Changelog; versioning follows SemVer.
 
+## [Unreleased]
+
+### Added
+
+- `colossal_cannon` mod: fully configurable colossal cannon (unit 284) — range, reload, damage, blast radius, hits per shot, environment damage and turret rotation speed, all exposed as settings-panel parameters with safety checks (`distanceStop > distanceMax`, `distanceMin < distanceMax`).
+
 ## [1.0.0] — 2026-08-21
 
 ### Added

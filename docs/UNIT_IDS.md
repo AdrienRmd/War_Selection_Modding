@@ -15,6 +15,7 @@ A starter table of known unit, tech, and resource IDs for **War Selection**, col
 | 25 | tech | Spy nuclear bomb | [nuclear_bomb mod](../mods/nuclear_bomb/nuclear_bomb.lua) |
 | 195 | unit | Spy | [nuclear_bomb mod](../mods/nuclear_bomb/nuclear_bomb.lua) |
 | 155 | unit | Example unit (multi-weapon, used in guide) | [Modding Guide: Attack](modding-guide/attack.md) |
+| 284 | building | Colossal cannon (turreted heavy cannon, turret 0 / weapon 0) | [colossal_cannon mod](../mods/colossal_cannon/colossal_cannon.lua) |
 
 ## How to find unit IDs
 
