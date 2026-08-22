@@ -19,7 +19,7 @@ Full walkthrough: [docs/modding-guide/installation.md](../../docs/modding-guide/
 
 ## Settings
 
-Open the mod's settings panel in the mod menu to change these. **Values are "displayed numbers"** — you type the number exactly as you want it shown in the game (the mod multiplies by 1000 internally to get the engine value). For example, `DistanceMax = 3000` means a 3000 m range. Only `RotationSpeed` and `DamagesCount` are used as-is (raw engine values).
+Open the mod's settings panel in the mod menu to change these. **Values are "displayed numbers"** — you type the number exactly as you want it shown in the game (the mod multiplies by 1000 internally to get the engine value). For example, `DistanceMax = 3000` means a 3000 m range. Only `DamagesCount` is used as-is (raw engine value).
 
 | Setting name | Default | What it does | Example values |
 |--------------|---------|--------------|----------------|
@@ -29,14 +29,15 @@ Open the mod's settings panel in the mod menu to change these. **Values are "dis
 | Recharge | 5 | Reload time between shots, in seconds | `10` = one shot every 10 s |
 | Radius | 5 | Blast radius of each shot, in meters | `10` = 10 m splash |
 | Damage | 400 | Damage dealt to units per hit | `800` = 800 damage |
-| RotationSpeed | 500 | Turret rotation speed (raw engine value, no ×1000) — higher = faster aiming | `1000` = twice as fast |
+| RotationSpeed | 0.5 | Turret rotation speed, in seconds (engine scale: 1000 = 1 s; base value 500 = 0.5 s) | `1` = 1 s |
 | DamagesCount | 1 | Number of times damage is applied per attack | `3` = 3 hits per shot |
 | EnvDamage | 250 | Damage dealt to environmental objects (trees, etc.) | `500` = 500 damage |
 
 ## How it works (for modders)
 
 - Cannon unit type: `root.unitType[284]`, turret 0, weapon 0 — all changes go through `attack.turret[0].weapon[0]` (ranges, `rechargePeriod`, `damage.radius`, `damage.damages[0]`, `damage.damagesCount`, `damage.envDamage`) plus `attack.turret[0].rotationSpeed`.
-- Reads panel values with `getParameterNumber(name, default, min, max)`; meters/seconds/damage are displayed values multiplied ×1000, `RotationSpeed`/`DamagesCount` are raw.
+- Reads panel values with `getParameterNumber(name, default, min, max)`; meters/seconds/damage are displayed values multiplied ×1000, `DamagesCount` is raw.
+- `rotationSpeed` engine scale: **1000 = 1 second** (base value 500 = 0.5 s) — the panel takes seconds and converts.
 - Safety fixes applied before writing (see [docs/modding-guide/attack.md](../../docs/modding-guide/attack.md)):
   - if `DistanceMin >= DistanceMax` → min is set to `DistanceMax / 2`;
   - if `DistanceStop <= DistanceMax` → stop is set to `DistanceMax + 50 m`;
@@ -45,7 +46,7 @@ Open the mod's settings panel in the mod menu to change these. **Values are "dis
 
 ## Known issues / notes
 
-- All panel values except `RotationSpeed` and `DamagesCount` are "displayed numbers" multiplied ×1000 in code — do not enter raw engine values for those.
+- All panel values except `DamagesCount` are "displayed numbers" multiplied ×1000 in code — do not enter raw engine values for those.
 - `distanceStop` must stay greater than `distanceMax` or the cannon stops attacking when the target moves — the mod auto-corrects it, but set it properly to control the behavior.
 - Only `damages[0]` (damage vs units) is exposed; damage vs buildings (`damages[2]`) and aircraft (`damages[14]`/`damages[16]`) keep their base values.
 - Not tested in-game yet — status WIP until confirmed working.

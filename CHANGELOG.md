@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file. Format base
 
 - `colossal_cannon` mod: fully configurable colossal cannon (unit 284) — range, reload, damage, blast radius, hits per shot, environment damage and turret rotation speed, all exposed as settings-panel parameters with safety checks (`distanceStop > distanceMax`, `distanceMin < distanceMax`).
 
+### Changed
+
+- `colossal_cannon`: `RotationSpeed` now follows the displayed-value ×1000 convention (engine scale: 1000 = 1 s, base 500 = 0.5 s) — the panel takes seconds instead of a raw engine value.
+
 ## [1.0.0] — 2026-08-21
 
 ### Added

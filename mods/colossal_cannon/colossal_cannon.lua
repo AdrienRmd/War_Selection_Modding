@@ -8,7 +8,7 @@
 -- ============================================================================
 -- The mod panel expects "displayed numbers" (meters, seconds, damage points)
 -- The code automatically multiplies x 1000 to convert to raw engine values.
--- Only RotationSpeed and DamagesCount are raw engine values (no x 1000).
+-- Only DamagesCount is a raw engine value (no x 1000).
 -- ============================================================================
 
 -- Panel parameters (displayed values)
@@ -18,7 +18,7 @@ local DISTANCE_STOP  = getParameterNumber("DistanceStop", 2050, 0, 100000) * 100
 local RECHARGE       = getParameterNumber("Recharge",        5, 1, 600)    * 1000 -- reload time, seconds (base 5)
 local RADIUS         = getParameterNumber("Radius",          5, 0, 1000)   * 1000 -- blast radius, meters (base 5)
 local DAMAGE         = getParameterNumber("Damage",        400, 0, 1000000) * 1000 -- damage to units (base 400)
-local ROTATION_SPEED = getParameterNumber("RotationSpeed", 500, 0, 10000)         -- turret rotation speed, raw value (base 500)
+local ROTATION_SPEED = getParameterNumber("RotationSpeed", 0.5, 0.1, 10)  * 1000 -- turret rotation, seconds: 1000 = 1 s (base 500 = 0.5 s)
 local DAMAGES_COUNT  = getParameterNumber("DamagesCount",    1, 1, 100)           -- hits per attack (base 1)
 local ENV_DAMAGE     = getParameterNumber("EnvDamage",     250, 0, 1000000) * 1000 -- damage to environment (base 250)
 
@@ -56,6 +56,6 @@ weapon.damage.damages[0]   = DAMAGE         -- base 400000 = 400 damage
 weapon.damage.damagesCount = DAMAGES_COUNT  -- base 1
 weapon.damage.envDamage    = ENV_DAMAGE     -- base 250000 = 250 damage
 
-cannon.rotationSpeed = ROTATION_SPEED       -- base 500
+cannon.rotationSpeed = ROTATION_SPEED       -- base 500 = 0.5 s (1000 = 1 s)
 
 root.f_recreateModifiedUnitTypes()
