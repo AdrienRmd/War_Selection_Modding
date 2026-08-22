@@ -2,7 +2,7 @@
 -- Mod name: Colossal cannon
 -- Description: Fully configurable colossal cannon (unit type 284): range, reload, damage, blast radius, turret rotation, health and armor. Settings panel in-game.
 -- Author: JSuisMort
--- Status: WIP
+-- Status: Stable
 -----------------------------------------------------------
 
 -- ============================================================================

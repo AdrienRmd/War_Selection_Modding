@@ -1,9 +1,10 @@
 # Colossal Cannon
-**Status:** WIP
+**Status:** Stable
 
-## Mod ID
+## Mod ID: `mod-bsb2JnTBdh9`
 
-Not published yet — work in progress.
+> [!TIP]
+> **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
 
 ## What does this mod do?
 
@@ -16,6 +17,8 @@ This mod makes the game's **colossal cannon** (the giant long-range cannon, unit
 4. Relaunch the map — the mod is now active.
 
 Full walkthrough: [docs/modding-guide/installation.md](../../docs/modding-guide/installation.md)
+
+If you prefer, use the **Mod ID** at the top of this page to add the mod directly, without copying any code.
 
 ## Settings
 
@@ -53,4 +56,3 @@ Open the mod's settings panel in the mod menu to change these. **Values are "dis
 - All panel values except `DamagesCount` are "displayed numbers" multiplied ×1000 in code — do not enter raw engine values for those.
 - `distanceStop` must stay greater than `distanceMax` or the cannon stops attacking when the target moves — the mod auto-corrects it, but set it properly to control the behavior.
 - Only `damages[0]` (damage vs units) is exposed; damage vs buildings (`damages[2]`) and aircraft (`damages[14]`/`damages[16]`) keep their base values.
-- Not tested in-game yet — status WIP until confirmed working.
