@@ -1,6 +1,6 @@
 -----------------------------------------------------------
 -- Mod name: Colossal cannon
--- Description: Fully configurable colossal cannon (unit type 284): range, reload, damage, blast radius, turret rotation. Settings panel in-game.
+-- Description: Fully configurable colossal cannon (unit type 284): range, reload, damage, blast radius, turret rotation, health and armor. Settings panel in-game.
 -- Author: JSuisMort
 -- Status: WIP
 -----------------------------------------------------------
@@ -21,6 +21,9 @@ local DAMAGE         = getParameterNumber("Damage",        400, 0, 1000000) * 10
 local ROTATION_SPEED = getParameterNumber("RotationSpeed", 0.5, 0.1, 10)  * 1000 -- turret rotation, seconds: 1000 = 1 s (base 500 = 0.5 s)
 local DAMAGES_COUNT  = getParameterNumber("DamagesCount",    1, 1, 100)           -- hits per attack (base 1)
 local ENV_DAMAGE     = getParameterNumber("EnvDamage",     250, 0, 1000000) * 1000 -- damage to environment (base 250)
+local HEALTH         = getParameterNumber("Health",       1500, 1, 1000000) * 1000 -- cannon HP (base 1500)
+local FIRST_ARMOR    = getParameterNumber("FirstArmor",      8, 0, 1000)    * 1000 -- armor slot 0 thickness (base 8)
+local SECOND_ARMOR   = getParameterNumber("SecondArmor",    12, 0, 1000)    * 1000 -- armor slot 1 thickness (base 12)
 
 -- ============================================================================
 -- Safety checks: wrong ranges would silently break the weapon
@@ -57,5 +60,11 @@ weapon.damage.damagesCount = DAMAGES_COUNT  -- base 1
 weapon.damage.envDamage    = ENV_DAMAGE     -- base 250000 = 250 damage
 
 cannon.rotationSpeed = ROTATION_SPEED       -- base 500 = 0.5 s (1000 = 1 s)
+
+local deathability = root.unitType[284].deathability
+
+deathability.health                      = HEALTH      -- base 1500000 = 1500 HP
+deathability.armor.data[0].object.thickness = FIRST_ARMOR  -- base 8000 = 8 armor
+deathability.armor.data[1].object.thickness = SECOND_ARMOR -- base 12000 = 12 armor
 
 root.f_recreateModifiedUnitTypes()

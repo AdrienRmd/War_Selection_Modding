@@ -7,7 +7,7 @@ Not published yet — work in progress.
 
 ## What does this mod do?
 
-This mod makes the game's **colossal cannon** (the giant long-range cannon, unit type 284) fully configurable. From the mod's settings panel in-game you can change its **range** (min/max/stop), **reload time**, **damage** to units, **blast radius**, number of **hits per shot**, damage to the **environment**, and the turret's **rotation speed** — without touching any code. Want a cannon that shoots twice as far but takes 10 seconds to reload? Just change two numbers in the panel.
+This mod makes the game's **colossal cannon** (the giant long-range cannon, unit type 284) fully configurable. From the mod's settings panel in-game you can change its **range** (min/max/stop), **reload time**, **damage** to units, **blast radius**, number of **hits per shot**, damage to the **environment**, the turret's **rotation speed**, and its **health** and **armor** — without touching any code. Want a cannon that shoots twice as far but takes 10 seconds to reload? Just change two numbers in the panel.
 
 ## Quick install
 1. Download `colossal_cannon.lua` from this repository.
@@ -32,10 +32,14 @@ Open the mod's settings panel in the mod menu to change these. **Values are "dis
 | RotationSpeed | 0.5 | Turret rotation speed, in seconds (engine scale: 1000 = 1 s; base value 500 = 0.5 s) | `1` = 1 s |
 | DamagesCount | 1 | Number of times damage is applied per attack | `3` = 3 hits per shot |
 | EnvDamage | 250 | Damage dealt to environmental objects (trees, etc.) | `500` = 500 damage |
+| Health | 1500 | Cannon hit points | `3000` = 3000 HP |
+| FirstArmor | 8 | Armor thickness of armor slot 0 | `10` = 10 armor |
+| SecondArmor | 12 | Armor thickness of armor slot 1 | `20` = 20 armor |
 
 ## How it works (for modders)
 
 - Cannon unit type: `root.unitType[284]`, turret 0, weapon 0 — all changes go through `attack.turret[0].weapon[0]` (ranges, `rechargePeriod`, `damage.radius`, `damage.damages[0]`, `damage.damagesCount`, `damage.envDamage`) plus `attack.turret[0].rotationSpeed`.
+- Durability: `deathability.health` (base 1500 HP) and `deathability.armor.data[0]`/`data[1].object.thickness` (armor slots, base 8 and 12) — only thickness is changed; the armor probabilities of the existing entries are left untouched (see [docs/modding-guide/health-and-armor.md](../../docs/modding-guide/health-and-armor.md)).
 - Reads panel values with `getParameterNumber(name, default, min, max)`; meters/seconds/damage are displayed values multiplied ×1000, `DamagesCount` is raw.
 - `rotationSpeed` engine scale: **1000 = 1 second** (base value 500 = 0.5 s) — the panel takes seconds and converts.
 - Safety fixes applied before writing (see [docs/modding-guide/attack.md](../../docs/modding-guide/attack.md)):

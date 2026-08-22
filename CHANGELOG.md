@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. Format base
 ### Added
 
 - `colossal_cannon` mod: fully configurable colossal cannon (unit 284) — range, reload, damage, blast radius, hits per shot, environment damage and turret rotation speed, all exposed as settings-panel parameters with safety checks (`distanceStop > distanceMax`, `distanceMin < distanceMax`).
+- `colossal_cannon`: new `Health`, `FirstArmor` and `SecondArmor` settings-panel parameters for the cannon's hit points (base 1500) and armor slot thicknesses (base 8 / 12).
 
 ### Changed
 
