@@ -1,7 +1,10 @@
 # Fisher production & capacity
 **Status:** Stable
 
-> Not published in-game yet — copy the code (below), or publish it yourself and add the Mod ID here.
+## Mod ID: `mod-hodZDbghDU6`
+
+> [!TIP]
+> **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
 
 ## What does this mod do?
 
@@ -51,7 +54,7 @@ Panel parameter names must match exactly (case-sensitive) — a misnamed paramet
 - Production: `movement.gather[0].perTick`, engine scale `55 perTick = 1.1 food/sec`, i.e. **perTick = food/sec × 50** (5 game ticks per second). The panel takes food/sec and the code multiplies ×50.
 - Capacity: `movement.gather[0].bagSize`, engine scale **1000 = 1 food carried** (70000 = 70 food). The panel takes food carried and the code multiplies ×1000.
 - Both conversions are wrapped in `math.floor` — engine fields require integers, and Lua floats fail with `Type mismatch: Not integer`.
-- Reads panel values with `getParameterNumber(name, default, min, max)`; production defaults are the base-game rates (4.4–10 food/sec) and capacity defaults (50–250 food) come from the `*_stockage` local variables at the top of the script (`europe_stockage`, `asia_stockage`, …).
+- Reads panel values with `getParameterNumber(name, default, min, max)`; defaults are base-game values — production 4.4–10 food/sec (`base` field per boat) and capacity 50–250 food (`bag_base` field per boat) in the `fishers` table at the top of the script.
 - Prints the applied values to the developer **Console** at load (`[fisher] Europe fisher (id 26): 9.00/sec (perTick 450)` / `capacity 70 (bagSize 70000)`) — use it to verify that every panel parameter is read (a value falling back to its default means the panel parameter is missing or misnamed).
 - Ends with `root.f_recreateModifiedUnitTypes()`.
 

@@ -21,23 +21,15 @@ local western_asia_fisher    = 452 -- base 300 perTick = 6/sec
 local china_fisher           = 353 -- base 400 perTick = 8/sec
 local abstract_fisher        = 244 -- base 500 perTick = 10/sec
 
--- Base carry capacities (displayed values: 70 = 70 food)
-local europe_stockage           = 70
-local asia_stockage             = 50
-local medieval_europe_stockage  = 150
-local eastern_asia_stockage     = 150
-local western_asia_stockage     = 60
-local china_stockage            = 150
-local abstract_stockage         = 250
-
 local fishers = {
-    { name = "Europe",         param = "Europe",         stockage_param = "EuropeStockage",         id = europe_fisher,          base = 5.4, bag_base = europe_stockage          },
-    { name = "Asia",           param = "Asia",           stockage_param = "AsiaStockage",           id = asia_fisher,            base = 4.4, bag_base = asia_stockage            },
-    { name = "MedievalEurope", param = "MedievalEurope", stockage_param = "MedievalEuropeStockage", id = medieval_europe_fisher, base = 7,   bag_base = medieval_europe_stockage },
-    { name = "EasternAsia",    param = "EasternAsia",    stockage_param = "EasternAsiaStockage",    id = eastern_asia_fisher,    base = 7,   bag_base = eastern_asia_stockage    },
-    { name = "WesternAsia",    param = "WesternAsia",    stockage_param = "WesternAsiaStockage",    id = western_asia_fisher,    base = 6,   bag_base = western_asia_stockage    },
-    { name = "China",          param = "China",          stockage_param = "ChinaStockage",          id = china_fisher,           base = 8,   bag_base = china_stockage           },
-    { name = "Abstract",       param = "Abstract",       stockage_param = "AbstractStockage",       id = abstract_fisher,        base = 10,  bag_base = abstract_stockage        },
+    -- base = production (food/sec), bag_base = carry capacity (food carried)
+    { name = "Europe",         param = "Europe",         stockage_param = "EuropeStockage",         id = europe_fisher,          base = 5.4, bag_base = 70  },
+    { name = "Asia",           param = "Asia",           stockage_param = "AsiaStockage",           id = asia_fisher,            base = 4.4, bag_base = 50  },
+    { name = "MedievalEurope", param = "MedievalEurope", stockage_param = "MedievalEuropeStockage", id = medieval_europe_fisher, base = 7,   bag_base = 150 },
+    { name = "EasternAsia",    param = "EasternAsia",    stockage_param = "EasternAsiaStockage",    id = eastern_asia_fisher,    base = 7,   bag_base = 150 },
+    { name = "WesternAsia",    param = "WesternAsia",    stockage_param = "WesternAsiaStockage",    id = western_asia_fisher,    base = 6,   bag_base = 60  },
+    { name = "China",          param = "China",          stockage_param = "ChinaStockage",          id = china_fisher,           base = 8,   bag_base = 150 },
+    { name = "Abstract",       param = "Abstract",       stockage_param = "AbstractStockage",       id = abstract_fisher,        base = 10,  bag_base = 250 },
 }
 
 for _, f in ipairs(fishers) do

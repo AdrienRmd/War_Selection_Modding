@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. Format base
 - `colossal_cannon`: new `Health`, `FirstArmor` and `SecondArmor` settings-panel parameters for the cannon's hit points (base 1500) and armor slot thicknesses (base 8 / 12).
 - In-game Mod ID for `colossal_cannon` — `mod-bsb2JnTBdh9` (status: Stable).
 - `economy_gather` mod (fisher.lua): configurable fishing boats for every civilization — per-boat production (food per second, engine `perTick` = food/sec × 50) and per-boat carry capacity (`*Stockage` panel parameters, displayed value = food carried, engine `bagSize` = ×1000; defaults 50–250 food).
+- In-game Mod ID for `economy_gather` — `mod-hodZDbghDU6` (status: Stable).
 
 ### Changed
 
