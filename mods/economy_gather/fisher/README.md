@@ -4,7 +4,7 @@
 ## Mod ID: `mod-hodZDbghDU6`
 
 > [!TIP]
-> **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
+> **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
 
 ## What does this mod do?
 
@@ -16,7 +16,7 @@ It makes every **fishing boat** (the boat that gathers food from fish spots) con
 3. Start a **private match** on your map with **developer mode** enabled, open your mod, and paste the code with **Edit script**.
 4. Relaunch the map — the mod is now active.
 
-Full walkthrough: [docs/modding-guide/installation.md](../../docs/modding-guide/installation.md)
+Full walkthrough: [docs/modding-guide/installation.md](../../../docs/modding-guide/installation.md)
 
 ## Settings
 
@@ -50,15 +50,16 @@ Panel parameter names must match exactly (case-sensitive) — a misnamed paramet
 
 ## How it works (for modders)
 
-- Each fisher is a unit type (`root.unitType[id]`, IDs 26, 43, 81, 169, 452, 353, 244) whose gather parameters live under `movement.gather[0]` — resource `0` = food (see [docs/modding-guide/workers-and-construction.md](../../docs/modding-guide/workers-and-construction.md)).
+- Each fisher is a unit type (`root.unitType[id]`, IDs 26, 43, 81, 169, 452, 353, 244) whose gather parameters live under `movement.gather[0]` — resource `0` = food (see [docs/modding-guide/workers-and-construction.md](../../../docs/modding-guide/workers-and-construction.md)).
 - Production: `movement.gather[0].perTick`, engine scale `55 perTick = 1.1 food/sec`, i.e. **perTick = food/sec × 50** (5 game ticks per second). The panel takes food/sec and the code multiplies ×50.
 - Capacity: `movement.gather[0].bagSize`, engine scale **1000 = 1 food carried** (70000 = 70 food). The panel takes food carried and the code multiplies ×1000.
 - Both conversions are wrapped in `math.floor` — engine fields require integers, and Lua floats fail with `Type mismatch: Not integer`.
-- Reads panel values with `getParameterNumber(name, default, min, max)`; defaults are base-game values — production 4.4–10 food/sec (`base` field per boat) and capacity 50–250 food (`bag_base` field per boat) in the `fishers` table at the top of the script.
+- Reads panel values with `getParameterNumber(name, default, min, max)`; defaults are base-game values in the `fishers` table at the top of the script.
 - Prints the applied values to the developer **Console** at load (`[fisher] Europe fisher (id 26): 9.00/sec (perTick 450)` / `capacity 70 (bagSize 70000)`) — use it to verify that every panel parameter is read (a value falling back to its default means the panel parameter is missing or misnamed).
 - Ends with `root.f_recreateModifiedUnitTypes()`.
 
 ## Known issues / notes
 
+- The unmodified base-game values (engine and displayed formats) are archived in [../DEFAULTS.md](../DEFAULTS.md) — use them to revert any change.
 - Storage search distance (`findStorageDistance`) keeps its base value.
 - High production with a small capacity makes boats trip to the warehouse constantly — raise the `*Stockage` settings along with production.

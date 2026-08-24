@@ -4,7 +4,6 @@
 -- Author: JSuisMort
 -- Status: Stable
 -----------------------------------------------------------
-
 -- ============================================================================
 -- The mod panel expects "displayed numbers":
 --   production: 9  = 9 food per second -> perTick = food/sec x 50
