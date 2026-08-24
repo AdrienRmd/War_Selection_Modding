@@ -15,4 +15,4 @@ How to read the table: **Mod** links to the mod's folder, **Description** tells 
 | [default_gameplay_functions](default_gameplay_functions/) | Three variants of the age/civilization gameplay function overrides (load one). | ![WIP](https://img.shields.io/badge/Status-WIP-orange.svg) | — *(in base game)* |
 | [victory_conditions](victory_conditions/) | Alternative victory/defeat rules: team annihilation, full win/loss engine, king mode. | ![WIP](https://img.shields.io/badge/Status-WIP-orange.svg) | — |
 | [colossal_cannon](colossal_cannon/) | Fully configurable colossal cannon: range, reload, damage, blast radius, turret rotation. | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | **`mod-bsb2JnTBdh9`** |
-| [economy_gather](economy_gather/) | Configurable fishing boat production (food per second) for every civilization's fisher. | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | — |
+| [economy_gather](economy_gather/) | Configurable fishing boats: gather speed (food/sec) and carry capacity for every civilization's fisher. | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | — |

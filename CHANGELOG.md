@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file. Format base
 - `colossal_cannon` mod: fully configurable colossal cannon (unit 284) — range, reload, damage, blast radius, hits per shot, environment damage and turret rotation speed, all exposed as settings-panel parameters with safety checks (`distanceStop > distanceMax`, `distanceMin < distanceMax`).
 - `colossal_cannon`: new `Health`, `FirstArmor` and `SecondArmor` settings-panel parameters for the cannon's hit points (base 1500) and armor slot thicknesses (base 8 / 12).
 - In-game Mod ID for `colossal_cannon` — `mod-bsb2JnTBdh9` (status: Stable).
-- `economy_gather` mod (fisher.lua): configurable fishing boat production for every civilization's fisher boat — one settings-panel parameter per boat, in food per second (engine `perTick` = food/sec × 50, floored to an integer).
+- `economy_gather` mod (fisher.lua): configurable fishing boats for every civilization — per-boat production (food per second, engine `perTick` = food/sec × 50) and per-boat carry capacity (`*Stockage` panel parameters, displayed value = food carried, engine `bagSize` = ×1000; defaults 50–250 food).
 
 ### Changed
 
