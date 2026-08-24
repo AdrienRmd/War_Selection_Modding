@@ -14,6 +14,10 @@ All notable changes to this project will be documented in this file. Format base
 
 - `colossal_cannon`: `RotationSpeed` now follows the displayed-value ×1000 convention (engine scale: 1000 = 1 s, base 500 = 0.5 s) — the panel takes seconds instead of a raw engine value.
 
+### Fixed
+
+- `colossal_cannon`: all ×1000 panel conversions are now floored to integers — Lua floats made the script fail with `Type mismatch: "Argument 0: Not integer"`, silently skipping everything after `rotationSpeed` (health, armor, unit-type rebuild).
+
 ## [1.0.0] — 2026-08-21
 
 ### Added

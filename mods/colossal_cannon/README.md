@@ -43,7 +43,8 @@ Open the mod's settings panel in the mod menu to change these. **Values are "dis
 
 - Cannon unit type: `root.unitType[284]`, turret 0, weapon 0 — all changes go through `attack.turret[0].weapon[0]` (ranges, `rechargePeriod`, `damage.radius`, `damage.damages[0]`, `damage.damagesCount`, `damage.envDamage`) plus `attack.turret[0].rotationSpeed`.
 - Durability: `deathability.health` (base 1500 HP) and `deathability.armor.data[0]`/`data[1].object.thickness` (armor slots, base 8 and 12) — only thickness is changed; the armor probabilities of the existing entries are left untouched (see [docs/modding-guide/health-and-armor.md](../../docs/modding-guide/health-and-armor.md)).
-- Reads panel values with `getParameterNumber(name, default, min, max)`; meters/seconds/damage are displayed values multiplied ×1000, `DamagesCount` is raw.
+- Reads panel values with `getParameterNumber(name, default, min, max)`; meters/seconds/damage are displayed values multiplied ×1000, `DamagesCount` is raw. All ×1000 conversions are wrapped in `math.floor` — engine fields require integers, and Lua floats (e.g. `0.5 * 1000 = 500.0`) fail with `Type mismatch: Not integer`.
+- Prints the applied values to the developer **Console** at load (`[colossal_cannon] range max/min/stop: ...`) — use it to verify that every panel parameter is read (a value falling back to its default means the panel parameter is missing or misnamed).
 - `rotationSpeed` engine scale: **1000 = 1 second** (base value 500 = 0.5 s) — the panel takes seconds and converts.
 - Safety fixes applied before writing (see [docs/modding-guide/attack.md](../../docs/modding-guide/attack.md)):
   - if `DistanceMin >= DistanceMax` → min is set to `DistanceMax / 2`;
