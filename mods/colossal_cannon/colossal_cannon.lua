@@ -12,18 +12,20 @@
 -- ============================================================================
 
 -- Panel parameters (displayed values)
-local DISTANCE_MAX   = getParameterNumber("DistanceMax",  2000, 0, 100000) * 1000 -- max range, meters (base 2000)
-local DISTANCE_MIN   = getParameterNumber("DistanceMin",  1000, 0, 100000) * 1000 -- min range, meters (base 1000)
-local DISTANCE_STOP  = getParameterNumber("DistanceStop", 2050, 0, 100000) * 1000 -- stop distance, meters (base 2050)
-local RECHARGE       = getParameterNumber("Recharge",        5, 1, 600)    * 1000 -- reload time, seconds (base 5)
-local RADIUS         = getParameterNumber("Radius",          5, 0, 1000)   * 1000 -- blast radius, meters (base 5)
-local DAMAGE         = getParameterNumber("Damage",        400, 0, 1000000) * 1000 -- damage to units (base 400)
-local ROTATION_SPEED = getParameterNumber("RotationSpeed", 0.5, 0.1, 10)  * 1000 -- turret rotation, seconds: 1000 = 1 s (base 500 = 0.5 s)
+-- math.floor: engine fields require integers (e.g. 0.5 * 1000 = 500.0 is a
+-- Lua float and would fail with "Argument 0: Not integer")
+local DISTANCE_MAX   = math.floor(getParameterNumber("DistanceMax",  2000, 0, 100000) * 1000) -- max range, meters (base 2000)
+local DISTANCE_MIN   = math.floor(getParameterNumber("DistanceMin",  1000, 0, 100000) * 1000) -- min range, meters (base 1000)
+local DISTANCE_STOP  = math.floor(getParameterNumber("DistanceStop", 2050, 0, 100000) * 1000) -- stop distance, meters (base 2050)
+local RECHARGE       = math.floor(getParameterNumber("Recharge",        5, 1, 600)    * 1000) -- reload time, seconds (base 5)
+local RADIUS         = math.floor(getParameterNumber("Radius",          5, 0, 1000)   * 1000) -- blast radius, meters (base 5)
+local DAMAGE         = math.floor(getParameterNumber("Damage",        400, 0, 1000000) * 1000) -- damage to units (base 400)
+local ROTATION_SPEED = math.floor(getParameterNumber("RotationSpeed", 0.5, 0.1, 10)  * 1000) -- turret rotation, seconds: 1000 = 1 s (base 500 = 0.5 s)
 local DAMAGES_COUNT  = getParameterNumber("DamagesCount",    1, 1, 100)           -- hits per attack (base 1)
-local ENV_DAMAGE     = getParameterNumber("EnvDamage",     250, 0, 1000000) * 1000 -- damage to environment (base 250)
-local HEALTH         = getParameterNumber("Health",       1500, 1, 1000000) * 1000 -- cannon HP (base 1500)
-local FIRST_ARMOR    = getParameterNumber("FirstArmor",      8, 0, 1000)    * 1000 -- armor slot 0 thickness (base 8)
-local SECOND_ARMOR   = getParameterNumber("SecondArmor",    12, 0, 1000)    * 1000 -- armor slot 1 thickness (base 12)
+local ENV_DAMAGE     = math.floor(getParameterNumber("EnvDamage",     250, 0, 1000000) * 1000) -- damage to environment (base 250)
+local HEALTH         = math.floor(getParameterNumber("Health",       1500, 1, 1000000) * 1000) -- cannon HP (base 1500)
+local FIRST_ARMOR    = math.floor(getParameterNumber("FirstArmor",      8, 0, 1000)    * 1000) -- armor slot 0 thickness (base 8)
+local SECOND_ARMOR   = math.floor(getParameterNumber("SecondArmor",    12, 0, 1000)    * 1000) -- armor slot 1 thickness (base 12)
 
 -- ============================================================================
 -- Safety checks: wrong ranges would silently break the weapon
@@ -69,6 +71,7 @@ deathability.armor.data[1].object.thickness = SECOND_ARMOR -- base 12000 = 12 ar
 
 -- Debug: prints the values actually applied (check the developer Console)
 -- If a value shows the base default, the panel parameter is missing or misnamed
+print("test")
 print(string.format(
     "[colossal_cannon] range max/min/stop: %d/%d/%d m | reload: %.1f s | blast radius: %d m | damage: %d x%d | env damage: %d | rotation: %.2f s | HP: %d | armor: %d/%d",
     DISTANCE_MAX / 1000, DISTANCE_MIN / 1000, DISTANCE_STOP / 1000,
