@@ -63,8 +63,21 @@ cannon.rotationSpeed = ROTATION_SPEED       -- base 500 = 0.5 s (1000 = 1 s)
 
 local deathability = root.unitType[284].deathability
 
-deathability.health                      = HEALTH      -- base 1500000 = 1500 HP
+deathability.health                         = HEALTH      -- base 1500000 = 1500 HP
 deathability.armor.data[0].object.thickness = FIRST_ARMOR  -- base 8000 = 8 armor
 deathability.armor.data[1].object.thickness = SECOND_ARMOR -- base 12000 = 12 armor
+
+-- Debug: prints the values actually applied (check the developer Console)
+-- If a value shows the base default, the panel parameter is missing or misnamed
+print(string.format(
+    "[colossal_cannon] range max/min/stop: %d/%d/%d m | reload: %.1f s | blast radius: %d m | damage: %d x%d | env damage: %d | rotation: %.2f s | HP: %d | armor: %d/%d",
+    DISTANCE_MAX / 1000, DISTANCE_MIN / 1000, DISTANCE_STOP / 1000,
+    RECHARGE / 1000,
+    RADIUS / 1000,
+    DAMAGE / 1000, DAMAGES_COUNT,
+    ENV_DAMAGE / 1000,
+    ROTATION_SPEED / 1000,
+    HEALTH / 1000,
+    FIRST_ARMOR / 1000, SECOND_ARMOR / 1000))
 
 root.f_recreateModifiedUnitTypes()
