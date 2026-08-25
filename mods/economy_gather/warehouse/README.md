@@ -47,6 +47,6 @@ Panel parameter names must match exactly (case-sensitive) — a misnamed paramet
 
 ## Known issues / notes
 
-- The base value is **presumed** `65536` (= 100%) for all nine units — verify in console with `gameplay.root.unitType[id].storageMultiplier` (base values archived in [../DEFAULTS.md](../DEFAULTS.md)).
+- Base value verified in game: `65536` (= 100%) for all nine units (archived in [../DEFAULTS.md](../DEFAULTS.md)).
 - Lowering below 100% in a running game where warehouses are already fuller than the new cap is untested.
 - Percentages not exactly representable in 16.16 fixed point (e.g. 210% = 137625.6) are stored rounded up (137626 = 210.0015%) — a negligible +0.0015% at most, so the UI displays the requested integer.

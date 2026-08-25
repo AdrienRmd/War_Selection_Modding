@@ -123,16 +123,16 @@ Gather slots are unit-specific: the slot number is the position of the resource 
 
 ## Warehouses (`warehouse/warehouse.lua`)
 
-Capacity is set via `storageMultiplier`, 16.16 fixed point: `65536` (2^16) = 100%. The base value is **presumed** `65536` for all nine units (fixed-point convention) — verify in console with `gameplay.root.unitType[id].storageMultiplier` before relying on it.
+Capacity is set via `storageMultiplier`, 16.16 fixed point: `65536` (2^16) = 100%. The base value is **verified in game**: `65536` (= 100%) for all nine units. The capacity column below lists the mod's default settings (the author's tuned capacities, applied as `ceil(percentage × 65536 / 100)`).
 
 | Unit | ID | storageMultiplier (engine) | capacity (displayed) |
 |------|----|----------------------------|----------------------|
 | stone_warehouse | 2 | 65536 | 100% |
-| europe_warehouse | 17 | 65536 | 100% |
-| asia_warehouse | 30 | 65536 | 100% |
-| western_europe_warehouse | 59 | 65536 | 100% |
-| eastern_europe_warehouse | 60 | 65536 | 100% |
-| western_asia_warehouse | 87 | 65536 | 100% |
-| eastern_asia_warehouse | 88 | 65536 | 100% |
-| elephant_cargo | 124 | 65536 | 100% |
-| abstract_warehouse | 191 | 65536 | 100% |
+| europe_warehouse | 17 | 65536 | 110% |
+| asia_warehouse | 30 | 65536 | 110% |
+| western_europe_warehouse | 59 | 65536 | 130% |
+| eastern_europe_warehouse | 60 | 65536 | 130% |
+| western_asia_warehouse | 87 | 65536 | 130% |
+| eastern_asia_warehouse | 88 | 65536 | 130% |
+| elephant_cargo | 124 | 65536 | 130% |
+| abstract_warehouse | 191 | 65536 | 150% |
