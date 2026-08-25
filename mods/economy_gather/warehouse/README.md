@@ -25,14 +25,14 @@ Open the mod's settings panel in the mod menu to change these. **Values are perc
 | Setting name | Default | What it does | Example values |
 |--------------|---------|--------------|----------------|
 | Stone | 100 | Storage capacity of the stone warehouse (unit 2) | `200` = double capacity |
-| Europe | 110 | Storage capacity of the European warehouse (unit 17) | `200` = double capacity |
-| Asia | 110 | Storage capacity of the Asian warehouse (unit 30) | `200` = double capacity |
-| WesternEurope | 130 | Storage capacity of the Western European warehouse (unit 59) | `200` = double capacity |
-| EasternEurope | 130 | Storage capacity of the Eastern European warehouse (unit 60) | `200` = double capacity |
-| WesternAsia | 130 | Storage capacity of the Western Asian warehouse (unit 87) | `200` = double capacity |
-| EasternAsia | 130 | Storage capacity of the Eastern Asian warehouse (unit 88) | `200` = double capacity |
-| ElephantCargo | 130 | Storage capacity of the cargo elephant, the mobile storage unit (unit 124) | `200` = double capacity |
-| Abstract | 150 | Storage capacity of the abstract/generic warehouse (unit 191) | `200` = double capacity |
+| Europe | 110 | Storage capacity of the European warehouse (unit 17) | `220` = double capacity |
+| Asia | 110 | Storage capacity of the Asian warehouse (unit 30) | `220` = double capacity |
+| WesternEurope | 130 | Storage capacity of the Western European warehouse (unit 59) | `260` = double capacity |
+| EasternEurope | 130 | Storage capacity of the Eastern European warehouse (unit 60) | `260` = double capacity |
+| WesternAsia | 130 | Storage capacity of the Western Asian warehouse (unit 87) | `260` = double capacity |
+| EasternAsia | 130 | Storage capacity of the Eastern Asian warehouse (unit 88) | `260` = double capacity |
+| ElephantCargo | 130 | Storage capacity of the cargo elephant, the mobile storage unit (unit 124) | `260` = double capacity |
+| Abstract | 150 | Storage capacity of the abstract/generic warehouse (unit 191) | `300` = double capacity |
 
 Panel parameter names must match exactly (case-sensitive) — a misnamed parameter silently falls back to its default.
 
