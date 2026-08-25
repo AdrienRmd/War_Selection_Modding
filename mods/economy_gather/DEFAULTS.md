@@ -1,6 +1,6 @@
 # Base-game default values
 
-Reference of the **unmodified game values** for every unit touched by this mod. If you edit `fisher/fisher.lua` or `worker/worker.lua` and want to revert something, copy the value back from here.
+Reference of the **unmodified game values** for every unit touched by this mod. If you edit `fisher/fisher.lua`, `worker/worker.lua` or `warehouse/warehouse.lua` and want to revert something, copy the value back from here.
 
 Two formats are shown:
 
@@ -120,3 +120,19 @@ Gather slots are unit-specific: the slot number is the position of the resource 
 | meat | 2 | 80 | 1.6 | 30000 | 30 |
 | stone | 3 | 70 | 1.4 | 10000 | 10 |
 | rice | 4 | 90 | 1.8 | 20000 | 20 |
+
+## Warehouses (`warehouse/warehouse.lua`)
+
+Capacity is set via `storageMultiplier`, 16.16 fixed point: `65536` (2^16) = 100%. The base value is **presumed** `65536` for all nine units (fixed-point convention) — verify in console with `gameplay.root.unitType[id].storageMultiplier` before relying on it.
+
+| Unit | ID | storageMultiplier (engine) | capacity (displayed) |
+|------|----|----------------------------|----------------------|
+| stone_warehouse | 2 | 65536 | 100% |
+| europe_warehouse | 17 | 65536 | 100% |
+| asia_warehouse | 30 | 65536 | 100% |
+| western_europe_warehouse | 59 | 65536 | 100% |
+| eastern_europe_warehouse | 60 | 65536 | 100% |
+| western_asia_warehouse | 87 | 65536 | 100% |
+| eastern_asia_warehouse | 88 | 65536 | 100% |
+| elephant_cargo | 124 | 65536 | 100% |
+| abstract_warehouse | 191 | 65536 | 100% |
