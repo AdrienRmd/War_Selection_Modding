@@ -1,7 +1,10 @@
 # House income
-**Status:** Working (income and upkeep verified in game)
+**Status:** Stable
 
-Not published yet — work in progress.
+## Mod ID: `mod-6WoX8dg4gpk`
+
+> [!TIP]
+> **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
 
 ## What does this mod do?
 

@@ -6,7 +6,7 @@
 --              (the engine income field crashes on negative values).
 --              No settings panel: edit the VALUES section at the top.
 -- Author: AdrienRmd
--- Status: Working (income and upkeep verified in game)
+-- Status: Stable
 -----------------------------------------------------------
 
 -- ============================================================================
