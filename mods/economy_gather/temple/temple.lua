@@ -2,7 +2,7 @@
 -- Mod name: Temple (town center) storage capacity
 -- Description: Configurable storage capacity for every temple / town center (altar) and wonder, via the settings panel. Values are percentages of the base-game capacity: 100 = unchanged.
 -- Author: AdrienRmd
--- Status: Draft
+-- Status: Stable
 -----------------------------------------------------------
 -- ============================================================================
 -- The mod panel expects percentages of the base-game storage capacity:

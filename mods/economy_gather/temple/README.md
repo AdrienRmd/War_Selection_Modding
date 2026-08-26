@@ -1,8 +1,10 @@
 # Temple (town center) storage capacity
-**Status:** Draft
+**Status:** Stable
 
-> [!NOTE]
-> Mod ID: not published yet — create the mod in the editor and paste the code (see Quick install). Add the ID here once published.
+## Mod ID: `mod-ryi4ZIRtmsh`
+
+> [!TIP]
+> **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
 
 ## What does this mod do?
 
