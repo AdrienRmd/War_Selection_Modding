@@ -121,6 +121,10 @@ Gather slots are unit-specific: the slot number is the position of the resource 
 | stone | 3 | 70 | 1.4 | 10000 | 10 |
 | rice | 4 | 90 | 1.8 | 20000 | 20 |
 
+## Farms (`farm/farm.lua`)
+
+Same mechanism as warehouses (`storageMultiplier`, 16.16 fixed point, `65536` = 100%). Base value **presumed** `65536` (= 100%) for all units — not yet verified in game. Unit IDs: europe 54, asia 63, eastern_europe 70, western_europe 95, western_asia 112, eastern_asia 139, abstract 193, china 339, persio_iran 412.
+
 ## Temples / town centers (`temple/temple.lua`)
 
 Same mechanism as warehouses (`storageMultiplier`, 16.16 fixed point, `65536` = 100%). Base value **presumed** `65536` (= 100%) for all units — not yet verified in game. Unit IDs: altar 0, temple 10, europe 11, asia 28, western_europe 51, eastern_europe 52, western_asia 83, eastern_asia 84, abstract 190, wonder 239, great_britain 254, india 264, turkey 271, germany 282, russian 302, france 323, china 337, japan 358, poland 372, autro_hungary 385, persio_iran 402, italy 436.
