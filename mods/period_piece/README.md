@@ -55,6 +55,32 @@ Default balance shipped in the file:
 | wonder_age (shared, work 5 of the 13 IR2 temples) | 240 s | 50 | 10000 / 7000 / 5000 |
 | the 13 IR2 researches | 240 s | 50 | 12000 / 8000 / 5000 |
 
+## Example — one research, explained
+
+Every research (age/tech) in this mod is configured by a small block like this one at the top of `period_piece.lua` — here is what each field does. This block is real: `great_britain_IR2_age` is the late industrial (IR2) research of the Great Britain temple (unit 254).
+
+```lua
+local great_britain_IR2_age = {
+    enabled = true,
+    time  = 240,
+    worker_requirements_addition = 50,
+    food  = { amount = 12000 },
+    wood  = { amount = 8000 },
+    iron  = { amount = 5000 },
+    gold  = { amount = 0 },
+    oil   = { amount = 0 },
+}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `enabled` | `true` applies this block's values; `false` falls back to the mod's stored reference balance for that research (the `defaults` table in the file) |
+| `time` | research time in **seconds** (240 = 4 minutes; converted to milliseconds internally) |
+| `worker_requirements_addition` | minimum number of workers that must stand in the temple to start the research (written directly as the requirement's minimum; the worker unit type is chosen by the temple) |
+| `food/wood/iron/gold/oil = { amount = N }` | the research **cost** in displayed units (12000 food = 12,000 food); `0` = that resource is not charged — only positive amounts make sense here |
+
+Costs and times are "displayed numbers" — the mod converts them (×1000) internally, so type them as you want to see them in game.
+
 ## How it works (for modders)
 
 - 20 temples, 56 (temple, work id) pairs, 38 research value blocks; shared blocks referenced by several temples (iron_age, late_western_europe_age, abstract_age, austro_hungary_age, india_age, wonder_age).
