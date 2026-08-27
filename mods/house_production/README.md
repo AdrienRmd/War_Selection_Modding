@@ -1,6 +1,7 @@
 # House income
 **Status:** Stable
-**Author:** AdrienRmd
+
+## Author: AdrienRmd
 
 ## Mod ID: `mod-6WoX8dg4gpk`
 

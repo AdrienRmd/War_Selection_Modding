@@ -1,6 +1,7 @@
 # Worker gathering
 **Status:** Stable
-**Author:** JSuisMort
+
+## Author: AdrienRmd
 
 ## Mod ID: `mod-SUkAWpj8Eqe`
 

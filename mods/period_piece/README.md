@@ -1,6 +1,7 @@
 # Period piece
 **Status:** Stable
-**Author:** AdrienRmd
+
+## Author: AdrienRmd
 
 ## Mod ID: `mod-fnXiRjawrEb`
 

@@ -1,6 +1,8 @@
 # Sharing economy
 **Status:** WIP
 
+## Author: AdrienRmd
+
 Not published yet — work in progress.
 
 Two **independent scripts** (one script = one mod in the game): install one or both.

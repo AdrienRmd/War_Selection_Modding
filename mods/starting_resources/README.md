@@ -1,6 +1,7 @@
 # Starting Resources
 **Status:** Stable
-**Author:** AdrienRmd
+
+## Author: AdrienRmd
 
 ## Mod ID: `KgbndOUtoob`
 

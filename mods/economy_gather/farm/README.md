@@ -1,6 +1,7 @@
 # Farm storage capacity
 **Status:** Stable
-**Author:** AdrienRmd
+
+## Author: AdrienRmd
 
 ## Mod ID: `mod-2CvqnwKDhjl`
 

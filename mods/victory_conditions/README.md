@@ -1,6 +1,7 @@
 # Victory Conditions
 **Status:** WIP
-**Author:** AdrienRmd
+
+## Author: AdrienRmd
 
 ## What does this mod do?
 

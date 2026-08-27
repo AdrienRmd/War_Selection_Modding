@@ -1,6 +1,7 @@
 # Nuclear Bomb
 **Status:** Stable
-**Author:** AdrienRmd
+
+## Author: AdrienRmd
 
 ## Mod ID: `mod-ObN4zEbPvC6`
 

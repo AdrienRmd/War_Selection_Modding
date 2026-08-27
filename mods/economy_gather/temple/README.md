@@ -1,6 +1,7 @@
 # Temple (town center) storage capacity
 **Status:** Stable
-**Author:** AdrienRmd
+
+## Author: AdrienRmd
 
 ## Mod ID: `mod-ryi4ZIRtmsh`
 
