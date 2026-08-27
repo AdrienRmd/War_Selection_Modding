@@ -62,7 +62,12 @@ wars_selection_mod/
 │   ├── starting_resources/
 │   ├── diplomacy/
 │   ├── default_gameplay_functions/
-│   └── victory_conditions/
+│   ├── victory_conditions/
+│   ├── colossal_cannon/
+│   ├── economy_gather/
+│   ├── sharing_economy/
+│   ├── house_production/
+│   └── period_piece/
 ├── assets/                # Screenshots & GIFs of the mods (one subfolder per mod)
 │   └── diplomacy/
 ├── docs/
