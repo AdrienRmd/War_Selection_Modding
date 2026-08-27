@@ -107,6 +107,33 @@ Capacity configurable in [economy_gather/warehouse](../mods/economy_gather/wareh
 | 339 | building | China farm | economy_gather draft |
 | 412 | building | Persia/Iran farm | economy_gather draft |
 
+## Buildings — Houses
+
+Income configurable in [house_production](../mods/house_production/).
+
+| ID | Type | Name/Role | Source |
+|----|------|-----------|--------|
+| 3 | building | Stone Age house (base income: 20 iron / 5.5 s) | [house_production mod](../mods/house_production/house_production.lua) |
+| 16 | building | Europe house (no base income) | [house_production mod](../mods/house_production/house_production.lua) |
+| 29 | building | Asia house | [house_production mod](../mods/house_production/house_production.lua) |
+| 57 | building | Western Europe house | [house_production mod](../mods/house_production/house_production.lua) |
+| 58 | building | Eastern Europe house | [house_production mod](../mods/house_production/house_production.lua) |
+| 85 | building | Western Asia house | [house_production mod](../mods/house_production/house_production.lua) |
+| 86 | building | Eastern Asia house | [house_production mod](../mods/house_production/house_production.lua) |
+| 192 | building | Abstract (generic) house | [house_production mod](../mods/house_production/house_production.lua) |
+| 255 | building | Great Britain house | [house_production mod](../mods/house_production/house_production.lua) |
+| 265 | building | India house | [house_production mod](../mods/house_production/house_production.lua) |
+| 272 | building | Turkey house | [house_production mod](../mods/house_production/house_production.lua) |
+| 283 | building | Germany house | [house_production mod](../mods/house_production/house_production.lua) |
+| 303 | building | Russia house | [house_production mod](../mods/house_production/house_production.lua) |
+| 324 | building | France house | [house_production mod](../mods/house_production/house_production.lua) |
+| 338 | building | China house | [house_production mod](../mods/house_production/house_production.lua) |
+| 359 | building | Japan house | [house_production mod](../mods/house_production/house_production.lua) |
+| 373 | building | Poland house | [house_production mod](../mods/house_production/house_production.lua) |
+| 386 | building | Austro-Hungary house | [house_production mod](../mods/house_production/house_production.lua) |
+| 403 | building | Persia/Iran house | [house_production mod](../mods/house_production/house_production.lua) |
+| 437 | building | Italy house | [house_production mod](../mods/house_production/house_production.lua) |
+
 ## Buildings — Other
 
 | ID | Type | Name/Role | Source |

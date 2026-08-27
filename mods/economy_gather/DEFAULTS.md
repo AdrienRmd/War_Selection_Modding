@@ -1,6 +1,6 @@
 # Base-game default values
 
-Reference of the **unmodified game values** for every unit touched by this mod. If you edit `fisher/fisher.lua`, `worker/worker.lua` or `warehouse/warehouse.lua` and want to revert something, copy the value back from here.
+Reference of the **unmodified game values** for every unit touched by this mod. If you edit `fisher/fisher.lua`, `worker/worker.lua`, `warehouse/warehouse.lua`, `temple/temple.lua`, `farm/farm.lua` or `quays/quays.lua` and want to revert something, copy the value back from here.
 
 Two formats are shown:
 
@@ -123,15 +123,62 @@ Gather slots are unit-specific: the slot number is the position of the resource 
 
 ## Farms (`farm/farm.lua`)
 
-Same mechanism as warehouses (`storageMultiplier`, 16.16 fixed point, `65536` = 100%). Base value **presumed** `65536` (= 100%) for all units — not yet verified in game. Unit IDs: europe 54, asia 63, eastern_europe 70, western_europe 95, western_asia 112, eastern_asia 139, abstract 193, china 339, persio_iran 412.
+Same mechanism as warehouses (`storageMultiplier`, 16.16 fixed point: `65536` = 100%). Base value **presumed** `65536` (= 100%) for all units — not yet verified in game. The capacity column lists the mod's default settings.
+
+| Unit | ID | storageMultiplier (engine) | capacity (displayed) |
+|------|----|----------------------------|----------------------|
+| europe_farm | 54 | 65536 | 110% |
+| asia_farm | 63 | 65536 | 110% |
+| eastern_europe_farm | 70 | 65536 | 130% |
+| western_europe_farm | 95 | 65536 | 130% |
+| western_asia_farm | 112 | 65536 | 130% |
+| eastern_asia_farm | 139 | 65536 | 130% |
+| abstract_farm | 193 | 65536 | 150% |
+| china_farm | 339 | 65536 | 150% |
+| persio_iran_farm | 412 | 65536 | 150% |
 
 ## Temples / town centers (`temple/temple.lua`)
 
-Same mechanism as warehouses (`storageMultiplier`, 16.16 fixed point, `65536` = 100%). Base value **presumed** `65536` (= 100%) for all units — not yet verified in game. Unit IDs: altar 0, temple 10, europe 11, asia 28, western_europe 51, eastern_europe 52, western_asia 83, eastern_asia 84, abstract 190, wonder 239, great_britain 254, india 264, turkey 271, germany 282, russian 302, france 323, china 337, japan 358, poland 372, autro_hungary 385, persio_iran 402, italy 436.
+Same mechanism as warehouses (`storageMultiplier`, 16.16 fixed point: `65536` = 100%). Base value **presumed** `65536` (= 100%) for all units — not yet verified in game. The capacity column lists the mod's default settings.
+
+| Unit | ID | storageMultiplier (engine) | capacity (displayed) |
+|------|----|----------------------------|----------------------|
+| altar | 0 | 65536 | 100% |
+| temple | 10 | 65536 | 100% |
+| europe_temple | 11 | 65536 | 110% |
+| asia_temple | 28 | 65536 | 110% |
+| western_europe_temple | 51 | 65536 | 130% |
+| eastern_europe_temple | 52 | 65536 | 130% |
+| western_asia_temple | 83 | 65536 | 130% |
+| eastern_asia_temple | 84 | 65536 | 130% |
+| abstract_temple | 190 | 65536 | 150% |
+| wonder | 239 | 65536 | 150% |
+| great_britain_temple | 254 | 65536 | 150% |
+| india_temple | 264 | 65536 | 150% |
+| turkey_temple | 271 | 65536 | 150% |
+| germany_temple | 282 | 65536 | 150% |
+| russian_temple | 302 | 65536 | 150% |
+| france_temple | 323 | 65536 | 150% |
+| china_temple | 337 | 65536 | 150% |
+| japan_temple | 358 | 65536 | 150% |
+| poland_temple | 372 | 65536 | 150% |
+| autro_hungary_temple | 385 | 65536 | 150% |
+| persio_iran_temple | 402 | 65536 | 150% |
+| italy_temple | 436 | 65536 | 150% |
 
 ## Quays (`quays/quays.lua`)
 
-Same mechanism as warehouses (`storageMultiplier`, 16.16 fixed point, `65536` = 100%). Base value **presumed** `65536` (= 100%) for all units — not yet verified in game. Unit IDs: europe 21, asia 35, eastern_europe 68, western_europe 93, western_asia 118, eastern_asia 144, abstract 247.
+Same mechanism as warehouses (`storageMultiplier`, 16.16 fixed point: `65536` = 100%). Base value **presumed** `65536` (= 100%) for all units — not yet verified in game. The capacity column lists the mod's default settings.
+
+| Unit | ID | storageMultiplier (engine) | capacity (displayed) |
+|------|----|----------------------------|----------------------|
+| europe_quay | 21 | 65536 | 110% |
+| asia_quay | 35 | 65536 | 110% |
+| eastern_europe_quay | 68 | 65536 | 130% |
+| western_europe_quay | 93 | 65536 | 130% |
+| western_asia_quay | 118 | 65536 | 130% |
+| eastern_asia_quay | 144 | 65536 | 130% |
+| abstract_quay | 247 | 65536 | 150% |
 
 ## Warehouses (`warehouse/warehouse.lua`)
 

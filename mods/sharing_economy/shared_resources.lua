@@ -1,124 +1,108 @@
------------------------------------------------------------
--- Mod name: Team shared resources
--- Description: Pools the treasury of allied factions (same team): income and spending are synced across the team every second, for all five resources. An eliminated player's faction leaves the pool.
--- Author: AdrienRmd
--- Status: WIP
------------------------------------------------------------
--- Resources: 0 = food, 1 = wood, 2 = iron, 3 = gold, 4 = oil
--- Delta sync, once per second (moment % 1000 == 0): each faction's change
--- since the last snapshot is added to the pool, then every faction is set
--- to the pooled value and snapshots are refreshed -- no double counting.
+-- ============================================================================
+-- 队伍共享资源 mod
+-- 资源：0=肉, 1=木, 2=铁（变化量同步）
+-- 只处理有存活玩家的 faction
+-- ============================================================================
 
-local RESOURCE_MAX = 4 -- share resources 0..4
+function onStart(var)
+    local scene = root.scene[0]
+    local factions = scene.faction
 
-local function buildTeams()
-    local factions = root.scene[0].faction
+    -- 找有存活玩家的 faction
     local playerFactions = {}
-
-    -- Only factions controlled by a live player
     for i = 0, root.player.size - 1 do
         local player = root.player[i]
         if player ~= nil and not player.eliminated then
+            -- 通过 controlledFactions 找对应 faction
             for fid = 0, factions.size - 1 do
-                if factions[fid] ~= nil and player.controlledFactions[fid] then
-                    playerFactions[fid] = true
+                local fac = factions[fid]
+                if fac ~= nil then
+                    -- 用 team 和 player index 匹配
+                    -- controlledFactions 是 Tags，active tag 对应 faction id
+                    if player.controlledFactions[fid] then
+                        playerFactions[fid] = i
+                    end
                 end
             end
         end
     end
 
-    -- Group those factions by team
+    -- 按 team 分组，只用有玩家的 faction
     local teams = {}
-    for fid in pairs(playerFactions) do
+    for fid, pid in pairs(playerFactions) do
         local teamId = factions[fid].team
         if teams[teamId] == nil then
             teams[teamId] = {}
         end
-        teams[teamId][#teams[teamId] + 1] = fid
+        teams[teamId][#teams[teamId]+1] = fid
     end
-    return teams
-end
 
-function onStart(var)
-    var.teams = buildTeams()
-    var.prevRes = {}
-
-    for _, facIds in pairs(var.teams) do
+    -- 记录初始资源
+    local prevRes = {}
+    for _, facIds in pairs(teams) do
         for _, fid in ipairs(facIds) do
-            local res = root.scene[0].faction[fid].treasury.resources
-            var.prevRes[fid] = {}
-            for i = 0, RESOURCE_MAX do
-                var.prevRes[fid][i] = res[i]
-            end
+            local res = factions[fid].treasury.resources
+            prevRes[fid] = {}
+            prevRes[fid][0] = res[0]
+            prevRes[fid][1] = res[1]
+            prevRes[fid][2] = res[2]
         end
     end
 
-    print("[ResourceShare] initialized")
-    for teamId, facIds in pairs(var.teams) do
-        print(string.format("[ResourceShare] team %s: %d faction(s)", tostring(teamId), #facIds))
+    var.teams = teams
+    var.prevRes = prevRes
+    print("[ResourceShare] 初始化完成")
+    for teamId, facIds in pairs(teams) do
+        print("[ResourceShare] team " .. teamId .. " factions: " .. #facIds)
     end
 end
 
 function onTick(var, currentMoment)
-    if currentMoment % 1000 ~= 0 then return end -- once per second
+    if currentMoment % 1000 ~= 0 then return end
 
-    local factions = root.scene[0].faction
+    local scene = root.scene[0]
+    local factions = scene.faction
+    local teams = var.teams
+    local prevRes = var.prevRes
 
-    for _, facIds in pairs(var.teams) do
+    for teamId, facIds in pairs(teams) do
         if #facIds >= 2 then
-            -- Pool = first faction's current values + every other faction's delta
+            local baseFid = facIds[1]
+            local baseRes = factions[baseFid].treasury.resources
             local pool = {}
-            local baseRes = factions[facIds[1]].treasury.resources
-            for i = 0, RESOURCE_MAX do
-                pool[i] = baseRes[i]
-            end
+            pool[0] = baseRes[0]
+            pool[1] = baseRes[1]
+            pool[2] = baseRes[2]
 
             for j = 2, #facIds do
                 local fid = facIds[j]
-                local prev = var.prevRes[fid]
+                local res = factions[fid].treasury.resources
+                local prev = prevRes[fid]
                 if prev ~= nil then
-                    local res = factions[fid].treasury.resources
-                    for i = 0, RESOURCE_MAX do
-                        pool[i] = pool[i] + (res[i] - prev[i])
+                    for i = 0, 2 do
+                        local diff = res[i] - prev[i]
+                        if diff ~= 0 then
+                            pool[i] = pool[i] + diff
+                        end
                     end
                 end
             end
 
-            for i = 0, RESOURCE_MAX do
-                pool[i] = math.max(0, pool[i]) -- never negative
+            for i = 0, 2 do
+                pool[i] = math.max(0, pool[i])
             end
 
-            -- Apply the pool to every faction and refresh snapshots
             for _, fid in ipairs(facIds) do
                 local res = factions[fid].treasury.resources
-                for i = 0, RESOURCE_MAX do
-                    res[i] = pool[i]
-                    var.prevRes[fid][i] = pool[i]
-                end
+                res[0] = pool[0]
+                res[1] = pool[1]
+                res[2] = pool[2]
+                prevRes[fid][0] = pool[0]
+                prevRes[fid][1] = pool[1]
+                prevRes[fid][2] = pool[2]
             end
         end
     end
 end
 
-function onPlayerEliminate(var)
-    local eliminatedId = getParameterNumber("player")
-    if eliminatedId == nil then return end
-    local player = root.player[eliminatedId]
-    if player == nil then return end
-    print(string.format("[ResourceShare] onPlayerEliminate: player %s", tostring(eliminatedId)))
-
-    for teamId, facIds in pairs(var.teams) do
-        local kept = {}
-        for _, fid in ipairs(facIds) do
-            if player.controlledFactions[fid] then
-                print(string.format("[ResourceShare] faction %d left team %s (player %d eliminated)",
-                    fid, tostring(teamId), eliminatedId))
-            else
-                kept[#kept + 1] = fid
-            end
-        end
-        var.teams[teamId] = (#kept >= 2) and kept or nil
-    end
-end
-
-addMod({ onStart = onStart, onTick = onTick, onPlayerEliminate = onPlayerEliminate })
+addMod({ onStart = onStart, onTick = onTick })
