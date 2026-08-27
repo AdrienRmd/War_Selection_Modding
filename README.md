@@ -44,6 +44,8 @@ Save that as a `.lua` file, paste it into a mod created in the map editor (see [
 The [Modding Guide](docs/modding-guide/) documents how to edit unit and building parameters — speed, attacks, abilities, health/armor, resources, workers, and more:
 
 - [Installing a mod](docs/modding-guide/installation.md) — full walkthrough: create a mod in the map editor, paste the code, test it
+- [Lua Basics](docs/modding-guide/lua-basics.md) — the minimum Lua you need, explained for total beginners
+- [Lifecycle and Events](docs/modding-guide/lifecycle-and-events.md) — when code runs: onStart, onTick, events, timers, panel parameters
 - [Movement and Vision](docs/modding-guide/movement-and-vision.md)
 - [Attack](docs/modding-guide/attack.md)
 - [Abilities and Upgrades](docs/modding-guide/abilities-and-upgrades.md)
@@ -51,6 +53,7 @@ The [Modding Guide](docs/modding-guide/) documents how to edit unit and building
 - [Resources and Income](docs/modding-guide/resources-and-income.md)
 - [Workers and Construction](docs/modding-guide/workers-and-construction.md)
 - [Misc](docs/modding-guide/misc.md)
+- [Examples](docs/modding-guide/examples.md) — real mods from this repository explained step by step, simplest to most complex
 
 ## Repository structure
 
@@ -69,6 +72,7 @@ wars_selection_mod/
 │   ├── house_production/
 │   └── period_piece/
 ├── assets/                # Screenshots & GIFs of the mods (one subfolder per mod)
+│   ├── adjust_resources/
 │   └── diplomacy/
 ├── docs/
 │   ├── modding-guide/     # The beginner-friendly modding guide (start here)

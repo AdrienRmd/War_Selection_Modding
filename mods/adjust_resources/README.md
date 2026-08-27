@@ -27,6 +27,8 @@ If you prefer, use the **Mod ID** at the top of this page to add the mod directl
 
 Open the mod's settings panel in the mod menu to change these. **Setting names are in French** (they come from the mod code). Amounts are "displayed numbers" — type the number exactly as you want it shown in the game (the mod multiplies by 1000 internally). For example, `10000` means 10,000 wheat per field. The trees setting is different: it is a **percentage**, where 100 = unchanged.
 
+![The Adjust Resources settings panel in the map editor](../../assets/adjust_resources/settings_panel.png)
+
 | Setting name | Default | What it does | Example values |
 |--------------|---------|--------------|----------------|
 | baies (berries) | 1000 | Food in each berry bush | `50000` = 50,000 per bush |
