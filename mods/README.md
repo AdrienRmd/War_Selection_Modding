@@ -25,5 +25,6 @@ How to read the table: **Mod** links to the mod's folder, **Author** credits the
 | [house_production](house_production/) | AdrienRmd | Configurable periodic income for houses: enable/disable, amount, resource(s) and period, edited in code; negative amounts act as upkeep. | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | **`mod-6WoX8dg4gpk`** |
 | [period_piece](period_piece/) | AdrienRmd | Configurable age research: time, cost and minimum workers for every research in every temple, with per-block enable and a stored default balance. | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | **`mod-fnXiRjawrEb`** |
 | [fast_period_piece](period_piece/fast_period_piece.lua) | AdrienRmd | Sandbox variant of period_piece: every research takes 3 s, needs 1 worker and costs nothing — for quick age testing. | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | **`mod-ARJwbLUGnHj`** |
+| [Italian_paratrooper](Italian_paratrooper/) | Austin *(modified by AdrienRmd)* | Configurable paratrooper drops for the two transport planes: which unit lands and how many. | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | **`mod-7KUQPxJeq67`** |
 
 The six `economy_gather/*` mods in the table form a family — see [economy_gather/README.md](economy_gather/README.md) for the family overview.
