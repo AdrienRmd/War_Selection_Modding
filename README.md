@@ -60,24 +60,27 @@ The [Modding Guide](docs/modding-guide/) documents how to edit unit and building
 ```
 wars_selection_mod/
 ├── mods/                  # Ready-to-use mods (one folder per mod, each with a README)
-│   ├── nuclear_bomb/
 │   ├── adjust_resources/
-│   ├── starting_resources/
-│   ├── diplomacy/
-│   ├── default_gameplay_functions/
-│   ├── victory_conditions/
 │   ├── colossal_cannon/
+│   ├── default_gameplay_functions/
+│   ├── diplomacy/
 │   ├── economy_gather/
-│   ├── sharing_economy/
 │   ├── house_production/
-│   └── period_piece/
+│   ├── nuclear_bomb/
+│   ├── period_piece/
+│   ├── sharing_economy/
+│   ├── starting_resources/
+│   └── victory_conditions/
 ├── assets/                # Screenshots & GIFs of the mods (one subfolder per mod)
 │   ├── adjust_resources/
 │   └── diplomacy/
 ├── docs/
-│   ├── modding-guide/     # The beginner-friendly modding guide (start here)
+│   ├── modding-guide/     # Beginner-friendly guide: install, Lua basics, lifecycle & events,
+│   │                      # parameter pages (movement, attack, abilities, health, resources,
+│   │                      # workers, misc) and real-mod examples
 │   └── UNIT_IDS.md        # Unit & Tech ID reference
 ├── .github/               # Issue templates & CI (luacheck)
+├── CHANGELOG.md
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
 └── LICENSE
