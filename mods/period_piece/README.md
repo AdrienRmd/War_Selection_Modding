@@ -6,6 +6,13 @@
 > [!TIP]
 > **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
 
+## Fast variant — Mod ID: `mod-ARJwbLUGnHj`
+
+> [!TIP]
+> **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
+
+**`fast_period_piece.lua`** is the same mod with sandbox test values: **every research takes 3 seconds, needs 1 worker and costs nothing** — meant for quickly walking through the ages while testing a map, not for balanced games. Use the regular mod above (`mod-fnXiRjawrEb`) for real matches. Setting a block to `enabled = false` in the fast variant still falls back to the full reference balance (the `defaults` table is unchanged), and the console lines are prefixed `[fast]` so you can tell which variant is loaded.
+
 ## What does this mod do?
 
 This mod re-balances **every age research in every temple** — how long each research takes, what it costs (food, wood, iron, gold, oil), and the minimum number of workers needed to start it. Ages are the big evolutions you research in temples (Europe, Asia, Iron Age, Western/Eastern Europe/Asia, the nation choices, the late "IR2" industrial researches, and the Wonder). A research offered by several temples (Iron Age, Abstract age, Wonder) is defined once and applied to all of them.
@@ -52,6 +59,7 @@ Default balance shipped in the file:
 - Engine writes: `root.unitType[id].ability.work[wid].makeTime` (milliseconds), `.costProcess[rid]` (x1000; 0 food, 1 wood, 2 iron, 3 gold, 4 oil).
 - Worker requirement: `root.unitType[id].ability.ability[wid].requirements.unit[0]` set to `{ type = worker_type, min = N, max = 65535 }`, element created with `f_create()` when missing. Per-temple `worker_type`: 55/56/89/90 (era temples 51/52/83/84), 201 (the 13 IR2 temples); temples 10/11/28 have none — only `min` is written and the game-chosen type is kept.
 - Every entry runs inside `pcall` with `[age] WARN/ERROR` console lines and a final `[age] done: X applied, Y skipped, Z failed` summary; `root.f_recreateModifiedUnitTypes()` after the loop; registered with `addMod({ onStart = ... })`.
+- Fast variant: `fast_period_piece.lua` — identical structure and logic; all 38 value blocks set to `time = 3`, `worker_requirements_addition = 1`, zero costs; same `defaults` table.
 
 ## Known issues / notes
 
