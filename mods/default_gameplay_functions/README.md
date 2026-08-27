@@ -1,5 +1,6 @@
 # Default Gameplay Functions
 **Status:** WIP
+**Author:** AdrienRmd
 
 ## What does this mod do?
 

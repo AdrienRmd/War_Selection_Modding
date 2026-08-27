@@ -1,5 +1,6 @@
 # Colossal Cannon
 **Status:** Stable
+**Author:** JSuisMort
 
 ## Mod ID: `mod-bsb2JnTBdh9`
 

@@ -1,5 +1,6 @@
 # Diplomacy
 **Status:** Stable
+**Author:** ShiJueXiangGuan, UIXlangGuan, WaiJiaoMod
 
 ## Mod IDs
 

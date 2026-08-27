@@ -1,5 +1,6 @@
 # Fisher production & capacity
 **Status:** Stable
+**Author:** JSuisMort
 
 ## Mod ID: `mod-hodZDbghDU6`
 

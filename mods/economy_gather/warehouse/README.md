@@ -1,5 +1,6 @@
 # Warehouse storage capacity
 **Status:** Stable
+**Author:** AdrienRmd
 
 ## Mod ID: `mod-lBzk9Z47Gu3`
 

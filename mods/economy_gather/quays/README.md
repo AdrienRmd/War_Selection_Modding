@@ -1,5 +1,6 @@
 # Quay storage capacity
 **Status:** Stable
+**Author:** AdrienRmd
 
 ## Mod ID: `mod-ZssXoR5h0V3`
 

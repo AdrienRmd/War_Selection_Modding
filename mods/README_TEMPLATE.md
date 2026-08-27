@@ -1,5 +1,7 @@
 # <Mod Name>
 **Status:** WIP | Stable
+**Author:** <your name>
+**Modified by:** <name> (<what you changed>) *(optional — remove this line if the mod is entirely yours)*
 
 ## Mod ID: `<mod-xxxxxxxxxxx>`
 

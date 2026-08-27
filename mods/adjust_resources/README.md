@@ -1,5 +1,7 @@
 # Adjust Resources
 **Status:** Stable
+**Author:** Austin
+**Modified by:** AdrienRmd (English texts)
 
 ## Mod ID: `mod-w5wFJbOcfL6`
 
