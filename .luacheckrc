@@ -18,6 +18,7 @@ globals = {
     "fromJson",
     -- Engine callbacks defined by mods
     "onInit",
+    "onPlayerEliminate",
     "onStart",
     "onTick",
     -- mods/adjust_resources
@@ -112,7 +113,9 @@ read_globals = {
     "forEachPlayerFaction",
     "forEachPlayerLive",
     "forEachPlayerUnit",
+    "forEachPlayerUnit2",
     "genServerData",
+    "getParameterBool",
     "getResult",
     "isResearchComplete",
     "key",
