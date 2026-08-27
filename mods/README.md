@@ -9,7 +9,7 @@ How to read the table: **Mod** links to the mod's folder, **Description** tells 
 | Mod | Description | Status | Mod ID |
 |-----|-------------|--------|--------|
 | [nuclear_bomb](nuclear_bomb/) | Configurable nuclear bomb; four aircraft can build and drop one bomb each. | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | **`mod-ObN4zEbPvC6`** |
-| [adjust_resources](adjust_resources/) | Sets/scales map resource quantities (berries, fish, wheat, stone, iron, trees). | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | **`mod-GFwbdOCoN77`** |
+| [adjust_resources](adjust_resources/) | Sets/scales map resource quantities (berries, fish, wheat, stone, iron, trees). | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | **`mod-w5wFJbOcfL6`** |
 | [starting_resources](starting_resources/) | Configurable starting treasury resources per faction. | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | **`KgbndOUtoob`** *(in base game)* |
 | [diplomacy](diplomacy/) | Player-to-player diplomacy: 3 new buttons — request alliance, declare neutral (peace), declare enemy (war), plus a shared allied victory. | ![Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg) | 3 scripts — [see README](diplomacy/#mod-ids) |
 | [default_gameplay_functions](default_gameplay_functions/) | Three variants of the age/civilization gameplay function overrides (load one). | ![WIP](https://img.shields.io/badge/Status-WIP-orange.svg) | — *(in base game)* |

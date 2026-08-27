@@ -1,7 +1,7 @@
 # Adjust Resources
 **Status:** Stable
 
-## Mod ID: `mod-GFwbdOCoN77`
+## Mod ID: `mod-w5wFJbOcfL6`
 
 > [!TIP]
 > **The quickest way to use this mod — no code to copy.** Open your map in the editor → **Mods** → **Add a modification**, paste the ID above, save and publish the map. Full instructions: [Add an existing mod to your map](../../docs/modding-guide/installation.md#part-3--add-an-existing-already-published-mod-to-your-map).
@@ -26,6 +26,8 @@ If you prefer, use the **Mod ID** at the top of this page to add the mod directl
 ## Settings
 
 Open the mod's settings panel in the mod menu to change these. **Setting names are in French** (they come from the mod code). Amounts are "displayed numbers" — type the number exactly as you want it shown in the game (the mod multiplies by 1000 internally). For example, `10000` means 10,000 wheat per field. The trees setting is different: it is a **percentage**, where 100 = unchanged.
+
+![The Adjust Resources settings panel in the map editor](../../assets/adjust_resources/settings_panel.png)
 
 | Setting name | Default | What it does | Example values |
 |--------------|---------|--------------|----------------|

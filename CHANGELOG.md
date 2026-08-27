@@ -37,7 +37,7 @@ All notable changes to this project will be documented in this file. Format base
 - MIT license.
 - In-game Mod IDs for published mods:
   - `nuclear_bomb` — `mod-ObN4zEbPvC6`
-  - `adjust_resources` — `mod-GFwbdOCoN77`
+  - `adjust_resources` — `mod-w5wFJbOcfL6`
   - `starting_resources` — `KgbndOUtoob`
   - `diplomacy` (3 scripts) — `mod-s2u4EUGfise`, `mod-HmXZrJBjwM6`, `mod-KbwSsR2og7a`
 - `assets` folder with diplomacy screenshot.

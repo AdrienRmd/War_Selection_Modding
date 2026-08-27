@@ -72,6 +72,7 @@ wars_selection_mod/
 │   ├── house_production/
 │   └── period_piece/
 ├── assets/                # Screenshots & GIFs of the mods (one subfolder per mod)
+│   ├── adjust_resources/
 │   └── diplomacy/
 ├── docs/
 │   ├── modding-guide/     # The beginner-friendly modding guide (start here)

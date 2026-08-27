@@ -1,7 +1,8 @@
 -----------------------------------------------------------
 -- Mod name: Adjust resources
 -- Description: Sets/scales map resource quantities (berries, fish, wheat, stone, iron, trees).
--- Author: AdrienRmd
+-- Author: Austin
+-- Modified by: AdrienRmd (English texts)
 -- Status: Stable
 -----------------------------------------------------------
 
