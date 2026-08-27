@@ -25,19 +25,19 @@ If you prefer, use the **Mod ID** at the top of this page to add the mod directl
 
 ## Settings
 
-Open the mod's settings panel in the mod menu to change these. **Setting names are in French** (they come from the mod code). Amounts are "displayed numbers" — type the number exactly as you want it shown in the game (the mod multiplies by 1000 internally). For example, `10000` means 10,000 wheat per field. The trees setting is different: it is a **percentage**, where 100 = unchanged.
+Open the mod's settings panel in the mod menu to change these. **Setting names match the variable names in the mod code**. Amounts are "displayed numbers" — type the number exactly as you want it shown in the game (the mod multiplies by 1000 internally). For example, `10000` means 10,000 wheat per field. The trees setting is different: it is a **percentage**, where 100 = unchanged.
 
 ![The Adjust Resources settings panel in the map editor](../../assets/adjust_resources/settings_panel.png)
 
 | Setting name | Default | What it does | Example values |
 |--------------|---------|--------------|----------------|
-| baies (berries) | 1000 | Food in each berry bush | `50000` = 50,000 per bush |
-| petitsPoissons (small fish) | 500 | Food in each small fish spot | `5000` = 5,000 per spot |
-| grosPoissons (big fish) | 1000 | Food in each big fish spot | `10000` = 10,000 per spot |
-| ble (wheat) | 10000 | Food in each wheat field | `100000` = 100,000 per field |
-| pierre (stone) | 10000 | Stone in each deposit | `500` = 500 per deposit |
-| fer (iron) | 10000 | Iron in each deposit | `50000` = 50,000 per deposit |
-| arbresPourcent (trees %) | 100 | Wood in trees, as a percentage of normal (100 = unchanged; no ×1000 applied) | `200` = double wood, `50` = half wood |
+| `BERRY_AMOUNT` | 1000 | Food in each berry bush | `50000` = 50,000 per bush |
+| `SMALL_FISH_AMOUNT` | 500 | Food in each small fish spot | `5000` = 5,000 per spot |
+| `BIG_FISH_AMOUNT` | 1000 | Food in each big fish spot | `10000` = 10,000 per spot |
+| `WHEAT_AMOUNT` | 10000 | Food in each wheat field | `100000` = 100,000 per field |
+| `STONE_AMOUNT` | 10000 | Stone in each deposit | `500` = 500 per deposit |
+| `IRON_AMOUNT` | 10000 | Iron in each deposit | `50000` = 50,000 per deposit |
+| `WOOD_PCT` | 100 | Wood in trees, as a percentage of normal (100 = unchanged; no ×1000 applied) | `200` = double wood, `50` = half wood |
 
 ## How it works (for modders)
 
