@@ -23,7 +23,7 @@ root.unitType[unit_id].ability.work[work_id].cost.Order[resource_id]
 ### Enable / disable the entry
 
 ```lua
-gameplay.root.unitType[unit_id].ability.work[work_id].enabled = false
+root.unitType[unit_id].ability.work[work_id].enabled = false
 ```
 
 - Type: `bool` — `false` = unavailable, `true` = available.
@@ -78,7 +78,7 @@ root.unitType[unit_id].ability.enabled = true
 
 ## Unknown / to investigate
 
-> ⚠️ Unknown behavior — needs investigation.
+> Unknown behavior — needs investigation.
 
 ```lua
 root.unitType[unit_id].ability.ability
@@ -97,6 +97,7 @@ root.unitType[building_id].ability.work[work_id].costOrder[int] = 30
 ```
 
 - Observed shape: `costOrder (object): 0 / 0 / 0 / 0 / 0`.
+- Very close to [cost.Order](#required-resource-costorder) above — the exact relationship between the two spellings is unclear and under investigation; do not assume they are interchangeable.
 
 ```lua
 root.unitType[building_id].ability.work[work_id].costStart[int] = 20
@@ -109,3 +110,8 @@ root.unitType[building_id].ability.work[work_id].final = false
 ```
 
 - Type: `bool`; purpose unknown.
+
+## Real mod examples
+
+- [period_piece.lua](../../mods/period_piece/period_piece.lua) — edits `ability.work` for every age research of every temple: `makeTime`, `costProcess` per resource, and worker requirements (`requirements.unit[0]`). Look at how each temple/work pair is written inside a `pcall` so one broken entry cannot stop the whole mod.
+- [nuclear_bomb.lua](../../mods/nuclear_bomb/nuclear_bomb.lua) — builds new `ability.ability` and `ability.work` entries from scratch with `f_create()` / `f_clear()`, wiring `makeTime`, `reserveLimit`, `reserveTime` and `costProcess`. Look at the loop over the four aircraft to see a complete work entry being assembled.

@@ -65,6 +65,11 @@ root.unitType[worker_id].movement.gather[resource_id].perTick = 55
 
 ## Unknown / to investigate
 
-> ⚠️ Unknown behavior — needs investigation.
+> Unknown behavior — needs investigation.
 
 - The exact in-game formula behind the "magic number" `0.00024` in the construction rate. The current value was derived empirically and does not perfectly correlate with in-game values.
+
+## Real mod examples
+
+- [worker.lua](../../mods/economy_gather/worker/worker.lua) — sets `movement.gather[slot].perTick` and `.bagSize` for every civilization's worker, per resource. Look at the conversions `perTick = speed × 50` and `bagSize = carried × 1000`, and at the slot lists: gather slots are unit-specific (wood can be slot 1 for one worker and slot 0 for another).
+- [fisher.lua](../../mods/economy_gather/fisher/fisher.lua) — the same two fields applied to fishing boats via the settings panel (`perTick = food/sec × 50`, `bagSize = capacity × 1000`), all on gather slot 0 (food).

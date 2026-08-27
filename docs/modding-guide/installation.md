@@ -1,5 +1,7 @@
 # Installing a mod
 
+[← Back to index](README.md)
+
 War Selection mods are **not** installed by copying files into a game folder. Mods live inside the game's **map editor**: you create a mod there, attach it to a map, and paste its Lua code through an in-game script editor. No external tools are needed — everything happens inside the game.
 
 This page is the complete walkthrough, in two parts: creating an (empty) mod in the map editor, then writing or pasting its code and testing it. If you downloaded a `.lua` file from this repository, you will paste its contents at step 11.
@@ -46,6 +48,10 @@ If a mod already exists — yours, or one shared by another player — you don't
 - **The "Enable developer mode in the match" checkbox does not appear** — this is a known game bug. Wait a bit and retry: create the private match again until the checkbox shows up.
 - **The mod does nothing or misbehaves** — open the **Console** in the match: it shows script errors and `print()` output. Fix the reported error, or add `print()` calls to your code to see what runs and which values you read.
 - **Your changes are not applied** — make sure you relaunched the map after saving the script, and that the mod is added to the map in the editor (Part 1, step 5).
+
+## Real mod examples
+
+- [mods/README.md](../../mods/README.md) — the index of every mod in this repository, with the published **mod IDs** you can use directly in Part 3 (add an existing mod to your map by ID).
 
 ## Official modding resources
 

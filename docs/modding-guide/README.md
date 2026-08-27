@@ -32,10 +32,16 @@ end
 addMod({ onStart = onStart })  -- registers the mod with the game
 ```
 
-- **All your code goes inside the function** passed to `addMod` (or in other callbacks like `onTick` — see the theme pages below).
+- **All your code goes inside the function** passed to `addMod` (or in other callbacks like `onTick` — [Lifecycle and Events](lifecycle-and-events.md) explains when each callback runs).
 - **`root` is the game's data tree** — the whole game configuration, loaded by your mod. You never rebuild it; you just reach into it and change values.
 - **`root.unitType[id]` addresses one unit type**: pick the unit's ID (see [UNIT_IDS.md](../UNIT_IDS.md)), then walk down to the parameter you want, e.g. `root.unitType[1].movement.moveSpeed`. Buildings are unit types too — same access.
 - A quick way to explore: inspect values in-game, e.g. `gameplay.root.unitType[155].attack.weapon`. A unit can have several weapons (up to 3 different shots depending on distance).
+
+> **`root` vs `gameplay.root`** — you will see both spellings in this guide:
+> - In a **mod script**, you write `root` (e.g. `root.unitType[1]`).
+> - In the **in-game developer console**, you access the same data tree through `gameplay.root` (e.g. `gameplay.root.unitType[155]`).
+>
+> It is the same tree — only the entry point changes. Snippets in this guide use `root`; `gameplay.root` appears only where the text is explicitly about console inspection.
 
 ## Value units — read this once
 
@@ -46,13 +52,15 @@ The game stores values in internal units that differ from what you see on screen
 | 1 displayed resource / HP / damage | **1000** | `11000` = 11 damage, `100000` HP = 100 HP |
 | 1 meter of distance | **1000** | `110000` = 110 m |
 | 1 second of time | **1000 ms** | `1500` = 1.5 s |
-| Move speed | use **multiples of 16** | `32`, `48`, `64`… |
+| Move speed | multiples of **16**, ÷ 10 for displayed speed | `160` = speed 16, `32` = speed 3.2 — details in [Movement and Vision](movement-and-vision.md#speed) |
 
 So if you want "11 damage", write `11 * 1000 = 11000` in the code.
 
 ## Table of Contents
 
 - [Installing a mod](installation.md) — full walkthrough: create a mod in the map editor, paste the code, test
+- [Lua Basics](lua-basics.md) — the minimum Lua you need, explained for total beginners
+- [Lifecycle and Events](lifecycle-and-events.md) — WHEN code runs: onStart, onTick, events, timers, panel parameters
 - [Movement and Vision](movement-and-vision.md) — moveSpeed, viewRange
 - [Attack](attack.md) — unit weapons and building turrets: damage, range, recharge
 - [Abilities and Upgrades](abilities-and-upgrades.md) — ability.work, ability.enabled, production
@@ -60,19 +68,9 @@ So if you want "11 damage", write `11 * 1000 = 11000` in the code.
 - [Resources and Income](resources-and-income.md) — periodic income, resource IDs, production costs
 - [Workers and Construction](workers-and-construction.md) — build speed, gathering
 - [Misc](misc.md) — radius, transport, research requirements
+- [Examples](examples.md) — real mods from this repository explained step by step, simplest to most complex
 
-## How to read this guide
-
-Sections are tagged with a color legend telling you how safe a change is:
-
-- 🟢 **Easy and safe** — change the value, it just works.
-- 🟡 **Be careful** — works, but has side effects you should know about.
-- 🔴 **Known bugs / avoid** — documented to misbehave; better left alone.
-- ⚠️ **Unknown behavior** — not fully tested; experiment at your own risk.
-
-> Pages that currently contain ⚠️ unknown sections: [Abilities and Upgrades](abilities-and-upgrades.md), [Health and Armor](health-and-armor.md), [Workers and Construction](workers-and-construction.md).
-
-### Resource IDs
+## Resource IDs
 
 Used everywhere a resource index appears (`cost.Order`, `income.value`, `costProcess`, `healMeCost`, `destroyReward`, `movement.gather`):
 
@@ -84,6 +82,6 @@ Used everywhere a resource index appears (`cost.Order`, `income.value`, `costPro
 | 3 | Gold |
 | 4 | Oil |
 
-### Finding IDs
+## Finding IDs
 
 Unit and tech IDs are listed in [UNIT_IDS.md](../UNIT_IDS.md). You can also inspect values in-game, e.g. `gameplay.root.unitType[155].attack.weapon`, or check the game's stats site.

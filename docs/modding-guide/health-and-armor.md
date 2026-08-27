@@ -8,8 +8,9 @@
 root.unitType[unit_id].deathability.enabled = true
 ```
 
-- `invincible = false` — set `enabled = false` for invincibility.
-- Type: `bool`
+- Type: `bool` — with `true`, the unit keeps its normal deathability (it can die).
+- Setting `enabled = false` is expected to switch deathability off altogether, making the unit invincible.
+- Not fully verified — test in game. No mod in this repository currently uses this field, so the behavior above is undocumented.
 
 ## Maximum HP
 
@@ -119,6 +120,10 @@ root.unitType[unit_id].deathability.attackReaction.callAllyDistance = 100000
 
 ## Unknown / to investigate
 
-> ⚠️ Unknown behavior — needs investigation.
+> Unknown behavior — needs investigation.
 
 - How to **add** a new armor entry (only modifying existing armor is currently understood). See [Armor configuration](#armor-configuration) above.
+
+## Real mod examples
+
+- [colossal_cannon.lua](../../mods/colossal_cannon/colossal_cannon.lua) — sets `deathability.health` and two armor thicknesses (`deathability.armor.data[0].object.thickness`, `deathability.armor.data[1].object.thickness`) on the cannon (unit 284). Look at how the displayed values (HP, armor points) are multiplied by 1000 before being written.
