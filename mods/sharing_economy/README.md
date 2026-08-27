@@ -1,7 +1,7 @@
 # Sharing economy
 **Status:** WIP
 
-## Author: AdrienRmd
+## Author: Austin
 
 Not published yet — work in progress.
 
