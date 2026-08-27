@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file. Format base
 - `worker` mod (`mods/economy_gather/worker/`): per-resource worker gathering (speed per second and carry capacity) for every civilization's worker — no panel (too many values); a beginner-friendly VALUES section at the top of the script holds one labeled block per worker with displayed values (×50 → `perTick`, ×1000 → `bagSize`), pre-filled with base-game data; unit IDs and gather slot order are kept in a separate do-not-change section.
 - `fisher`/`worker`: base-game default values (engine and displayed formats) archived in a single `mods/economy_gather/DEFAULTS.md` covering both mods.
 - In-game Mod ID for `worker` — `mod-SUkAWpj8Eqe` (status: Stable).
+- `wave` mod family (`mods/wave/`, 3 scripts): Wave PVE — AI attacker faction spawns escalating waves (ages follow the players + 1, tiers, per-player scaling, penalty growth, unit caps, nearest/random targeting, elimination re-targeting, wonder victory); Winter — periodic blizzards reducing unit speeds (70%/50%) and vision (50%, aircraft 70%); Winter visual — cold-blue lighting fades matching the blizzards. Scripts by Austin & Nuanyang, translated from Chinese with English texts by AdrienRmd.
+- In-game Mod IDs for `wave` — Wave PVE `mod-MtNRIa6lil4`, Winter `mod-RzcO3BQ8KF9`, Winter visual `mod-TbiDQ5Es1k0` (status: Stable).
 
 ### Changed
 

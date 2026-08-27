@@ -66,11 +66,13 @@ wars_selection_mod/
 │   ├── diplomacy/
 │   ├── economy_gather/
 │   ├── house_production/
+│   ├── Italian_paratrooper/
 │   ├── nuclear_bomb/
 │   ├── period_piece/
 │   ├── sharing_economy/
 │   ├── starting_resources/
-│   └── victory_conditions/
+│   ├── victory_conditions/
+│   └── wave/
 ├── assets/                # Screenshots & GIFs of the mods (one subfolder per mod)
 │   ├── adjust_resources/
 │   └── diplomacy/
