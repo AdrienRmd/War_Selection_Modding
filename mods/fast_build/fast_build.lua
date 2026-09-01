@@ -6,7 +6,7 @@
 --              The starting value comes from the panel parameter
 --              BuildSpeedRatio (default 100 = base game).
 -- Author: AdrienRmd
--- Status: Testing
+-- Status: Stable
 -----------------------------------------------------------
 -- ============================================================================
 -- ONE file, TWO roles (same pattern as the diplomacy mod, but merged):

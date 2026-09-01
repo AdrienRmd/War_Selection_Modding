@@ -1,5 +1,5 @@
 # Fast build
-**Status:** WIP
+**Status:** Stable
 
 ## Author: AdrienRmd
 
@@ -36,6 +36,5 @@ The in-game buttons override this value at any time.
 
 ## Known issues / notes
 
-- **Untested in game** (status WIP): whether the engine applies `root.unitsBuildSpeedRatio` changes made after the match starts, and whether this single-file dual-context layout works, must be confirmed by testing. If the buttons do nothing, the fallback is to split the script into two mods (interface + backend) like the diplomacy mod.
+- **Verified in game**: the engine applies `unitsBuildSpeedRatio` changes made after the match starts, and the single-file dual-context layout works (the same script runs in both the visual and gameplay contexts).
 - If another mod of the map also writes `root.unitsBuildSpeedRatio` at load (e.g. `better_batiment` sets 40), the value at match start depends on the mod load order — fix it live with the buttons.
-- The preset buttons reuse native "placing" buttons: if the game waits for a terrain click after pressing one, click anywhere on the map to validate.
