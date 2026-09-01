@@ -65,6 +65,7 @@ wars_selection_mod/
 │   ├── default_gameplay_functions/
 │   ├── diplomacy/
 │   ├── economy_gather/
+│   ├── fast_build/
 │   ├── house_production/
 │   ├── Italian_paratrooper/
 │   ├── nuclear_bomb/
