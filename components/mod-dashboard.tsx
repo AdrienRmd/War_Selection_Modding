@@ -1,15 +1,300 @@
 "use client";
-import {useEffect,useState} from 'react';
-import Link from '@/components/site-link';
-import {Bilingual,useI18n} from '@/components/i18n';
-import type {ModEntry} from '@/lib/mod-types';
-import {UsageBadge} from '@/components/mod-library';
-import {Button} from '@/components/ui/button';
-import {Checkbox} from '@/components/ui/checkbox';
-import {Textarea} from '@/components/ui/textarea';
-import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
-import {AlertDialog,AlertDialogTrigger,AlertDialogContent,AlertDialogTitle,AlertDialogDescription,AlertDialogFooter,AlertDialogAction,AlertDialogCancel} from '@/components/ui/alert-dialog';
-const states:Record<string,[string,string]>={all:['全部','All'],pending:['待审核','Pending'],approved:['已公开','Published'],rejected:['需修改 / 下架','Changes requested'],withdrawn:['已撤回','Withdrawn']};
-async function getMods(admin:boolean,signal?:AbortSignal){const r=await fetch('/api/mods/submissions'+(admin?'?scope=admin':''),{signal}),d=await r.json() as {error?:string;items:ModEntry[]};if(!r.ok)throw Error(d.error);return d.items}
-export function ModDashboard({admin=false}:{admin?:boolean}){const {locale}=useI18n(),l=(z:string,e:string)=>locale==='en'?e:z;const [items,setItems]=useState<ModEntry[]>([]),[busy,setBusy]=useState(true),[error,setError]=useState(''),[filter,setFilter]=useState(admin?'pending':'all');async function refresh(){setBusy(true);setError('');try{setItems(await getMods(admin))}catch(e){setError(e instanceof Error?e.message:'Unable to load')}finally{setBusy(false)}}useEffect(()=>{const c=new AbortController();getMods(admin,c.signal).then(data=>{if(!c.signal.aborted)setItems(data)}).catch(e=>{if(!c.signal.aborted)setError(e instanceof Error?e.message:'Unable to load')}).finally(()=>{if(!c.signal.aborted)setBusy(false)});return()=>c.abort()},[admin]);const shown=items.filter(m=>filter==='all'||m.status===filter);return <><div className="mod-controls mb-6"><Select value={filter} onValueChange={setFilter}><SelectTrigger aria-label={l('发布状态','Publication status')}><SelectValue/></SelectTrigger><SelectContent>{Object.entries(states).map(([v,labels])=><SelectItem value={v} key={v}>{labels[locale==='en'?1:0]} ({items.filter(m=>v==='all'||m.status===v).length})</SelectItem>)}</SelectContent></Select><Button variant="outline" onClick={refresh} disabled={busy}>{l('刷新','Refresh')}</Button><Link href="/submit/mod" className="button primary">{l('提交 Mod','Submit a mod')}</Link></div>{admin&&<p className="bilingual-note mb-6">{l('“已公开”包含斯大林格勒和 GitHub 收录资料，可进入编辑。玩家新投稿在“待审核”。','Published includes curated Stalingrad and GitHub entries, available for editing. New player submissions are Pending.')}</p>}{error&&<p role="alert" className="notice error">{error}</p>}{busy?<p role="status">{l('正在加载…','Loading…')}</p>:<div className="mod-dashboard">{shown.map(m=><ModReview key={m.id+'-'+m.revision} entry={m} admin={admin} refresh={refresh}/>)}{!shown.length&&<div className="empty-surface"><h2>{l('这一栏还没有 Mod','No mods in this view')}</h2><p>{l('提交你的作品，或切换状态查看已收录资料。','Submit your work or change the status filter to find existing entries.')}</p></div>}</div>}</>}
-function ModReview({entry:m,admin,refresh}:{entry:ModEntry;admin:boolean;refresh:()=>Promise<void>}){const {locale}=useI18n(),l=(z:string,e:string)=>locale==='en'?e:z;const [checks,setChecks]=useState<string[]>([]),[feedback,setFeedback]=useState(m.feedback||''),[busy,setBusy]=useState(false),[error,setError]=useState('');async function act(status:string){setBusy(true);setError('');try{const withdraw=status==='withdrawn',r=await fetch('/api/mods/'+(withdraw?'withdraw/':'review/')+m.id,{method:withdraw?'POST':'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status,feedback,checks,revision:m.revision})}),d=await r.json() as {error?:string};if(!r.ok)throw Error(d.error);await refresh()}catch(e){setError(e instanceof Error?e.message:'Unable to save')}finally{setBusy(false)}}return <article className="panel"><div className="section-head"><div><p className="eyebrow">{m.origin.toUpperCase()} · {states[m.status]?.[locale==='en'?1:0]}</p><h2><Bilingual zh={m.title} en={m.title_en}/></h2><p className="mod-source">{m.author}</p></div><UsageBadge value={m.usage_status}/></div><p><Bilingual zh={m.summary} en={m.summary_en}/></p><div className="mod-manage-actions"><Link className="button primary" href={'/mods/'+m.id+'/edit'}>{l('编辑资料与 Mod 码','Edit details & Mod codes')}</Link><Link className="button" href={'/mods/'+m.id}>{l('查看完整资料','View full details')}</Link>{m.has_file&&<a className="button" href={'/api/mods/files/'+m.id}>{l('下载检查','Download for review')}</a>}</div>{m.feedback&&<div className="review-feedback"><strong>{l('审核意见','Review feedback')}</strong><p>{m.feedback}</p></div>}{admin&&m.origin==='community'&&m.status!=='withdrawn'&&<div className="review-controls"><h3>{l('人工审核','Manual review')}</h3>{[['ownership','已核对授权、作者与来源','Rights, attribution and source checked'],['files','已检查文件或发布码及依赖','Files or published codes and dependencies checked'],['gameplay','已在标注版本完成游戏测试','Tested in the stated game version'],['description','说明与实际效果一致','Description matches actual behavior']].map(([v,z,e])=><label className="check-line" key={v}><Checkbox checked={checks.includes(v)} onCheckedChange={yes=>setChecks(c=>yes===true?[...c,v]:c.filter(x=>x!==v))}/>{l(z,e)}</label>)}<label>{l('审核意见（至少 5 字）','Review feedback (at least 5 characters)')}<Textarea value={feedback} onChange={e=>setFeedback(e.target.value)} maxLength={2000}/></label><div className="review-buttons"><AlertDialog><AlertDialogTrigger asChild><Button disabled={busy||checks.length!==4||feedback.trim().length<5}>{l('通过并公开','Approve & publish')}</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogTitle>{l('公开此 Mod？','Publish this mod?')}</AlertDialogTitle><AlertDialogDescription>{l('确认已完成人工检查，资料与文件将公开。','Confirm that all manual checks are complete. Details and files will become public.')}</AlertDialogDescription><AlertDialogFooter><AlertDialogCancel>{l('取消','Cancel')}</AlertDialogCancel><AlertDialogAction onClick={()=>act('approved')}>{l('确认发布','Publish')}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog><Button variant="outline" disabled={busy||feedback.trim().length<5} onClick={()=>act('rejected')}>{l('退回修改 / 下架','Request changes / unpublish')}</Button></div></div>}{m.origin==='community'&&m.status!=='withdrawn'&&<div className="mod-manage-actions"><AlertDialog><AlertDialogTrigger asChild><Button variant="outline" disabled={busy}>{l('撤回稿件','Withdraw submission')}</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogTitle>{l('撤回此 Mod？','Withdraw this mod?')}</AlertDialogTitle><AlertDialogDescription>{l('停止公开资料与下载，保留文件及审核记录；重新编辑需送审。','This hides the entry and download, while retaining files and review history. Editing again requires review.')}</AlertDialogDescription><AlertDialogFooter><AlertDialogCancel>{l('取消','Cancel')}</AlertDialogCancel><AlertDialogAction onClick={()=>act('withdrawn')}>{l('确认撤回','Withdraw')}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></div>}{busy&&<p role="status">{l('保存中…','Saving…')}</p>}{error&&<p role="alert" className="notice error">{error}</p>}</article>}
+import { useEffect, useState } from "react";
+import Link from "@/components/site-link";
+import { Bilingual, useI18n } from "@/components/i18n";
+import type { ModEntry } from "@/lib/mod-types";
+import { UsageBadge } from "@/components/mod-library";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+const states: Record<string, [string, string]> = {
+  all: ["全部", "All"],
+  pending: ["待审核", "Pending"],
+  approved: ["已公开", "Published"],
+  rejected: ["需修改 / 下架", "Changes requested"],
+  withdrawn: ["已撤回", "Withdrawn"],
+};
+async function getMods(admin: boolean, signal?: AbortSignal) {
+  const r = await fetch("/api/mods/submissions" + (admin ? "?scope=admin" : ""), { signal }),
+    d = (await r.json()) as { error?: string; items: ModEntry[] };
+  if (!r.ok) throw Error(d.error);
+  return d.items;
+}
+export function ModDashboard({ admin = false }: { admin?: boolean }) {
+  const { locale } = useI18n(),
+    l = (z: string, e: string) => (locale !== "zh" ? e : z);
+  const [items, setItems] = useState<ModEntry[]>([]),
+    [busy, setBusy] = useState(true),
+    [error, setError] = useState(""),
+    [filter, setFilter] = useState(admin ? "pending" : "all");
+  async function refresh() {
+    setBusy(true);
+    setError("");
+    try {
+      setItems(await getMods(admin));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to load");
+    } finally {
+      setBusy(false);
+    }
+  }
+  useEffect(() => {
+    const c = new AbortController();
+    getMods(admin, c.signal)
+      .then((data) => {
+        if (!c.signal.aborted) setItems(data);
+      })
+      .catch((e) => {
+        if (!c.signal.aborted) setError(e instanceof Error ? e.message : "Unable to load");
+      })
+      .finally(() => {
+        if (!c.signal.aborted) setBusy(false);
+      });
+    return () => c.abort();
+  }, [admin]);
+  const shown = items.filter((m) => filter === "all" || m.status === filter);
+  return (
+    <>
+      <div className="mod-controls mb-6">
+        <Select value={filter} onValueChange={setFilter}>
+          <SelectTrigger aria-label={l("发布状态", "Publication status")}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(states).map(([v, labels]) => (
+              <SelectItem value={v} key={v}>
+                {labels[locale !== "zh" ? 1 : 0]} (
+                {items.filter((m) => v === "all" || m.status === v).length})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button variant="outline" onClick={refresh} disabled={busy}>
+          {l("刷新", "Refresh")}
+        </Button>
+        <Link href="/submit/mod" className="button primary">
+          {l("提交 Mod", "Submit a mod")}
+        </Link>
+      </div>
+      {admin && (
+        <p className="bilingual-note mb-6">
+          {l(
+            "“已公开”包含斯大林格勒和 GitHub 收录资料，可进入编辑。玩家新投稿在“待审核”。",
+            "Published includes curated Stalingrad and GitHub entries, available for editing. New player submissions are Pending.",
+          )}
+        </p>
+      )}
+      {error && (
+        <p role="alert" className="notice error">
+          {error}
+        </p>
+      )}
+      {busy ? (
+        <p role="status">{l("正在加载…", "Loading…")}</p>
+      ) : (
+        <div className="mod-dashboard">
+          {shown.map((m) => (
+            <ModReview key={m.id + "-" + m.revision} entry={m} admin={admin} refresh={refresh} />
+          ))}
+          {!shown.length && (
+            <div className="empty-surface">
+              <h2>{l("这一栏还没有 Mod", "No mods in this view")}</h2>
+              <p>
+                {l(
+                  "提交你的作品，或切换状态查看已收录资料。",
+                  "Submit your work or change the status filter to find existing entries.",
+                )}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+function ModReview({
+  entry: m,
+  admin,
+  refresh,
+}: {
+  entry: ModEntry;
+  admin: boolean;
+  refresh: () => Promise<void>;
+}) {
+  const { locale } = useI18n(),
+    l = (z: string, e: string) => (locale !== "zh" ? e : z);
+  const [checks, setChecks] = useState<string[]>([]),
+    [feedback, setFeedback] = useState(m.feedback || ""),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  async function act(status: string) {
+    setBusy(true);
+    setError("");
+    try {
+      const withdraw = status === "withdrawn",
+        r = await fetch("/api/mods/" + (withdraw ? "withdraw/" : "review/") + m.id, {
+          method: withdraw ? "POST" : "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status, feedback, checks, revision: m.revision }),
+        }),
+        d = (await r.json()) as { error?: string };
+      if (!r.ok) throw Error(d.error);
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to save");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <article className="panel">
+      <div className="section-head">
+        <div>
+          <p className="eyebrow">
+            {m.origin.toUpperCase()} · {states[m.status]?.[locale !== "zh" ? 1 : 0]}
+          </p>
+          <h2>
+            <Bilingual zh={m.title} en={m.title_en} />
+          </h2>
+          <p className="mod-source">{m.author}</p>
+        </div>
+        <UsageBadge value={m.usage_status} />
+      </div>
+      <p>
+        <Bilingual zh={m.summary} en={m.summary_en} />
+      </p>
+      <div className="mod-manage-actions">
+        <Link className="button primary" href={"/mods/" + m.id + "/edit"}>
+          {l("编辑资料与 Mod 码", "Edit details & Mod codes")}
+        </Link>
+        <Link className="button" href={"/mods/" + m.id}>
+          {l("查看完整资料", "View full details")}
+        </Link>
+        {m.has_file && (
+          <a className="button" href={"/api/mods/files/" + m.id}>
+            {l("下载检查", "Download for review")}
+          </a>
+        )}
+      </div>
+      {m.feedback && (
+        <div className="review-feedback">
+          <strong>{l("审核意见", "Review feedback")}</strong>
+          <p>{m.feedback}</p>
+        </div>
+      )}
+      {admin && m.origin === "community" && m.status !== "withdrawn" && (
+        <div className="review-controls">
+          <h3>{l("人工审核", "Manual review")}</h3>
+          {[
+            ["ownership", "已核对授权、作者与来源", "Rights, attribution and source checked"],
+            [
+              "files",
+              "已检查文件或发布码及依赖",
+              "Files or published codes and dependencies checked",
+            ],
+            ["gameplay", "已在标注版本完成游戏测试", "Tested in the stated game version"],
+            ["description", "说明与实际效果一致", "Description matches actual behavior"],
+          ].map(([v, z, e]) => (
+            <label className="check-line" key={v}>
+              <Checkbox
+                checked={checks.includes(v)}
+                onCheckedChange={(yes) =>
+                  setChecks((c) => (yes === true ? [...c, v] : c.filter((x) => x !== v)))
+                }
+              />
+              {l(z, e)}
+            </label>
+          ))}
+          <label>
+            {l("审核意见（至少 5 字）", "Review feedback (at least 5 characters)")}
+            <Textarea
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              maxLength={2000}
+            />
+          </label>
+          <div className="review-buttons">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button disabled={busy || checks.length !== 4 || feedback.trim().length < 5}>
+                  {l("通过并公开", "Approve & publish")}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogTitle>{l("公开此 Mod？", "Publish this mod?")}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {l(
+                    "确认已完成人工检查，资料与文件将公开。",
+                    "Confirm that all manual checks are complete. Details and files will become public.",
+                  )}
+                </AlertDialogDescription>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{l("取消", "Cancel")}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => act("approved")}>
+                    {l("确认发布", "Publish")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <Button
+              variant="outline"
+              disabled={busy || feedback.trim().length < 5}
+              onClick={() => act("rejected")}
+            >
+              {l("退回修改 / 下架", "Request changes / unpublish")}
+            </Button>
+          </div>
+        </div>
+      )}
+      {m.origin === "community" && m.status !== "withdrawn" && (
+        <div className="mod-manage-actions">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" disabled={busy}>
+                {l("撤回稿件", "Withdraw submission")}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogTitle>{l("撤回此 Mod？", "Withdraw this mod?")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {l(
+                  "停止公开资料与下载，保留文件及审核记录；重新编辑需送审。",
+                  "This hides the entry and download, while retaining files and review history. Editing again requires review.",
+                )}
+              </AlertDialogDescription>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{l("取消", "Cancel")}</AlertDialogCancel>
+                <AlertDialogAction onClick={() => act("withdrawn")}>
+                  {l("确认撤回", "Withdraw")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
+      {busy && <p role="status">{l("保存中…", "Saving…")}</p>}
+      {error && (
+        <p role="alert" className="notice error">
+          {error}
+        </p>
+      )}
+    </article>
+  );
+}

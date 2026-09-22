@@ -1,22 +1,364 @@
 "use client";
-import {T,useI18n} from "@/components/i18n";
+import { T, useI18n } from "@/components/i18n";
 
-import {useState} from "react";
+import { useState } from "react";
 import Link from "@/components/site-link";
-import {Save,Upload,ArrowUpRight,CheckCircle2,Image,FileArchive,Plus,Trash2} from "lucide-react";
-import {Input} from "@/components/ui/input";
-import {Textarea} from "@/components/ui/textarea";
-import {Button} from "@/components/ui/button";
-import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/components/ui/select";
-import type {EditableMap} from "@/lib/map-content";
-export function MapEditor({initial}:{initial:EditableMap}){const {t}=useI18n();
- const [data,setData]=useState(initial),[busy,setBusy]=useState(false),[error,setError]=useState(""),[saved,setSaved]=useState(false),[dirty,setDirty]=useState(false);
- const featured=data.id==="stalingrad";
- function change<K extends keyof EditableMap>(key:K,value:EditableMap[K]){setData(d=>({...d,[key]:value}));setDirty(true);setSaved(false);}
- async function save(e:React.FormEvent<HTMLFormElement>){e.preventDefault();if(busy)return;const element=e.currentTarget;const form=new FormData(element);form.set("category",data.category);form.set("revision",String(data.revision));if(featured)form.set("rules",JSON.stringify(data.rules||[]));setBusy(true);setError("");setSaved(false);try{const r=await fetch(`/api/editor/${data.id}`,{method:"PATCH",body:form});const body=await r.json() as {error?:string;revision:number};if(!r.ok)throw new Error(body.error||"保存失败");const uploaded=form.get("file");const cover=form.get("cover");setData(d=>({...d,revision:body.revision,...(uploaded instanceof File&&uploaded.size?{file_name:uploaded.name,file_size:uploaded.size,has_file:true}:{}),...(cover instanceof File&&cover.size?{has_cover:true}:{})}));element.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach(input=>input.value="");setSaved(true);setDirty(false);}catch(e){setError(e instanceof Error?e.message:"保存未完成");}finally{setBusy(false);}}
- return <form className="map-editor" onSubmit={save}><div className="editor-banner"><span><Save size={18}/><T text={dirty?"有尚未保存的修改":saved?"修改已保存":"正在编辑公开资料"}/></span><div><Link href={featured?"/maps/stalingrad":"/submissions"} className="button"><T text={featured?"查看地图":"返回我的创作"}/><ArrowUpRight size={16}/></Link><Button className="button primary" type="submit" disabled={busy}><T text={busy?"正在保存…":featured?"保存并更新档案":"保存并重新提交审核"}/></Button></div></div>
- {error&&<p className="notice error" role="alert"><T text={error}/></p>}{saved&&<p className="notice success" role="status"><CheckCircle2 size={18}/><T text={featured?"公开档案已更新。查看地图页可确认最新内容。":"修改已保存并进入待审核；审核前不公开新内容。"}/></p>}
- <div className="form-layout"><section className="atlas-form panel"><div className="form-section-heading"><span>01</span><div><h2><T text={"地图资料"}/></h2><p><T text={"修改的是网站档案；游戏内地形请在 War Selection 编辑器中修改。"}/></p></div></div><div className="form-grid">{[{key:"title",label:"地图名称",min:2,max:60},{key:"author",label:"作者 / 团队名",min:2,max:40},{key:"game_version",label:"实际测试游戏版本",min:1,max:60}].map(f=><label key={f.key}><T text={f.label}/><Input name={f.key} value={String(data[f.key as keyof EditableMap])} onChange={e=>change(f.key as "title"|"author"|"game_version",e.target.value)} minLength={f.min} maxLength={f.max} required/></label>)}<label><T text={"最大玩家数"}/><Input name="players" type="number" min={1} max={60} value={data.players} onChange={e=>change("players",Number(e.target.value))} required/></label><label><T text={"地图类型"}/><Select value={data.category} onValueChange={v=>change("category",v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{["历史战役","团队对抗","生存合作","自定义玩法"].map(c=><SelectItem key={c} value={c}><T text={c}/></SelectItem>)}</SelectContent></Select></label><label><T text={"游戏内分享码"}/><Input name="map_code" maxLength={150} value={data.map_code} onChange={e=>change("map_code",e.target.value)} placeholder={t("填写真实可用的分享码")}/></label></div><label><T text={"简短介绍"}/><Input name="summary" minLength={10} maxLength={180} required value={data.summary} onChange={e=>change("summary",e.target.value)}/></label><label><T text={"玩法与安装说明"}/><Textarea name="description" rows={9} minLength={30} maxLength={6000} required value={data.description} onChange={e=>change("description",e.target.value)}/></label><label><T text={"Mod 加载顺序与注意事项"}/><Textarea name="mods" rows={5} maxLength={4000} value={data.mods} onChange={e=>change("mods",e.target.value)}/></label>
- {featured&&<><div className="form-section-heading"><span>02</span><div><h2><T text={"规则速览"}/></h2><p><T text={"这些说明会显示在斯大林格勒地图页，不会自动改动游戏 Mod。"}/></p></div></div>{(data.rules||[]).map((r,i)=><div className="rule-editor-row" key={i}><Input aria-label={t(`规则 ${i+1} 名称`)} value={r.label} maxLength={40} required onChange={e=>change("rules",data.rules!.map((x,j)=>i===j?{...x,label:e.target.value}:x))}/><Input aria-label={t(`规则 ${i+1} 数值`)} value={r.value} maxLength={140} required onChange={e=>change("rules",data.rules!.map((x,j)=>i===j?{...x,value:e.target.value}:x))}/><Button type="button" variant="ghost" aria-label={t(`删除规则 ${i+1}`)} onClick={()=>change("rules",data.rules!.filter((_,j)=>i!==j))}><Trash2 size={16}/></Button></div>)}<Button type="button" variant="outline" disabled={(data.rules?.length||0)>=12} onClick={()=>change("rules",[...(data.rules||[]),{label:"",value:""}])}><Plus size={16}/>  <T text={"添加规则"}/></Button></>}
- </section><aside className="detail-aside"><section className="atlas-form panel"><div className="form-section-heading"><Upload size={22}/><div><h2><T text={"文件与封面"}/></h2><p><T text={"不选择新文件，将保留原有版本。"}/></p></div></div><label className="upload-box"><Image size={28}/><strong><T text={"替换地图封面"}/></strong><span><T text={"PNG / JPEG · 最大 2 MB"}/></span><Input name="cover" type="file" accept="image/png,image/jpeg" onChange={()=>{setDirty(true);setSaved(false)}}/></label>{data.has_cover&&<img className="editor-cover" src={featured?"/api/featured?asset=cover":`/api/atlas/files/${data.id}?type=cover`} alt={t("当前地图封面")}/>}<label className="upload-box"><FileArchive size={28}/><strong><T text={"更新地图 ZIP 包"}/></strong><span><T text={"最大 10 MB · 请包含使用说明"}/></span><Input name="file" type="file" accept=".zip,application/zip" onChange={()=>{setDirty(true);setSaved(false)}}/></label><p className="caption"><T text={data.file_name?`当前文件：${data.file_name}`:"尚未提供地图下载包"}/></p></section><section className="panel"><h3><T text={featured?"作者维护的精选档案":"修改后重新审核"}/></h3><p><T text={featured?"只有管理员可以保存。保存后即更新公开资料，请先核对文字和文件。下方历史技术档案仍按其标注日期保留。":"已发布地图修改后会回到待审核状态，暂时停止公开下载；管理员通过后再上架。"}/></p><p className="caption"><T text={"版本冲突时不会覆盖其他人的修改。离开前请保存；未保存内容不会跨设备同步。"}/></p></section></aside></div></form>
+import {
+  Save,
+  Upload,
+  ArrowUpRight,
+  CheckCircle2,
+  Image as ImageIcon,
+  FileArchive,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { EditableMap } from "@/lib/map-content";
+export function MapEditor({ initial }: { initial: EditableMap }) {
+  const { t } = useI18n();
+  const [data, setData] = useState(initial),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState(""),
+    [saved, setSaved] = useState(false),
+    [dirty, setDirty] = useState(false);
+  const featured = data.id === "stalingrad";
+  function change<K extends keyof EditableMap>(key: K, value: EditableMap[K]) {
+    setData((d) => ({ ...d, [key]: value }));
+    setDirty(true);
+    setSaved(false);
+  }
+  async function save(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (busy) return;
+    const element = e.currentTarget;
+    const form = new FormData(element);
+    form.set("category", data.category);
+    form.set("revision", String(data.revision));
+    if (featured) form.set("rules", JSON.stringify(data.rules || []));
+    setBusy(true);
+    setError("");
+    setSaved(false);
+    try {
+      const r = await fetch(`/api/editor/${data.id}`, { method: "PATCH", body: form });
+      const body = (await r.json()) as { error?: string; revision: number };
+      if (!r.ok) throw new Error(body.error || "保存失败");
+      const uploaded = form.get("file");
+      const cover = form.get("cover");
+      setData((d) => ({
+        ...d,
+        revision: body.revision,
+        ...(uploaded instanceof File && uploaded.size
+          ? { file_name: uploaded.name, file_size: uploaded.size, has_file: true }
+          : {}),
+        ...(cover instanceof File && cover.size ? { has_cover: true } : {}),
+      }));
+      element
+        .querySelectorAll<HTMLInputElement>('input[type="file"]')
+        .forEach((input) => (input.value = ""));
+      setSaved(true);
+      setDirty(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存未完成");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <form className="map-editor" onSubmit={save}>
+      <div className="editor-banner">
+        <span>
+          <Save size={18} />
+          <T text={dirty ? "有尚未保存的修改" : saved ? "修改已保存" : "正在编辑公开资料"} />
+        </span>
+        <div>
+          <Link href={featured ? "/maps/stalingrad" : "/submissions"} className="button">
+            <T text={featured ? "查看地图" : "返回我的创作"} />
+            <ArrowUpRight size={16} />
+          </Link>
+          <Button className="button primary" type="submit" disabled={busy}>
+            <T text={busy ? "正在保存…" : featured ? "保存并更新档案" : "保存并重新提交审核"} />
+          </Button>
+        </div>
+      </div>
+      {error && (
+        <p className="notice error" role="alert">
+          <T text={error} />
+        </p>
+      )}
+      {saved && (
+        <p className="notice success" role="status">
+          <CheckCircle2 size={18} />
+          <T
+            text={
+              featured
+                ? "公开档案已更新。查看地图页可确认最新内容。"
+                : "修改已保存并进入待审核；审核前不公开新内容。"
+            }
+          />
+        </p>
+      )}
+      <div className="form-layout">
+        <section className="atlas-form panel">
+          <div className="form-section-heading">
+            <span>01</span>
+            <div>
+              <h2>
+                <T text={"地图资料"} />
+              </h2>
+              <p>
+                <T text={"修改的是网站档案；游戏内地形请在 War Selection 编辑器中修改。"} />
+              </p>
+            </div>
+          </div>
+          <div className="form-grid">
+            {[
+              { key: "title", label: "地图名称", min: 2, max: 60 },
+              { key: "author", label: "作者 / 团队名", min: 2, max: 40 },
+              { key: "game_version", label: "实际测试游戏版本", min: 1, max: 60 },
+            ].map((f) => (
+              <label key={f.key}>
+                <T text={f.label} />
+                <Input
+                  name={f.key}
+                  value={String(data[f.key as keyof EditableMap])}
+                  onChange={(e) =>
+                    change(f.key as "title" | "author" | "game_version", e.target.value)
+                  }
+                  minLength={f.min}
+                  maxLength={f.max}
+                  required
+                />
+              </label>
+            ))}
+            <label>
+              <T text={"最大玩家数"} />
+              <Input
+                name="players"
+                type="number"
+                min={1}
+                max={60}
+                value={data.players}
+                onChange={(e) => change("players", Number(e.target.value))}
+                required
+              />
+            </label>
+            <label>
+              <T text={"地图类型"} />
+              <Select value={data.category} onValueChange={(v) => change("category", v)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["历史战役", "团队对抗", "生存合作", "自定义玩法"].map((c) => (
+                    <SelectItem key={c} value={c}>
+                      <T text={c} />
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
+            <label>
+              <T text={"游戏内分享码"} />
+              <Input
+                name="map_code"
+                maxLength={150}
+                value={data.map_code}
+                onChange={(e) => change("map_code", e.target.value)}
+                placeholder={t("填写真实可用的分享码")}
+              />
+            </label>
+          </div>
+          <label>
+            <T text={"简短介绍"} />
+            <Input
+              name="summary"
+              minLength={10}
+              maxLength={180}
+              required
+              value={data.summary}
+              onChange={(e) => change("summary", e.target.value)}
+            />
+          </label>
+          <label>
+            <T text={"玩法与安装说明"} />
+            <Textarea
+              name="description"
+              rows={9}
+              minLength={30}
+              maxLength={6000}
+              required
+              value={data.description}
+              onChange={(e) => change("description", e.target.value)}
+            />
+          </label>
+          <label>
+            <T text={"Mod 加载顺序与注意事项"} />
+            <Textarea
+              name="mods"
+              rows={5}
+              maxLength={4000}
+              value={data.mods}
+              onChange={(e) => change("mods", e.target.value)}
+            />
+          </label>
+          {featured && (
+            <>
+              <div className="form-section-heading">
+                <span>02</span>
+                <div>
+                  <h2>
+                    <T text={"规则速览"} />
+                  </h2>
+                  <p>
+                    <T text={"这些说明会显示在斯大林格勒地图页，不会自动改动游戏 Mod。"} />
+                  </p>
+                </div>
+              </div>
+              {(data.rules || []).map((r, i) => (
+                <div className="rule-editor-row" key={i}>
+                  <Input
+                    aria-label={t(`规则 ${i + 1} 名称`)}
+                    value={r.label}
+                    maxLength={40}
+                    required
+                    onChange={(e) =>
+                      change(
+                        "rules",
+                        data.rules!.map((x, j) => (i === j ? { ...x, label: e.target.value } : x)),
+                      )
+                    }
+                  />
+                  <Input
+                    aria-label={t(`规则 ${i + 1} 数值`)}
+                    value={r.value}
+                    maxLength={140}
+                    required
+                    onChange={(e) =>
+                      change(
+                        "rules",
+                        data.rules!.map((x, j) => (i === j ? { ...x, value: e.target.value } : x)),
+                      )
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    aria-label={t(`删除规则 ${i + 1}`)}
+                    onClick={() =>
+                      change(
+                        "rules",
+                        data.rules!.filter((_, j) => i !== j),
+                      )
+                    }
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                disabled={(data.rules?.length || 0) >= 12}
+                onClick={() => change("rules", [...(data.rules || []), { label: "", value: "" }])}
+              >
+                <Plus size={16} /> <T text={"添加规则"} />
+              </Button>
+            </>
+          )}
+        </section>
+        <aside className="detail-aside">
+          <section className="atlas-form panel">
+            <div className="form-section-heading">
+              <Upload size={22} />
+              <div>
+                <h2>
+                  <T text={"文件与封面"} />
+                </h2>
+                <p>
+                  <T text={"不选择新文件，将保留原有版本。"} />
+                </p>
+              </div>
+            </div>
+            <label className="upload-box">
+              <ImageIcon size={28} />
+              <strong>
+                <T text={"替换地图封面"} />
+              </strong>
+              <span>
+                <T text={"PNG / JPEG · 最大 2 MB"} />
+              </span>
+              <Input
+                name="cover"
+                type="file"
+                accept="image/png,image/jpeg"
+                onChange={() => {
+                  setDirty(true);
+                  setSaved(false);
+                }}
+              />
+            </label>
+            {data.has_cover && (
+              <img
+                className="editor-cover"
+                src={
+                  featured ? "/api/featured?asset=cover" : `/api/atlas/files/${data.id}?type=cover`
+                }
+                alt={t("当前地图封面")}
+              />
+            )}
+            <label className="upload-box">
+              <FileArchive size={28} />
+              <strong>
+                <T text={"更新地图 ZIP 包"} />
+              </strong>
+              <span>
+                <T text={"最大 10 MB · 请包含使用说明"} />
+              </span>
+              <Input
+                name="file"
+                type="file"
+                accept=".zip,application/zip"
+                onChange={() => {
+                  setDirty(true);
+                  setSaved(false);
+                }}
+              />
+            </label>
+            <p className="caption">
+              <T text={data.file_name ? `当前文件：${data.file_name}` : "尚未提供地图下载包"} />
+            </p>
+          </section>
+          <section className="panel">
+            <h3>
+              <T text={featured ? "作者维护的精选档案" : "修改后重新审核"} />
+            </h3>
+            <p>
+              <T
+                text={
+                  featured
+                    ? "只有管理员可以保存。保存后即更新公开资料，请先核对文字和文件。下方历史技术档案仍按其标注日期保留。"
+                    : "已发布地图修改后会回到待审核状态，暂时停止公开下载；管理员通过后再上架。"
+                }
+              />
+            </p>
+            <p className="caption">
+              <T
+                text={"版本冲突时不会覆盖其他人的修改。离开前请保存；未保存内容不会跨设备同步。"}
+              />
+            </p>
+          </section>
+        </aside>
+      </div>
+    </form>
+  );
 }

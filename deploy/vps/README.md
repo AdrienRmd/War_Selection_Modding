@@ -29,14 +29,14 @@ workerd** en local, avec les bindings D1/R2 simulés sur disque dans
 
 Valeurs relevées dans `dist/server/wrangler.json` (généré par `npm run build`) :
 
-| Champ | Valeur |
-|---|---|
-| `main` | `index.js` (soit `dist/server/index.js`) |
-| `assets.directory` | `../client` (soit `dist/client`) |
-| `compatibility_date` | `2026-05-15` |
-| `compatibility_flags` | `["nodejs_compat"]` |
-| `d1_databases` | `[{ "binding": "DB", "database_name": "site-creator-d1", "database_id": "00000000-0000-4000-8000-000000000000" }]` |
-| `r2_buckets` | `[{ "binding": "BUCKET", "bucket_name": "site-creator-r2" }]` |
+| Champ                 | Valeur                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `main`                | `index.js` (soit `dist/server/index.js`)                                                                           |
+| `assets.directory`    | `../client` (soit `dist/client`)                                                                                   |
+| `compatibility_date`  | `2026-05-15`                                                                                                       |
+| `compatibility_flags` | `["nodejs_compat"]`                                                                                                |
+| `d1_databases`        | `[{ "binding": "DB", "database_name": "site-creator-d1", "database_id": "00000000-0000-4000-8000-000000000000" }]` |
+| `r2_buckets`          | `[{ "binding": "BUCKET", "bucket_name": "site-creator-r2" }]`                                                      |
 
 Le `database_id` est un placeholder : normal, tout tourne en `--local` (persisté
 dans `.wrangler/state`), rien ne se connecte à Cloudflare.
@@ -45,13 +45,13 @@ dans `.wrangler/state`), rien ne se connecte à Cloudflare.
 
 ## 2. Contenu du kit
 
-| Fichier | Rôle |
-|---|---|
-| `README.md` | ce guide |
-| `setup-vps.sh` | script d'installation idempotent (à exécuter **en root** sur le VPS, repo présent dans `/opt/ws-atlas`) |
-| `ws-atlas.service` | unité systemd du service |
-| `nginx-ws-aremond.conf` | server block nginx pour `ws.aremond.ovh` |
-| `Caddyfile.exemple` | alternative Caddy (HTTPS automatique) si vous préférez Caddy à nginx |
+| Fichier                 | Rôle                                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| `README.md`             | ce guide                                                                                                |
+| `setup-vps.sh`          | script d'installation idempotent (à exécuter **en root** sur le VPS, repo présent dans `/opt/ws-atlas`) |
+| `ws-atlas.service`      | unité systemd du service                                                                                |
+| `nginx-ws-aremond.conf` | server block nginx pour `ws.aremond.ovh`                                                                |
+| `Caddyfile.exemple`     | alternative Caddy (HTTPS automatique) si vous préférez Caddy à nginx                                    |
 
 ---
 
@@ -228,16 +228,16 @@ Automatisez avec un cron root, par exemple quotidien à 4 h :
 
 ## 11. Dépannage
 
-| Symptôme | Diagnostic / correction |
-|---|---|
-| `curl 127.0.0.1:8787` refuse la connexion | `journalctl -u ws-atlas -n 100 --no-pager` — le worker met quelques secondes à démarrer ; réessayez. |
-| Port 8787 déjà occupé | `sudo ss -ltnp \| grep 8787` — identifiez le process ; le port doit rester exclusivement pour ws-atlas (bind 127.0.0.1). |
-| Erreurs de permissions (`EACCES` sur `.wrangler` ou `.sites-runtime`) | `sudo chown -R wsatlas:wsatlas /opt/ws-atlas` puis `sudo systemctl restart ws-atlas`. |
-| Site joignable en HTTP mais pas HTTPS | Certbot n'a pas encore tourné ou DNS non propagé : `dig +short ws.aremond.ovh`, puis relancez `sudo certbot --nginx -d ws.aremond.ovh`. |
-| 502 Bad Gateway depuis nginx | Le service est mort : `sudo systemctl status ws-atlas`, `journalctl -u ws-atlas -f`, puis redémarrez. Vérifiez que le worker bind bien 127.0.0.1. |
-| `npm run build` échoue sur le VPS | Vérifiez `node -v` (>= 22.13) et refaites `npm run install:ci` complet. |
-| Base vide / erreurs SQL au premier lancement | Les 3 migrations D1 n'ont pas été appliquées — voir étape 2. |
-| Logs applicatifs | `sudo journalctl -u ws-atlas -f` (sortie stdout/stderr du worker). |
+| Symptôme                                                              | Diagnostic / correction                                                                                                                           |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `curl 127.0.0.1:8787` refuse la connexion                             | `journalctl -u ws-atlas -n 100 --no-pager` — le worker met quelques secondes à démarrer ; réessayez.                                              |
+| Port 8787 déjà occupé                                                 | `sudo ss -ltnp \| grep 8787` — identifiez le process ; le port doit rester exclusivement pour ws-atlas (bind 127.0.0.1).                          |
+| Erreurs de permissions (`EACCES` sur `.wrangler` ou `.sites-runtime`) | `sudo chown -R wsatlas:wsatlas /opt/ws-atlas` puis `sudo systemctl restart ws-atlas`.                                                             |
+| Site joignable en HTTP mais pas HTTPS                                 | Certbot n'a pas encore tourné ou DNS non propagé : `dig +short ws.aremond.ovh`, puis relancez `sudo certbot --nginx -d ws.aremond.ovh`.           |
+| 502 Bad Gateway depuis nginx                                          | Le service est mort : `sudo systemctl status ws-atlas`, `journalctl -u ws-atlas -f`, puis redémarrez. Vérifiez que le worker bind bien 127.0.0.1. |
+| `npm run build` échoue sur le VPS                                     | Vérifiez `node -v` (>= 22.13) et refaites `npm run install:ci` complet.                                                                           |
+| Base vide / erreurs SQL au premier lancement                          | Les 3 migrations D1 n'ont pas été appliquées — voir étape 2.                                                                                      |
+| Logs applicatifs                                                      | `sudo journalctl -u ws-atlas -f` (sortie stdout/stderr du worker).                                                                                |
 
 ## 12. Limites et avertissements (à lire)
 

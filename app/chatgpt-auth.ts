@@ -1,5 +1,7 @@
-import { headers } from "next/headers";
+/// <reference types="vite/client" />
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth-server";
 
 export type ChatGPTUser = {
   userId: string;
@@ -8,40 +10,34 @@ export type ChatGPTUser = {
   fullName: string | null;
 };
 
-const USER_ID_HEADER = "oai-authenticated-user-id";
-const USER_EMAIL_HEADER = "oai-authenticated-user-email";
-const USER_FULL_NAME_HEADER = "oai-authenticated-user-full-name";
-const USER_FULL_NAME_ENCODING_HEADER =
-  "oai-authenticated-user-full-name-encoding";
-const PERCENT_ENCODED_UTF8 = "percent-encoded-utf-8";
-const SIGN_IN_PATH = "/signin-with-chatgpt";
-const SIGN_OUT_PATH = "/signout-with-chatgpt";
+const SIGN_IN_PATH = "/signin";
+const SIGN_OUT_PATH = "/signout";
 const CALLBACK_PATH = "/callback";
+const LOCAL_AUTH_COOKIE = "__sites_local_auth";
+// Mirror of the sites-vite-plugin dev identity. Only reachable behind
+// import.meta.env.DEV, which Vite replaces with a build-time constant so the
+// branch is dead-code-eliminated from production bundles.
+const LOCAL_DEV_USER: ChatGPTUser = {
+  userId: "local_seedy",
+  displayName: "Seedy",
+  email: "seedy@sites.test",
+  fullName: "Seedy",
+};
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get(USER_ID_HEADER);
-  const email = requestHeaders.get(USER_EMAIL_HEADER);
-  if (!userId || !email) return null;
+  const user = await getSessionUser();
+  if (user) return user;
 
-  const encodedFullName = requestHeaders.get(USER_FULL_NAME_HEADER);
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get(USER_FULL_NAME_ENCODING_HEADER) === PERCENT_ENCODED_UTF8
-      ? safeDecodeURIComponent(encodedFullName)
-      : null;
-
-  return {
-    userId,
-    displayName: fullName ?? email,
-    email,
-    fullName,
-  };
+  // Dev-only shim: keep the `__sites_local_auth=1` simulation working for the
+  // scripts/test-*.mjs suites. No oai-authenticated-user-* header is ever
+  // trusted here; production identity comes exclusively from the session.
+  if (import.meta.env.DEV) {
+    if ((await cookies()).get(LOCAL_AUTH_COOKIE)?.value === "1") return LOCAL_DEV_USER;
+  }
+  return null;
 }
 
-export async function requireChatGPTUser(
-  returnTo: string,
-): Promise<ChatGPTUser> {
+export async function requireChatGPTUser(returnTo: string): Promise<ChatGPTUser> {
   const user = await getChatGPTUser();
   if (user) return user;
 
@@ -74,17 +70,5 @@ function safeRelativeReturnPath(value: string): string {
 }
 
 function isReservedAuthPath(pathname: string): boolean {
-  return (
-    pathname === SIGN_IN_PATH ||
-    pathname === SIGN_OUT_PATH ||
-    pathname === CALLBACK_PATH
-  );
-}
-
-function safeDecodeURIComponent(value: string): string | null {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return null;
-  }
+  return pathname === SIGN_IN_PATH || pathname === SIGN_OUT_PATH || pathname === CALLBACK_PATH;
 }
