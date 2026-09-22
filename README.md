@@ -146,8 +146,7 @@ export default async function Home() {
   const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
   const fullName =
     encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
+    requestHeaders.get("oai-authenticated-user-full-name-encoding") === "percent-encoded-utf-8"
       ? decodeURIComponent(encodedFullName)
       : null;
 

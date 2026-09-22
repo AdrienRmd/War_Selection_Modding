@@ -1,0 +1,22 @@
+# /etc/systemd/system/ws-atlas.service
+# Installé par deploy/vps/setup-vps.sh (copie + daemon-reload + enable --now).
+[Unit]
+Description=WS ATLAS — worker workerd (wrangler dev --local) sur 127.0.0.1:8787
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=wsatlas
+Group=wsatlas
+WorkingDirectory=/opt/ws-atlas
+ExecStart=/usr/bin/npm start
+Environment=NODE_ENV=production
+Restart=always
+RestartSec=5
+# Hardening léger
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

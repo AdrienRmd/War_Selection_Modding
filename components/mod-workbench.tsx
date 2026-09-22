@@ -1,118 +1,1242 @@
 "use client";
-import {useEffect,useMemo,useRef,useState} from "react";
-import {Search,Download,Upload,HelpCircle,FileCode2,RotateCcw,X,Shield,Eye,Save,Info,Check,Settings2} from "lucide-react";
-import {useI18n,T} from "@/components/i18n";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Switch} from "@/components/ui/switch";
-import {Tabs,TabsList,TabsTrigger,TabsContent} from "@/components/ui/tabs";
-import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/components/ui/select";
-import {Dialog,DialogContent,DialogTitle,DialogDescription,DialogTrigger} from "@/components/ui/dialog";
-import {AlertDialog,AlertDialogContent,AlertDialogTitle,AlertDialogDescription,AlertDialogFooter,AlertDialogAction,AlertDialogCancel,AlertDialogTrigger} from "@/components/ui/alert-dialog";
-import {Skeleton} from "@/components/ui/skeleton";
-import {editKey,validateDraft,readProject,projectJSON,lua,type Catalog,type Unit,type Field,type Draft,type Rule,type RuleTarget,type ConflictMode} from "@/lib/workbench";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Search,
+  Download,
+  Upload,
+  HelpCircle,
+  FileCode2,
+  RotateCcw,
+  X,
+  Shield,
+  Eye,
+  Save,
+  Info,
+  Check,
+  Settings2,
+} from "lucide-react";
+import { useI18n } from "@/components/i18n";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  editKey,
+  validateDraft,
+  readProject,
+  projectJSON,
+  lua,
+  type Catalog,
+  type Unit,
+  type Field,
+  type Draft,
+  type Rule,
+  type RuleTarget,
+  type ConflictMode,
+} from "@/lib/workbench";
 
-function download(content:string,name:string,type:string){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
-const filename=(name:string)=>"ws-atlas-"+(name.replace(/[^\p{L}\p{N}_-]/gu,"-").slice(0,55)||"unit-mod");
-const format=(v:number)=>Number.isInteger(v)?String(v):Number(v.toFixed(6)).toString();
-async function fetchCatalog(signal:AbortSignal):Promise<Catalog>{
- // The 453-unit source snapshot compresses well; old browsers retain the JSON fallback.
- if(typeof DecompressionStream!=="undefined"){
-  const response=await fetch("/unit-catalog.json.gz",{signal});
-  if(response.ok){const bytes=new Uint8Array(await response.arrayBuffer());const stream=bytes[0]===0x1f&&bytes[1]===0x8b?new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip")):new Blob([bytes]).stream();return new Response(stream).json() as Promise<Catalog>}
- }
- const response=await fetch("/unit-catalog.json",{signal});if(!response.ok)throw Error();return response.json() as Promise<Catalog>;
+function download(content: string, name: string, type: string) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
-export function ModWorkbench(){
- const {t}=useI18n();const [catalog,setCatalog]=useState<Catalog|null>(null),[error,setError]=useState(false),[retry,setRetry]=useState(0);
- useEffect(()=>{const c=new AbortController();setError(false);fetchCatalog(c.signal).then(d=>{if(d.schemaVersion!==2||!Array.isArray(d.units)||!d.units.length)throw Error();setCatalog(d)}).catch(e=>{if(e.name!=="AbortError")setError(true)});return()=>c.abort()},[retry]);
- return <main className="workbench-shell">{catalog?<Workspace catalog={catalog}/>:<><h1>{t("Mod 工作台")}</h1>{error?<div role="alert"><p>{t("单位快照暂时无法加载，请重试。")}</p><Button onClick={()=>setRetry(n=>n+1)}>{t("重新加载")}</Button></div>:<Skeleton className="h-96 w-full" aria-label={t("正在加载单位资料")}/>}</>}</main>
+const filename = (name: string) =>
+  "ws-atlas-" + (name.replace(/[^\p{L}\p{N}_-]/gu, "-").slice(0, 55) || "unit-mod");
+const format = (v: number) => (Number.isInteger(v) ? String(v) : Number(v.toFixed(6)).toString());
+async function fetchCatalog(signal: AbortSignal): Promise<Catalog> {
+  // The 453-unit source snapshot compresses well; old browsers retain the JSON fallback.
+  if (typeof DecompressionStream !== "undefined") {
+    const response = await fetch("/unit-catalog.json.gz", { signal });
+    if (response.ok) {
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      const stream =
+        bytes[0] === 0x1f && bytes[1] === 0x8b
+          ? new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"))
+          : new Blob([bytes]).stream();
+      return new Response(stream).json() as Promise<Catalog>;
+    }
+  }
+  const response = await fetch("/unit-catalog.json", { signal });
+  if (!response.ok) throw Error();
+  return response.json() as Promise<Catalog>;
 }
-function Workspace({catalog}:{catalog:Catalog}){
- const {t,locale}=useI18n();const b=(zh:string,en:string)=>locale==="en"?en:zh;
- const [selected,setSelected]=useState(6),[query,setQuery]=useState(""),[nation,setNation]=useState("all"),[category,setCategory]=useState("all");
- const [draft,setDraft]=useState<Draft>({}),[rules,setRules]=useState<Rule[]>([]),[mode,setMode]=useState<ConflictMode>("abort");
- const [advanced,setAdvanced]=useState(false),[technical,setTechnical]=useState(false),[fieldQuery,setFieldQuery]=useState("");
- const [name,setName]=useState(()=>t("我的单位平衡")),[message,setMessage]=useState(""),[importError,setImportError]=useState(""),[pending,setPending]=useState<ReturnType<typeof readProject>|null>(null);
- const fileInput=useRef<HTMLInputElement>(null),unit=catalog.units.find(u=>u.id===selected)||catalog.units[0];
- const unitName=(u:Unit)=>locale==="en"?u.nameEn:u.name;
- const label=(f:Field)=>locale==="en"?(f.labelEn||t(f.label)):f.label;
- const count=Object.keys(draft).length+rules.length;
- const checked=useMemo(()=>{try{return{edits:validateDraft(catalog,draft,rules,mode),error:""}}catch(e){return{edits:[],error:e instanceof Error?e.message:"Invalid project"}}},[catalog,draft,rules,mode]);
- const error=checked.error||(!name.trim()?t("请填写工程名称。"):"");
- const generated=useMemo(()=>!error&&(checked.edits.length||rules.length)?lua(catalog,checked.edits,name.trim(),rules,mode):"",[catalog,checked,error,name,rules,mode]);
- useEffect(()=>{if(!count)return;const fn=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue=""};window.addEventListener("beforeunload",fn);return()=>window.removeEventListener("beforeunload",fn)},[count]);
- const changedUnits=useMemo(()=>new Set([...Object.keys(draft).map(k=>Number(k.split(":")[0])),...rules.map(r=>r.unitId)]),[draft,rules]);
- const shown=useMemo(()=>catalog.units.filter(u=>(nation==="all"||u.nation===nation)&&(category==="all"||u.category===category)&&String(u.id+" "+u.name+" "+u.nameEn).toLowerCase().includes(query.trim().toLowerCase())),[catalog,nation,category,query]);
- const matches=(f:Field)=>(advanced||!f.advanced)&&(!fieldQuery||[f.label,f.labelEn,f.help,f.helpEn,f.path].join(" ").toLowerCase().includes(fieldQuery.toLowerCase()));
- function remove(key:string){setDraft(old=>{const n={...old};delete n[key];return n});setMessage("")}
- function setValue(f:Field,text:string){setDraft(old=>{const n={...old},key=editKey(unit.id,f.key);if(text.trim()&&Number.isFinite(Number(text))&&Math.round(Number(text)*f.scale)===f.raw)delete n[key];else n[key]=text;return n});setMessage("")}
- function resetUnit(){setDraft(old=>Object.fromEntries(Object.entries(old).filter(([k])=>!k.startsWith(unit.id+":"))));setRules(old=>old.filter(r=>r.unitId!==unit.id));setMessage("")}
- function apply(p:ReturnType<typeof readProject>){setDraft(p.draft);setRules(p.rules);setMode(p.conflictMode);setName(p.name);setSelected(p.edits[0]?.unitId??p.rules[0]?.unitId??6);setQuery("");setNation("all");setCategory("all");setPending(null);setMessage(b("工程已导入。","Project imported."))}
- async function importFile(file?:File){if(!file)return;setImportError("");try{if(file.size>1024*1024)throw Error(t("工程文件不能超过 1 MB。"));const p=readProject(await file.text(),catalog);if(count)setPending(p);else apply(p)}catch(e){setImportError(e instanceof Error?e.message:"Import failed")}finally{if(fileInput.current)fileInput.current.value=""}}
- const field=(f:Field)=>{const key=editKey(unit.id,f.key),changed=Object.hasOwn(draft,key),value=changed?draft[key]:String(f.value),id="field-"+key,helpId="help-"+key;
-  return <div className={"numeric-field "+(changed?"changed":"")} key={key}><div className="field-label"><label htmlFor={id}>{label(f)}</label>{f.advanced&&<span className="advanced-tag">{b("高级","Advanced")}</span>}</div><div className="number-control">{f.kind==="boolean"?<div className="boolean-field"><Switch id={id} checked={Number(value)===1} onCheckedChange={v=>setValue(f,String(Number(v)))} aria-describedby={helpId}/><span>{Number(value)===1?b("开启","On"):b("关闭","Off")}</span></div>:<Input id={id} type="number" inputMode="decimal" step={f.round?f.step:1/f.scale} min={f.min} max={f.max} value={value} onChange={e=>setValue(f,e.target.value)} aria-describedby={helpId}/>}
-   {changed&&<button type="button" title={t("恢复原版数值")} aria-label={b("恢复 ","Reset ")+label(f)} onClick={()=>remove(key)}><RotateCcw size={16}/></button>}</div>
-   <small>{b("原版 ","Baseline ")}{f.kind==="boolean"?(f.value?b("开启","On"):b("关闭","Off")):format(f.value)}{changed&&" → "+(f.kind==="boolean"?(Number(value)?b("开启","On"):b("关闭","Off")):value)}
-   {f.round&&changed&&Number.isFinite(Number(value))&&<span> · {b("实际写入 ","Encoded ")}{format(Math.round(Number(value)*f.scale)/f.scale)}×</span>}</small>
-   <p className="field-help" id={helpId}>{locale==="en"?f.helpEn:f.help}</p>{f.defaulted&&<small>{b("配置省略此值，显示引擎默认值；导出时再次校验。","Omitted in config; shows an engine default, rechecked on export.")}</small>}
-   {technical&&<code className="field-path">{f.path}<br/>{b("写入值 = 展示值 × ","Raw = display × ")}{f.scale}{f.scope==="faction-build"&&<><br/>{b("写入各阵营 build 表","Written to each faction's build table")}</>}</code>}</div>
- };
- const fields=(keys:string[])=>unit.fields.filter(f=>keys.includes(f.key)&&matches(f));
- const group=(title:string,items:Field[],note?:string)=><div className="field-group"><h3>{title}<span className="field-count">{items.length}</span></h3>{note&&<p className="field-note">{note}</p>}{items.length?<div className="numeric-fields">{items.map(field)}</div>:<p className="field-empty">{b("没有符合当前筛选的字段；可开启高级参数或清除搜索。","No matching fields. Enable advanced parameters or clear the search.")}</p>}</div>;
- const grouped=(name:string,title:string)=>group(title,unit.fields.filter(f=>f.group===name&&matches(f)));
- const ruleEditor=(key:string)=>{const target=unit.ruleTargets.find(x=>x.key===key);return target?<RuleEditor key={key} unit={unit} target={target} catalog={catalog} rules={rules} setRules={setRules}/>:null};
- const tabs=[["base","基础","General"],["weapons","武器","Weapons"],["armor","护甲","Armor"],["work","生产与科技","Work & research"],["build","建造","Building"],["economy","经济","Economy"],["transport","运输与航空","Transport & air"],["skills","技能","Abilities"]];
- return <>
-  <div className="workbench-heading"><div><p className="eyebrow">MOD WORKBENCH / FIELD GUIDE</p><h1>{t("Mod 工作台")}</h1><p>{b("选择单位，调整已有属性，查看效果说明，再导出玩法脚本。","Choose a unit, tune existing properties, review effects and export gameplay Lua.")}</p></div><div className="workbench-actions"><Button className="button" variant="outline" onClick={()=>fileInput.current?.click()}><Upload size={16}/>{t("导入工程")}</Button><input ref={fileInput} type="file" className="sr-only" accept=".json,application/json" aria-label={t("导入工作台工程")} onChange={e=>void importFile(e.target.files?.[0])}/><Help catalog={catalog}/></div></div>
-  <div className="workbench-capabilities"><span>{catalog.units.length} {b("个单位","units")}</span><span>{catalog.units.reduce((n,u)=>n+u.workItems.length,0)} {b("个队列项","work entries")}</span><span>{catalog.units.reduce((n,u)=>n+u.buildingCosts.length,0)} {b("个建造方案","build plans")}</span><span>{b("参数核对 ≠ 实机验证","Source-checked ≠ game-tested")}</span></div>
-  {importError&&<p role="alert" className="workbench-error">{t(importError)}</p>}{message&&<p role="status" className="notice success"><Check size={16}/>{message}</p>}
-  <div className="workbench-grid">
-   <aside className="unit-browser"><div className="unit-browser-head"><h2>{t("单位目录")} <span>{shown.length}/{catalog.units.length}</span></h2><label className="search-input"><Search size={16}/><Input aria-label={t("搜索单位名称或 ID")} placeholder={t("名称 / English / ID")} value={query} onChange={e=>setQuery(e.target.value)}/></label><div className="unit-filters"><Select value={nation} onValueChange={setNation}><SelectTrigger aria-label={t("筛选国家")}><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">{t("全部国家")}</SelectItem>{[...new Set(catalog.units.map(u=>u.nation))].sort().map(n=><SelectItem value={n} key={n}>{t(n)}</SelectItem>)}</SelectContent></Select><Select value={category} onValueChange={setCategory}><SelectTrigger aria-label={t("筛选类别")}><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">{t("全部类别")}</SelectItem>{[...new Set(catalog.units.map(u=>u.category))].sort().map(n=><SelectItem value={n} key={n}>{t(n)}</SelectItem>)}</SelectContent></Select></div></div><div className="unit-list" aria-label={t("筛选后的单位")}>{shown.map(u=><button className={"unit-choice "+(u.id===unit.id?"active":"")} key={u.id} onClick={()=>{setSelected(u.id);setFieldQuery("")}} aria-pressed={u.id===unit.id}><span>{String(u.id).padStart(3,"0")}</span><span><b>{unitName(u)}</b><small>{t(u.nation)} · {t(u.category)}</small></span>{changedUnits.has(u.id)&&<i aria-label={t("有改动")}>●</i>}</button>)}{!shown.length&&<p className="field-empty">{t("没有匹配的单位。试试 ID 或清除筛选。")}</p>}</div></aside>
-   <section className="unit-editor" aria-label={t("单位参数")}><div className="unit-title"><div className="unit-emblem"><Shield size={26}/></div><div><p className="eyebrow">UNIT {unit.id} / {t(unit.nation)}</p><h2>{unitName(unit)}</h2><p>{locale==="en"?unit.name:unit.nameEn}</p></div><Button className="button" variant="outline" disabled={!changedUnits.has(unit.id)} onClick={resetUnit}><RotateCcw size={14}/>{t("重置")}</Button></div>
-    <div className="field-toolbar"><label className="search-input"><Search size={15}/><Input aria-label={b("搜索当前单位参数","Search unit parameters")} placeholder={b("找参数：人口、加油、伤害…","Find population, fuel, damage…")} value={fieldQuery} onChange={e=>setFieldQuery(e.target.value)}/></label><div className="field-switches"><label><Switch checked={advanced} onCheckedChange={setAdvanced}/>{b("高级参数","Advanced")}</label><label><Switch checked={technical} onCheckedChange={setTechnical}/>{b("代码路径","Lua paths")}</label></div></div>
-    <Tabs defaultValue="base"><div className="editor-tabs"><TabsList aria-label={t("参数分组")}>{tabs.map(([key,zh,en])=><TabsTrigger value={key} key={key}>{b(zh,en)}</TabsTrigger>)}</TabsList></div>
-     <TabsContent value="base" className="editor-fields">{grouped("基础",b("基础属性","General properties"))}<div className="notice subtle"><Info size={16}/><span>{b("这里只改原版基础类型，作用于所有阵营。科技、国家与其他 Mod 可能继续影响结果。","Base types affect all factions. Research, nations and other mods may alter final results.")}</span></div></TabsContent>
-     <TabsContent value="weapons" className="editor-fields">{unit.weapons.length?unit.weapons.map(w=><div key={w.key}>{group(t(w.label),fields(w.fields),w.enabled===false?b("原版默认禁用；改伤害不会自动启用。","Disabled by default; changing damage does not enable it."):undefined)}</div>):<p className="field-empty">{t("该单位没有可编辑的武器参数。")}</p>}<p className="field-note">{t("只显示原版已有的伤害字段；未列出不等于伤害为零。伤害数值不能单独赋予对空等攻击能力。装填间隔不等于完整攻击周期，还受连射与动画影响。")}</p></TabsContent>
-     <TabsContent value="armor" className="editor-fields">{grouped("装甲",b("分区厚度与命中权重","Zone thickness and hit weights"))}<div className="armor-summary">{unit.armor.map(a=>{const wf=unit.fields.find(f=>f.key==="armor-"+a.index+"-weight");const weight=wf?Number(draft[editKey(unit.id,wf.key)]??wf.value):(a.probabilityWeight??1);const total=unit.armor.reduce((n,z)=>{const f=unit.fields.find(f=>f.key==="armor-"+z.index+"-weight");return n+(f?Number(draft[editKey(unit.id,f.key)]??f.value):(z.probabilityWeight??1))},0);return <span key={a.index}>{b("区 ","Zone ")}{a.index} · {total>0?format(weight/total*100)+"%":b("权重无效","Invalid weights")}</span>})}</div><p className="field-note">{b("高级参数可调原版已有权重。权重按总和归一化，不要求总和为100；不是伤害减免百分比。","Advanced controls expose existing weights. Weights are normalized by their sum, not damage reduction percentages.")}</p></TabsContent>
-     <TabsContent value="work" className="editor-fields"><p className="field-note">{b("本单位能生产、研究或转化的队列。费用按阶段单独计算；不更改科技本身的效果。","Queues produced, researched or transformed by this unit. Costs are per phase; research effects themselves are unchanged.")}</p>{unit.workItems.map(w=><div className="work-entry" key={w.workId}>{group((locale==="en"?w.labelEn:w.label),fields(w.fields),"Work ID "+w.workId+" → Ability ID "+w.abilityId+" · "+b(["生产单位","研究科技","转化单位"][w.type]||"特殊效果",["Create unit","Research","Transform"][w.type]||"Special effect"))}{ruleEditor(w.ruleKey)}</div>)}<details className="source-training"><summary>{b("从其他单位生产本单位","Produced by other units")} ({unit.trainingSources.length})</summary>{unit.trainingSources.map(s=><div key={s.producerId+"-"+s.workId}>{group((locale==="en"?catalog.units.find(u=>u.id===s.producerId)?.nameEn:s.producerName)+" #"+s.producerId+" / Work "+s.workId,fields(s.fields).filter(f=>!(/cost(?:Order|Start|Process)\[[34]\]/.test(f.path))),b("每批 ","Per batch: ")+s.count)}</div>)}</details></TabsContent>
-     <TabsContent value="build" className="editor-fields">{unit.buildingCosts.map(plan=><div className="work-entry" key={plan.buildId}>{group("Build ID "+plan.buildId+" → Unit "+unit.id,fields(plan.fields))}<div className="build-total">{b("当前总造价","Current total cost")}: {[0,1,2].map(i=>{const cost=(k:string)=>{const f=unit.fields.find(f=>f.key==="build-"+plan.buildId+"-"+k+"-"+i);return f?Number(draft[editKey(unit.id,f.key)]??f.value):0};return <span key={i}>{b(["食","木","铁"][i],["Food","Wood","Metal"][i])} {format(cost("initCost")+cost("buildCost"))}</span>})}</div>{ruleEditor(plan.ruleKey)}</div>)}{grouped("建造速度",b("工人建造进度","Worker construction progress"))}{group(b("维修费用参数","Repair-cost parameters"),unit.fields.filter(f=>f.key.startsWith("repair-cost")&&matches(f)))}</TabsContent>
-     <TabsContent value="economy" className="editor-fields">{grouped("经济",b("人口、采集与资源收益","Population, gathering and income"))}<p className="field-note">{b("同一种资源可能有多个采集槽：例如果树、农田、动物。按槽位分别调整，不会自动联动其他工人或仓库。","A resource may have several gathering slots, such as trees, farms and animals. Each slot and unit type is edited separately.")}</p></TabsContent>
-     <TabsContent value="transport" className="editor-fields">{grouped("运输与航空",b("载运、燃油与机场补给","Transport, fuel and airfield service"))}</TabsContent>
-     <TabsContent value="skills" className="editor-fields">{grouped("技能",b("已有技能的触发与持续时间","Existing ability triggers and durations"))}<div className="ability-reference">{unit.abilityItems.map(a=><p key={a.id}>Ability {a.id} · type {a.type}{a.target!==undefined&&" · Unit "+a.target}{a.research!==undefined&&" · Research "+a.research}{a.action&&" · "+b("由动作触发","action-triggered")}</p>)}</div><p className="field-note">{b("只调整已有技能。不新增技能按钮，不重写科技效果、伤害标签、弹道或模型；这些需要配套脚本与游戏内验证。","Edits existing abilities only. New buttons, research effects, targeting tags, projectiles and models require coordinated scripts and in-game testing.")}</p></TabsContent>
-    </Tabs>
-   </section>
-   <aside className="patch-inspector"><h2>{t("改动清单")} <span>{String(count).padStart(2,"0")}</span></h2><p>{b("只导出实际修改的字段与条件。","Only changed fields and conditions are exported.")}</p><div className="patch-name"><label htmlFor="project-name">{t("工程名称")}</label><Input id="project-name" maxLength={80} value={name} onChange={e=>setName(e.target.value)}/></div>
-    <label className="conflict-label">{b("与其他 Mod 冲突时","If another mod changes these values")}</label><Select value={mode} onValueChange={v=>setMode(v as ConflictMode)}><SelectTrigger aria-label={b("冲突处理","Conflict policy")}><SelectValue/></SelectTrigger><SelectContent><SelectItem value="abort">{b("停止应用（推荐）","Stop applying (recommended)")}</SelectItem><SelectItem value="overwrite">{b("记录警告并覆盖","Warn and override")}</SelectItem></SelectContent></Select><p className="field-note">{mode==="abort"?b("运行时发现所改字段与原版不同，会整份停止预检。避免无意覆盖已有平衡。","A changed baseline stops the entire preflight, avoiding unintended balance overrides."):b("会覆盖先加载的同字段修改；请确认加载顺序。后加载的 Mod 仍可覆盖本脚本。","Overrides earlier edits to the same fields. Later mods can still override this script.")}</p>
-    <div className="patch-list">{Object.entries(draft).map(([key,v])=>{const [id,fk]=key.split(":");const u=catalog.units.find(u=>u.id===Number(id)),f=u?.fields.find(f=>f.key===fk);return <div className="patch-row" key={key}><div><button className="patch-unit-link" onClick={()=>{setSelected(Number(id));setFieldQuery("")}}>{u?unitName(u):id} <small>#{id}</small></button><small>{f&&label(f)}</small><p><del>{f?.kind==="boolean"?String(!!f.value):f&&format(f.value)}</del> → {f?.kind==="boolean"?String(Number(v)===1):v||"—"}</p></div><button aria-label={b("移除改动 ","Remove edit ")+key} onClick={()=>remove(key)}><X size={15}/></button></div>})}{rules.map((r,i)=><div className="patch-row" key={"r"+i}><div><b>#{r.unitId} / {r.targetKey}</b><small>{b("前置单位 ","Required unit ")}#{r.requiredUnitId}</small><p>{r.min} ≤ {b("数量","count")} ≤ {r.max===65535?b("不限","unbounded"):r.max}</p></div><button aria-label={b("移除条件 ","Remove condition ")+i} onClick={()=>setRules(old=>old.filter((_,n)=>n!==i))}><X size={15}/></button></div>)}</div>
-    {error&&<p role="alert" className="workbench-error">{t(error)}</p>}
-    <Button className="button primary" disabled={!generated} onClick={()=>{download(generated,filename(name.trim())+".lua","text/plain;charset=utf-8");setMessage(t("Lua 下载已发起。请在游戏编辑器导入脚本，并先开私人测试局验证。"))}}><Download size={17}/>{t("导出 Lua 脚本")}</Button>
-    <Button className="button" variant="outline" disabled={!!error} onClick={()=>{download(projectJSON(catalog,checked.edits,name.trim(),rules,mode),filename(name.trim())+".json","application/json");setMessage(t("工程下载已发起，下次可导入继续编辑。"))}}><Save size={16}/>{t("保存工程 JSON")}</Button>
-    <Dialog><DialogTrigger asChild><Button className="button" variant="ghost" disabled={!generated}><Eye size={16}/>{t("查看导出代码")}</Button></DialogTrigger><DialogContent style={{maxWidth:960}}><DialogTitle>{t("Lua 脚本预览")}</DialogTitle><DialogDescription>{b("预检通过后写入；新增条件使用游戏的集合接口，不替换整份建造表。","Preflight before writes. New conditions use engine collections without replacing the build table.")}</DialogDescription><pre className="lua-preview">{generated}</pre></DialogContent></Dialog>
-    <AlertDialog><AlertDialogTrigger asChild><Button className="button" variant="ghost" disabled={!count}><RotateCcw size={15}/>{t("清空全部改动")}</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogTitle>{t("清空当前工程的所有数值修改？")}</AlertDialogTitle><AlertDialogDescription>{t("此操作会恢复所有原版数值。建议先保存工程 JSON。")}</AlertDialogDescription><AlertDialogFooter><AlertDialogCancel>{t("取消")}</AlertDialogCancel><AlertDialogAction onClick={()=>{setDraft({});setRules([]);setMessage(t("已恢复全部原版数值。"))}}>{t("确认清空")}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
-    <p className="mt-4">{t("草稿只在当前页面内存中；离开前请保存工程。无需登录，不上传你的改动。")}</p>
-   </aside>
-  </div>
-  <div className="workbench-footnote"><FileCode2 size={22}/><div><strong>Gameplay {catalog.provenance.gameplayVersion} · Steam {catalog.provenance.steamBuild}</strong><p>{b("数据更新 ","Snapshot updated ")}{catalog.provenance.sourceUpdatedAt.slice(0,10)} · {b("来自本地官方文件与运行时结构核对。导出为 Lua 源码，不是自动安装包，尚未进行本次实机验证。","Cross-checked against local game files and runtime structure. Exports Lua source, not an installer. Not tested in a live match this session.")}</p></div></div>
-  <AlertDialog open={!!pending} onOpenChange={v=>{if(!v)setPending(null)}}><AlertDialogContent><AlertDialogTitle>{t("用导入工程替换当前改动？")}</AlertDialogTitle><AlertDialogDescription>{b("当前改动将被替换。请先保存工程备份。","Current changes will be replaced. Save a project backup first.")}</AlertDialogDescription><AlertDialogFooter><AlertDialogCancel>{t("取消")}</AlertDialogCancel><AlertDialogAction onClick={()=>pending&&apply(pending)}>{t("替换工程")}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
- </>
+export function ModWorkbench() {
+  const { t } = useI18n();
+  const [catalog, setCatalog] = useState<Catalog | null>(null),
+    [error, setError] = useState(false),
+    [retry, setRetry] = useState(0);
+  useEffect(() => {
+    const c = new AbortController();
+    fetchCatalog(c.signal)
+      .then((d) => {
+        if (d.schemaVersion !== 2 || !Array.isArray(d.units) || !d.units.length) throw Error();
+        setCatalog(d);
+      })
+      .catch((e) => {
+        if (e.name !== "AbortError") setError(true);
+      });
+    return () => c.abort();
+  }, [retry]);
+  return (
+    <main className="workbench-shell">
+      {catalog ? (
+        <Workspace catalog={catalog} />
+      ) : (
+        <>
+          <h1>{t("Mod 工作台")}</h1>
+          {error ? (
+            <div role="alert">
+              <p>{t("单位快照暂时无法加载，请重试。")}</p>
+              <Button
+                onClick={() => {
+                  setError(false);
+                  setRetry((n) => n + 1);
+                }}
+              >
+                {t("重新加载")}
+              </Button>
+            </div>
+          ) : (
+            <Skeleton className="h-96 w-full" aria-label={t("正在加载单位资料")} />
+          )}
+        </>
+      )}
+    </main>
+  );
 }
-function RuleEditor({unit,target,catalog,rules,setRules}:{unit:Unit;target:RuleTarget;catalog:Catalog;rules:Rule[];setRules:React.Dispatch<React.SetStateAction<Rule[]>>}){
- const {locale}=useI18n(),b=(zh:string,en:string)=>locale==="en"?en:zh;
- const [id,setId]=useState("201"),[min,setMin]=useState("1"),[max,setMax]=useState("65535"),[error,setError]=useState("");
- const selected=catalog.units.find(u=>u.id===Number(id)),base=target.requirements;
- const current=rules.filter(r=>r.unitId===unit.id&&r.targetKey===target.key);
- function add(){const r={unitId:unit.id,targetKey:target.key,requiredUnitId:Number(id),min:Number(min),max:Number(max)};try{if(!id.trim()||!min.trim()||!max.trim())throw Error(b("请填完整。","Complete all fields."));const next=[...rules.filter(x=>!(x.unitId===r.unitId&&x.targetKey===r.targetKey&&x.requiredUnitId===r.requiredUnitId)),r];validateDraft(catalog,{},next);setRules(next);setError("")}catch(e){setError(e instanceof Error?e.message:"Invalid requirement")}}
- return <details className="requirement-editor"><summary><Settings2 size={15}/>{b("前置条件与数量限制","Prerequisites & count limits")} {current.length>0&&" · "+current.length+b(" 项改动"," edits")}</summary><div>
-  <p>{b("原有单位条件","Original unit conditions")}: {base.units.length?base.units.map(r=>"#"+r.id+" ["+r.min+", "+(r.max===65535?"∞":r.max)+"]").join(" / "):b("无","None")}</p>
-  <p>{b("保留科技前置","Research prerequisites retained")}: ANY [{base.researchAny.join(", ")||"—"}] · ALL [{base.researchAll.join(", ")||"—"}]</p>
-  {current.map(r=><p className="condition-preview" key={r.requiredUnitId}>#{r.requiredUnitId}: {r.min}–{r.max===65535?"∞":r.max}</p>)}
-  <p className="field-note">{b("设置的是现存/已建成单位数量门槛。保留其他前置，最多4条单位条件；并行队列或同时放地基是否能越过上限仍需实测，不是强制人口锁。","Gates live/constructed counts and preserves other prerequisites. Up to four unit conditions; parallel queues or simultaneous foundations need testing. This is not a hard population lock.")}</p>
-  {base.unitsAll===false?<p className="field-note">{b("此项为“任一条件满足”，暂时只读，避免改变原有逻辑。","This uses any-of conditions and remains read-only to preserve its logic.")}</p>:<><div className="condition-inputs"><label>{b("前置单位 ID","Required unit ID")}<Input aria-label={b("前置单位 ID ","Required unit ID ")+target.key} type="number" min={0} step={1} value={id} onChange={e=>setId(e.target.value)}/><small>{selected?(locale==="en"?selected.nameEn:selected.name):b("未找到单位","Unknown unit")}</small></label><label>{b("至少拥有","At least")}<Input aria-label={b("最小数量 ","Minimum count ")+target.key} type="number" min={0} max={65535} step={1} value={min} onChange={e=>setMin(e.target.value)}/></label><label>{b("最多拥有","At most")}<Input aria-label={b("最大数量 ","Maximum count ")+target.key} type="number" min={0} max={65535} step={1} value={max} onChange={e=>setMax(e.target.value)}/><small>65535 = {b("不设上限","no bound")}</small></label></div><div className="condition-actions"><Button className="button" variant="outline" onClick={add}>{b("加入 / 更新条件","Add / update condition")}</Button><button onClick={()=>{setId(String(unit.id));setMin("0");setMax("3")}}>{b("填写本单位最多3个","Fill: this unit, max 3")}</button></div></>}
-  {error&&<p role="alert" className="workbench-error">{error}</p>}
- </div></details>
+function Workspace({ catalog }: { catalog: Catalog }) {
+  const { t, locale } = useI18n();
+  const b = (zh: string, en: string) => (locale !== "zh" ? en : zh);
+  const [selected, setSelected] = useState(6),
+    [query, setQuery] = useState(""),
+    [nation, setNation] = useState("all"),
+    [category, setCategory] = useState("all");
+  const [draft, setDraft] = useState<Draft>({}),
+    [rules, setRules] = useState<Rule[]>([]),
+    [mode, setMode] = useState<ConflictMode>("abort");
+  const [advanced, setAdvanced] = useState(false),
+    [technical, setTechnical] = useState(false),
+    [fieldQuery, setFieldQuery] = useState("");
+  const [name, setName] = useState(() => t("我的单位平衡")),
+    [message, setMessage] = useState(""),
+    [importError, setImportError] = useState(""),
+    [pending, setPending] = useState<ReturnType<typeof readProject> | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null),
+    unit = catalog.units.find((u) => u.id === selected) || catalog.units[0];
+  const unitName = (u: Unit) => (locale !== "zh" ? u.nameEn : u.name);
+  const label = (f: Field) => (locale !== "zh" ? f.labelEn || t(f.label) : f.label);
+  const count = Object.keys(draft).length + rules.length;
+  const checked = useMemo(() => {
+    try {
+      return { edits: validateDraft(catalog, draft, rules, mode), error: "" };
+    } catch (e) {
+      return { edits: [], error: e instanceof Error ? e.message : "Invalid project" };
+    }
+  }, [catalog, draft, rules, mode]);
+  const error = checked.error || (!name.trim() ? t("请填写工程名称。") : "");
+  const generated = useMemo(
+    () =>
+      !error && (checked.edits.length || rules.length)
+        ? lua(catalog, checked.edits, name.trim(), rules, mode)
+        : "",
+    [catalog, checked, error, name, rules, mode],
+  );
+  useEffect(() => {
+    if (!count) return;
+    const fn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", fn);
+    return () => window.removeEventListener("beforeunload", fn);
+  }, [count]);
+  const changedUnits = useMemo(
+    () =>
+      new Set([
+        ...Object.keys(draft).map((k) => Number(k.split(":")[0])),
+        ...rules.map((r) => r.unitId),
+      ]),
+    [draft, rules],
+  );
+  const shown = useMemo(
+    () =>
+      catalog.units.filter(
+        (u) =>
+          (nation === "all" || u.nation === nation) &&
+          (category === "all" || u.category === category) &&
+          String(u.id + " " + u.name + " " + u.nameEn)
+            .toLowerCase()
+            .includes(query.trim().toLowerCase()),
+      ),
+    [catalog, nation, category, query],
+  );
+  const matches = (f: Field) =>
+    (advanced || !f.advanced) &&
+    (!fieldQuery ||
+      [f.label, f.labelEn, f.help, f.helpEn, f.path]
+        .join(" ")
+        .toLowerCase()
+        .includes(fieldQuery.toLowerCase()));
+  function remove(key: string) {
+    setDraft((old) => {
+      const n = { ...old };
+      delete n[key];
+      return n;
+    });
+    setMessage("");
+  }
+  function setValue(f: Field, text: string) {
+    setDraft((old) => {
+      const n = { ...old },
+        key = editKey(unit.id, f.key);
+      if (
+        text.trim() &&
+        Number.isFinite(Number(text)) &&
+        Math.round(Number(text) * f.scale) === f.raw
+      )
+        delete n[key];
+      else n[key] = text;
+      return n;
+    });
+    setMessage("");
+  }
+  function resetUnit() {
+    setDraft((old) =>
+      Object.fromEntries(Object.entries(old).filter(([k]) => !k.startsWith(unit.id + ":"))),
+    );
+    setRules((old) => old.filter((r) => r.unitId !== unit.id));
+    setMessage("");
+  }
+  function apply(p: ReturnType<typeof readProject>) {
+    setDraft(p.draft);
+    setRules(p.rules);
+    setMode(p.conflictMode);
+    setName(p.name);
+    setSelected(p.edits[0]?.unitId ?? p.rules[0]?.unitId ?? 6);
+    setQuery("");
+    setNation("all");
+    setCategory("all");
+    setPending(null);
+    setMessage(b("工程已导入。", "Project imported."));
+  }
+  async function importFile(file?: File) {
+    if (!file) return;
+    setImportError("");
+    try {
+      if (file.size > 1024 * 1024) throw Error(t("工程文件不能超过 1 MB。"));
+      const p = readProject(await file.text(), catalog);
+      if (count) setPending(p);
+      else apply(p);
+    } catch (e) {
+      setImportError(e instanceof Error ? e.message : "Import failed");
+    } finally {
+      if (fileInput.current) fileInput.current.value = "";
+    }
+  }
+  const field = (f: Field) => {
+    const key = editKey(unit.id, f.key),
+      changed = Object.hasOwn(draft, key),
+      value = changed ? draft[key] : String(f.value),
+      id = "field-" + key,
+      helpId = "help-" + key;
+    return (
+      <div className={"numeric-field " + (changed ? "changed" : "")} key={key}>
+        <div className="field-label">
+          <label htmlFor={id}>{label(f)}</label>
+          {f.advanced && <span className="advanced-tag">{b("高级", "Advanced")}</span>}
+        </div>
+        <div className="number-control">
+          {f.kind === "boolean" ? (
+            <div className="boolean-field">
+              <Switch
+                id={id}
+                checked={Number(value) === 1}
+                onCheckedChange={(v) => setValue(f, String(Number(v)))}
+                aria-describedby={helpId}
+              />
+              <span>{Number(value) === 1 ? b("开启", "On") : b("关闭", "Off")}</span>
+            </div>
+          ) : (
+            <Input
+              id={id}
+              type="number"
+              inputMode="decimal"
+              step={f.round ? f.step : 1 / f.scale}
+              min={f.min}
+              max={f.max}
+              value={value}
+              onChange={(e) => setValue(f, e.target.value)}
+              aria-describedby={helpId}
+            />
+          )}
+          {changed && (
+            <button
+              type="button"
+              title={t("恢复原版数值")}
+              aria-label={b("恢复 ", "Reset ") + label(f)}
+              onClick={() => remove(key)}
+            >
+              <RotateCcw size={16} />
+            </button>
+          )}
+        </div>
+        <small>
+          {b("原版 ", "Baseline ")}
+          {f.kind === "boolean" ? (f.value ? b("开启", "On") : b("关闭", "Off")) : format(f.value)}
+          {changed &&
+            " → " +
+              (f.kind === "boolean" ? (Number(value) ? b("开启", "On") : b("关闭", "Off")) : value)}
+          {f.round && changed && Number.isFinite(Number(value)) && (
+            <span>
+              {" "}
+              · {b("实际写入 ", "Encoded ")}
+              {format(Math.round(Number(value) * f.scale) / f.scale)}×
+            </span>
+          )}
+        </small>
+        <p className="field-help" id={helpId}>
+          {locale !== "zh" ? f.helpEn : f.help}
+        </p>
+        {f.defaulted && (
+          <small>
+            {b(
+              "配置省略此值，显示引擎默认值；导出时再次校验。",
+              "Omitted in config; shows an engine default, rechecked on export.",
+            )}
+          </small>
+        )}
+        {technical && (
+          <code className="field-path">
+            {f.path}
+            <br />
+            {b("写入值 = 展示值 × ", "Raw = display × ")}
+            {f.scale}
+            {f.scope === "faction-build" && (
+              <>
+                <br />
+                {b("写入各阵营 build 表", "Written to each faction's build table")}
+              </>
+            )}
+          </code>
+        )}
+      </div>
+    );
+  };
+  const fields = (keys: string[]) => unit.fields.filter((f) => keys.includes(f.key) && matches(f));
+  const group = (title: string, items: Field[], note?: string) => (
+    <div className="field-group">
+      <h3>
+        {title}
+        <span className="field-count">{items.length}</span>
+      </h3>
+      {note && <p className="field-note">{note}</p>}
+      {items.length ? (
+        <div className="numeric-fields">{items.map(field)}</div>
+      ) : (
+        <p className="field-empty">
+          {b(
+            "没有符合当前筛选的字段；可开启高级参数或清除搜索。",
+            "No matching fields. Enable advanced parameters or clear the search.",
+          )}
+        </p>
+      )}
+    </div>
+  );
+  const grouped = (name: string, title: string) =>
+    group(
+      title,
+      unit.fields.filter((f) => f.group === name && matches(f)),
+    );
+  const ruleEditor = (key: string) => {
+    const target = unit.ruleTargets.find((x) => x.key === key);
+    return target ? (
+      <RuleEditor
+        key={key}
+        unit={unit}
+        target={target}
+        catalog={catalog}
+        rules={rules}
+        setRules={setRules}
+      />
+    ) : null;
+  };
+  const tabs = [
+    ["base", "基础", "General"],
+    ["weapons", "武器", "Weapons"],
+    ["armor", "护甲", "Armor"],
+    ["work", "生产与科技", "Work & research"],
+    ["build", "建造", "Building"],
+    ["economy", "经济", "Economy"],
+    ["transport", "运输与航空", "Transport & air"],
+    ["skills", "技能", "Abilities"],
+  ];
+  return (
+    <>
+      <div className="workbench-heading">
+        <div>
+          <p className="eyebrow">MOD WORKBENCH / FIELD GUIDE</p>
+          <h1>{t("Mod 工作台")}</h1>
+          <p>
+            {b(
+              "选择单位，调整已有属性，查看效果说明，再导出玩法脚本。",
+              "Choose a unit, tune existing properties, review effects and export gameplay Lua.",
+            )}
+          </p>
+        </div>
+        <div className="workbench-actions">
+          <Button className="button" variant="outline" onClick={() => fileInput.current?.click()}>
+            <Upload size={16} />
+            {t("导入工程")}
+          </Button>
+          <input
+            ref={fileInput}
+            type="file"
+            className="sr-only"
+            accept=".json,application/json"
+            aria-label={t("导入工作台工程")}
+            onChange={(e) => void importFile(e.target.files?.[0])}
+          />
+          <Help catalog={catalog} />
+        </div>
+      </div>
+      <div className="workbench-capabilities">
+        <span>
+          {catalog.units.length} {b("个单位", "units")}
+        </span>
+        <span>
+          {catalog.units.reduce((n, u) => n + u.workItems.length, 0)}{" "}
+          {b("个队列项", "work entries")}
+        </span>
+        <span>
+          {catalog.units.reduce((n, u) => n + u.buildingCosts.length, 0)}{" "}
+          {b("个建造方案", "build plans")}
+        </span>
+        <span>{b("参数核对 ≠ 实机验证", "Source-checked ≠ game-tested")}</span>
+      </div>
+      {importError && (
+        <p role="alert" className="workbench-error">
+          {t(importError)}
+        </p>
+      )}
+      {message && (
+        <p role="status" className="notice success">
+          <Check size={16} />
+          {message}
+        </p>
+      )}
+      <div className="workbench-grid">
+        <aside className="unit-browser">
+          <div className="unit-browser-head">
+            <h2>
+              {t("单位目录")}{" "}
+              <span>
+                {shown.length}/{catalog.units.length}
+              </span>
+            </h2>
+            <label className="search-input">
+              <Search size={16} />
+              <Input
+                aria-label={t("搜索单位名称或 ID")}
+                placeholder={t("名称 / English / ID")}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </label>
+            <div className="unit-filters">
+              <Select value={nation} onValueChange={setNation}>
+                <SelectTrigger aria-label={t("筛选国家")}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("全部国家")}</SelectItem>
+                  {[...new Set(catalog.units.map((u) => u.nation))].sort().map((n) => (
+                    <SelectItem value={n} key={n}>
+                      {t(n)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger aria-label={t("筛选类别")}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("全部类别")}</SelectItem>
+                  {[...new Set(catalog.units.map((u) => u.category))].sort().map((n) => (
+                    <SelectItem value={n} key={n}>
+                      {t(n)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="unit-list" aria-label={t("筛选后的单位")}>
+            {shown.map((u) => (
+              <button
+                className={"unit-choice " + (u.id === unit.id ? "active" : "")}
+                key={u.id}
+                onClick={() => {
+                  setSelected(u.id);
+                  setFieldQuery("");
+                }}
+                aria-pressed={u.id === unit.id}
+              >
+                <span>{String(u.id).padStart(3, "0")}</span>
+                <span>
+                  <b>{unitName(u)}</b>
+                  <small>
+                    {t(u.nation)} · {t(u.category)}
+                  </small>
+                </span>
+                {changedUnits.has(u.id) && <i aria-label={t("有改动")}>●</i>}
+              </button>
+            ))}
+            {!shown.length && (
+              <p className="field-empty">{t("没有匹配的单位。试试 ID 或清除筛选。")}</p>
+            )}
+          </div>
+        </aside>
+        <section className="unit-editor" aria-label={t("单位参数")}>
+          <div className="unit-title">
+            <div className="unit-emblem">
+              <Shield size={26} />
+            </div>
+            <div>
+              <p className="eyebrow">
+                UNIT {unit.id} / {t(unit.nation)}
+              </p>
+              <h2>{unitName(unit)}</h2>
+              <p>{locale === "en" ? unit.name : unit.nameEn}</p>
+            </div>
+            <Button
+              className="button"
+              variant="outline"
+              disabled={!changedUnits.has(unit.id)}
+              onClick={resetUnit}
+            >
+              <RotateCcw size={14} />
+              {t("重置")}
+            </Button>
+          </div>
+          <div className="field-toolbar">
+            <label className="search-input">
+              <Search size={15} />
+              <Input
+                aria-label={b("搜索当前单位参数", "Search unit parameters")}
+                placeholder={b("找参数：人口、加油、伤害…", "Find population, fuel, damage…")}
+                value={fieldQuery}
+                onChange={(e) => setFieldQuery(e.target.value)}
+              />
+            </label>
+            <div className="field-switches">
+              <label>
+                <Switch checked={advanced} onCheckedChange={setAdvanced} />
+                {b("高级参数", "Advanced")}
+              </label>
+              <label>
+                <Switch checked={technical} onCheckedChange={setTechnical} />
+                {b("代码路径", "Lua paths")}
+              </label>
+            </div>
+          </div>
+          <Tabs defaultValue="base">
+            <div className="editor-tabs">
+              <TabsList aria-label={t("参数分组")}>
+                {tabs.map(([key, zh, en]) => (
+                  <TabsTrigger value={key} key={key}>
+                    {b(zh, en)}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+            <TabsContent value="base" className="editor-fields">
+              {grouped("基础", b("基础属性", "General properties"))}
+              <div className="notice subtle">
+                <Info size={16} />
+                <span>
+                  {b(
+                    "这里只改原版基础类型，作用于所有阵营。科技、国家与其他 Mod 可能继续影响结果。",
+                    "Base types affect all factions. Research, nations and other mods may alter final results.",
+                  )}
+                </span>
+              </div>
+            </TabsContent>
+            <TabsContent value="weapons" className="editor-fields">
+              {unit.weapons.length ? (
+                unit.weapons.map((w) => (
+                  <div key={w.key}>
+                    {group(
+                      t(w.label),
+                      fields(w.fields),
+                      w.enabled === false
+                        ? b(
+                            "原版默认禁用；改伤害不会自动启用。",
+                            "Disabled by default; changing damage does not enable it.",
+                          )
+                        : undefined,
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="field-empty">{t("该单位没有可编辑的武器参数。")}</p>
+              )}
+              <p className="field-note">
+                {t(
+                  "只显示原版已有的伤害字段；未列出不等于伤害为零。伤害数值不能单独赋予对空等攻击能力。装填间隔不等于完整攻击周期，还受连射与动画影响。",
+                )}
+              </p>
+            </TabsContent>
+            <TabsContent value="armor" className="editor-fields">
+              {grouped("装甲", b("分区厚度与命中权重", "Zone thickness and hit weights"))}
+              <div className="armor-summary">
+                {unit.armor.map((a) => {
+                  const wf = unit.fields.find((f) => f.key === "armor-" + a.index + "-weight");
+                  const weight = wf
+                    ? Number(draft[editKey(unit.id, wf.key)] ?? wf.value)
+                    : (a.probabilityWeight ?? 1);
+                  const total = unit.armor.reduce((n, z) => {
+                    const f = unit.fields.find((f) => f.key === "armor-" + z.index + "-weight");
+                    return (
+                      n +
+                      (f
+                        ? Number(draft[editKey(unit.id, f.key)] ?? f.value)
+                        : (z.probabilityWeight ?? 1))
+                    );
+                  }, 0);
+                  return (
+                    <span key={a.index}>
+                      {b("区 ", "Zone ")}
+                      {a.index} ·{" "}
+                      {total > 0
+                        ? format((weight / total) * 100) + "%"
+                        : b("权重无效", "Invalid weights")}
+                    </span>
+                  );
+                })}
+              </div>
+              <p className="field-note">
+                {b(
+                  "高级参数可调原版已有权重。权重按总和归一化，不要求总和为100；不是伤害减免百分比。",
+                  "Advanced controls expose existing weights. Weights are normalized by their sum, not damage reduction percentages.",
+                )}
+              </p>
+            </TabsContent>
+            <TabsContent value="work" className="editor-fields">
+              <p className="field-note">
+                {b(
+                  "本单位能生产、研究或转化的队列。费用按阶段单独计算；不更改科技本身的效果。",
+                  "Queues produced, researched or transformed by this unit. Costs are per phase; research effects themselves are unchanged.",
+                )}
+              </p>
+              {unit.workItems.map((w) => (
+                <div className="work-entry" key={w.workId}>
+                  {group(
+                    locale !== "zh" ? w.labelEn : w.label,
+                    fields(w.fields),
+                    "Work ID " +
+                      w.workId +
+                      " → Ability ID " +
+                      w.abilityId +
+                      " · " +
+                      b(
+                        ["生产单位", "研究科技", "转化单位"][w.type] || "特殊效果",
+                        ["Create unit", "Research", "Transform"][w.type] || "Special effect",
+                      ),
+                  )}
+                  {ruleEditor(w.ruleKey)}
+                </div>
+              ))}
+              <details className="source-training">
+                <summary>
+                  {b("从其他单位生产本单位", "Produced by other units")} (
+                  {unit.trainingSources.length})
+                </summary>
+                {unit.trainingSources.map((s) => (
+                  <div key={s.producerId + "-" + s.workId}>
+                    {group(
+                      (locale !== "zh"
+                        ? catalog.units.find((u) => u.id === s.producerId)?.nameEn
+                        : s.producerName) +
+                        " #" +
+                        s.producerId +
+                        " / Work " +
+                        s.workId,
+                      fields(s.fields).filter(
+                        (f) => !/cost(?:Order|Start|Process)\[[34]\]/.test(f.path),
+                      ),
+                      b("每批 ", "Per batch: ") + s.count,
+                    )}
+                  </div>
+                ))}
+              </details>
+            </TabsContent>
+            <TabsContent value="build" className="editor-fields">
+              {unit.buildingCosts.map((plan) => (
+                <div className="work-entry" key={plan.buildId}>
+                  {group("Build ID " + plan.buildId + " → Unit " + unit.id, fields(plan.fields))}
+                  <div className="build-total">
+                    {b("当前总造价", "Current total cost")}:{" "}
+                    {[0, 1, 2].map((i) => {
+                      const cost = (k: string) => {
+                        const f = unit.fields.find(
+                          (f) => f.key === "build-" + plan.buildId + "-" + k + "-" + i,
+                        );
+                        return f ? Number(draft[editKey(unit.id, f.key)] ?? f.value) : 0;
+                      };
+                      return (
+                        <span key={i}>
+                          {b(["食", "木", "铁"][i], ["Food", "Wood", "Metal"][i])}{" "}
+                          {format(cost("initCost") + cost("buildCost"))}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  {ruleEditor(plan.ruleKey)}
+                </div>
+              ))}
+              {grouped("建造速度", b("工人建造进度", "Worker construction progress"))}
+              {group(
+                b("维修费用参数", "Repair-cost parameters"),
+                unit.fields.filter((f) => f.key.startsWith("repair-cost") && matches(f)),
+              )}
+            </TabsContent>
+            <TabsContent value="economy" className="editor-fields">
+              {grouped("经济", b("人口、采集与资源收益", "Population, gathering and income"))}
+              <p className="field-note">
+                {b(
+                  "同一种资源可能有多个采集槽：例如果树、农田、动物。按槽位分别调整，不会自动联动其他工人或仓库。",
+                  "A resource may have several gathering slots, such as trees, farms and animals. Each slot and unit type is edited separately.",
+                )}
+              </p>
+            </TabsContent>
+            <TabsContent value="transport" className="editor-fields">
+              {grouped(
+                "运输与航空",
+                b("载运、燃油与机场补给", "Transport, fuel and airfield service"),
+              )}
+            </TabsContent>
+            <TabsContent value="skills" className="editor-fields">
+              {grouped(
+                "技能",
+                b("已有技能的触发与持续时间", "Existing ability triggers and durations"),
+              )}
+              <div className="ability-reference">
+                {unit.abilityItems.map((a) => (
+                  <p key={a.id}>
+                    Ability {a.id} · type {a.type}
+                    {a.target !== undefined && " · Unit " + a.target}
+                    {a.research !== undefined && " · Research " + a.research}
+                    {a.action && " · " + b("由动作触发", "action-triggered")}
+                  </p>
+                ))}
+              </div>
+              <p className="field-note">
+                {b(
+                  "只调整已有技能。不新增技能按钮，不重写科技效果、伤害标签、弹道或模型；这些需要配套脚本与游戏内验证。",
+                  "Edits existing abilities only. New buttons, research effects, targeting tags, projectiles and models require coordinated scripts and in-game testing.",
+                )}
+              </p>
+            </TabsContent>
+          </Tabs>
+        </section>
+        <aside className="patch-inspector">
+          <h2>
+            {t("改动清单")} <span>{String(count).padStart(2, "0")}</span>
+          </h2>
+          <p>
+            {b("只导出实际修改的字段与条件。", "Only changed fields and conditions are exported.")}
+          </p>
+          <div className="patch-name">
+            <label htmlFor="project-name">{t("工程名称")}</label>
+            <Input
+              id="project-name"
+              maxLength={80}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <label className="conflict-label">
+            {b("与其他 Mod 冲突时", "If another mod changes these values")}
+          </label>
+          <Select value={mode} onValueChange={(v) => setMode(v as ConflictMode)}>
+            <SelectTrigger aria-label={b("冲突处理", "Conflict policy")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="abort">
+                {b("停止应用（推荐）", "Stop applying (recommended)")}
+              </SelectItem>
+              <SelectItem value="overwrite">{b("记录警告并覆盖", "Warn and override")}</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="field-note">
+            {mode === "abort"
+              ? b(
+                  "运行时发现所改字段与原版不同，会整份停止预检。避免无意覆盖已有平衡。",
+                  "A changed baseline stops the entire preflight, avoiding unintended balance overrides.",
+                )
+              : b(
+                  "会覆盖先加载的同字段修改；请确认加载顺序。后加载的 Mod 仍可覆盖本脚本。",
+                  "Overrides earlier edits to the same fields. Later mods can still override this script.",
+                )}
+          </p>
+          <div className="patch-list">
+            {Object.entries(draft).map(([key, v]) => {
+              const [id, fk] = key.split(":");
+              const u = catalog.units.find((u) => u.id === Number(id)),
+                f = u?.fields.find((f) => f.key === fk);
+              return (
+                <div className="patch-row" key={key}>
+                  <div>
+                    <button
+                      className="patch-unit-link"
+                      onClick={() => {
+                        setSelected(Number(id));
+                        setFieldQuery("");
+                      }}
+                    >
+                      {u ? unitName(u) : id} <small>#{id}</small>
+                    </button>
+                    <small>{f && label(f)}</small>
+                    <p>
+                      <del>{f?.kind === "boolean" ? String(!!f.value) : f && format(f.value)}</del>{" "}
+                      → {f?.kind === "boolean" ? String(Number(v) === 1) : v || "—"}
+                    </p>
+                  </div>
+                  <button
+                    aria-label={b("移除改动 ", "Remove edit ") + key}
+                    onClick={() => remove(key)}
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+              );
+            })}
+            {rules.map((r, i) => (
+              <div className="patch-row" key={"r" + i}>
+                <div>
+                  <b>
+                    #{r.unitId} / {r.targetKey}
+                  </b>
+                  <small>
+                    {b("前置单位 ", "Required unit ")}#{r.requiredUnitId}
+                  </small>
+                  <p>
+                    {r.min} ≤ {b("数量", "count")} ≤{" "}
+                    {r.max === 65535 ? b("不限", "unbounded") : r.max}
+                  </p>
+                </div>
+                <button
+                  aria-label={b("移除条件 ", "Remove condition ") + i}
+                  onClick={() => setRules((old) => old.filter((_, n) => n !== i))}
+                >
+                  <X size={15} />
+                </button>
+              </div>
+            ))}
+          </div>
+          {error && (
+            <p role="alert" className="workbench-error">
+              {t(error)}
+            </p>
+          )}
+          <Button
+            className="button primary"
+            disabled={!generated}
+            onClick={() => {
+              download(generated, filename(name.trim()) + ".lua", "text/plain;charset=utf-8");
+              setMessage(t("Lua 下载已发起。请在游戏编辑器导入脚本，并先开私人测试局验证。"));
+            }}
+          >
+            <Download size={17} />
+            {t("导出 Lua 脚本")}
+          </Button>
+          <Button
+            className="button"
+            variant="outline"
+            disabled={!!error}
+            onClick={() => {
+              download(
+                projectJSON(catalog, checked.edits, name.trim(), rules, mode),
+                filename(name.trim()) + ".json",
+                "application/json",
+              );
+              setMessage(t("工程下载已发起，下次可导入继续编辑。"));
+            }}
+          >
+            <Save size={16} />
+            {t("保存工程 JSON")}
+          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="button" variant="ghost" disabled={!generated}>
+                <Eye size={16} />
+                {t("查看导出代码")}
+              </Button>
+            </DialogTrigger>
+            <DialogContent style={{ maxWidth: 960 }}>
+              <DialogTitle>{t("Lua 脚本预览")}</DialogTitle>
+              <DialogDescription>
+                {b(
+                  "预检通过后写入；新增条件使用游戏的集合接口，不替换整份建造表。",
+                  "Preflight before writes. New conditions use engine collections without replacing the build table.",
+                )}
+              </DialogDescription>
+              <pre className="lua-preview">{generated}</pre>
+            </DialogContent>
+          </Dialog>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button className="button" variant="ghost" disabled={!count}>
+                <RotateCcw size={15} />
+                {t("清空全部改动")}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogTitle>{t("清空当前工程的所有数值修改？")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("此操作会恢复所有原版数值。建议先保存工程 JSON。")}
+              </AlertDialogDescription>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t("取消")}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    setDraft({});
+                    setRules([]);
+                    setMessage(t("已恢复全部原版数值。"));
+                  }}
+                >
+                  {t("确认清空")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <p className="mt-4">
+            {t("草稿只在当前页面内存中；离开前请保存工程。无需登录，不上传你的改动。")}
+          </p>
+        </aside>
+      </div>
+      <div className="workbench-footnote">
+        <FileCode2 size={22} />
+        <div>
+          <strong>
+            Gameplay {catalog.provenance.gameplayVersion} · Steam {catalog.provenance.steamBuild}
+          </strong>
+          <p>
+            {b("数据更新 ", "Snapshot updated ")}
+            {catalog.provenance.sourceUpdatedAt.slice(0, 10)} ·{" "}
+            {b(
+              "来自本地官方文件与运行时结构核对。导出为 Lua 源码，不是自动安装包，尚未进行本次实机验证。",
+              "Cross-checked against local game files and runtime structure. Exports Lua source, not an installer. Not tested in a live match this session.",
+            )}
+          </p>
+        </div>
+      </div>
+      <AlertDialog
+        open={!!pending}
+        onOpenChange={(v) => {
+          if (!v) setPending(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogTitle>{t("用导入工程替换当前改动？")}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {b(
+              "当前改动将被替换。请先保存工程备份。",
+              "Current changes will be replaced. Save a project backup first.",
+            )}
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("取消")}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => pending && apply(pending)}>
+              {t("替换工程")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
 }
-function Help({catalog}:{catalog:Catalog}){
- const {locale,t}=useI18n(),b=(zh:string,en:string)=>locale==="en"?en:zh;
- return <Dialog><DialogTrigger asChild><Button className="button" variant="outline"><HelpCircle size={16}/>{t("使用与来源")}</Button></DialogTrigger><DialogContent className="workbench-help" style={{maxWidth:800,maxHeight:"85vh",overflowY:"auto"}}><DialogTitle>{t("把改动带进 War Selection")}</DialogTitle><DialogDescription>{t("工作台生成玩法脚本；游戏内创建、测试与发布仍需由作者完成。")}</DialogDescription><ol><li>{t("搜索名称或 ID，修改需要调整的参数。右侧显示原版与修改值，未改字段不会导出。")}</li><li>{t("先保存工程 JSON 作为备份，再下载 Lua。JSON 用于本站继续编辑，Lua 用于游戏。")}</li><li>{t("在游戏地图编辑器中新建“游戏玩法修改”Mod，保存草稿；在开发测试局中打开该 Mod 的“编辑脚本”，用导出的 Lua 替换完整脚本并保存。")}</li><li>{t("重新开始私人测试局，查看控制台的 [WS ATLAS] 日志，测试新生产的单位。先单独加载，再验证与地图其他 Mod 的加载顺序。")}</li></ol><h3>{b("这次可以改什么","What can be edited")}</h3><p>{b("基础属性、现有武器与护甲、人口、生产和科技队列费用/时间、建筑地基与施工费用、已有技能、采集与交资源、运输和飞机补给，以及建造/生产前置单位数量。","General stats, existing weapons and armor, population, production/research costs and time, foundation/construction costs, existing abilities, gathering/deposits, transport/airfield service and unit-count prerequisites.")}</p><h3>{b("不会自动完成的部分","Not automated")}</h3><p>{b("不新增模型、单位、技能按钮、弹道、目标标签或科技效果。不是改现有 Mod 的源码；导入只接受本站工程 JSON。无法保证与所有国家科技、其他 Mod 和后续版本兼容。","Does not create models, units, buttons, projectiles, targeting tags or research effects. It does not edit arbitrary existing mod source. Imports accept only this workbench's JSON projects; compatibility is not guaranteed.")}</p><p>{b("默认遇到基线冲突时停止。建造费用按每个已存在阵营的 Build ID 写入，包括中立阵营；单位属性作用于所有阵营。不进行高频循环扫描。","Baseline conflicts stop by default. Build costs target each existing faction's Build ID, including neutral; unit properties affect all factions. No high-frequency scanning.")}</p><h3>{t("数据与兼容性")}</h3><p>Steam {catalog.provenance.steamBuild} / Gameplay {catalog.provenance.gameplayVersion}. {b("高级选项包含版本相关原始值，已逐项标注；所有导出仍需实机测试。","Advanced options include labeled version-dependent raw values. All exports still require in-game testing.")}</p><div className="library-sources"><a href="https://github.com/AdrienRmd/War_Selection_Modding" target="_blank" rel="noreferrer">Modding guide</a><a href="https://github.com/IbubussI/wsunitstats-static" target="_blank" rel="noreferrer">WS Unit Stats</a><a href="https://wsunitstats.com/cn/units" target="_blank" rel="noreferrer">{b("单位资料站","Unit reference")}</a></div><p>{t("仅整理单位标识与事实参数，未复制第三方网站源码或游戏美术资源。War Selection 游戏及名称归原权利方所有。")}</p></DialogContent></Dialog>
+function RuleEditor({
+  unit,
+  target,
+  catalog,
+  rules,
+  setRules,
+}: {
+  unit: Unit;
+  target: RuleTarget;
+  catalog: Catalog;
+  rules: Rule[];
+  setRules: React.Dispatch<React.SetStateAction<Rule[]>>;
+}) {
+  const { locale } = useI18n(),
+    b = (zh: string, en: string) => (locale !== "zh" ? en : zh);
+  const [id, setId] = useState("201"),
+    [min, setMin] = useState("1"),
+    [max, setMax] = useState("65535"),
+    [error, setError] = useState("");
+  const selected = catalog.units.find((u) => u.id === Number(id)),
+    base = target.requirements;
+  const current = rules.filter((r) => r.unitId === unit.id && r.targetKey === target.key);
+  function add() {
+    const r = {
+      unitId: unit.id,
+      targetKey: target.key,
+      requiredUnitId: Number(id),
+      min: Number(min),
+      max: Number(max),
+    };
+    try {
+      if (!id.trim() || !min.trim() || !max.trim())
+        throw Error(b("请填完整。", "Complete all fields."));
+      const next = [
+        ...rules.filter(
+          (x) =>
+            !(
+              x.unitId === r.unitId &&
+              x.targetKey === r.targetKey &&
+              x.requiredUnitId === r.requiredUnitId
+            ),
+        ),
+        r,
+      ];
+      validateDraft(catalog, {}, next);
+      setRules(next);
+      setError("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Invalid requirement");
+    }
+  }
+  return (
+    <details className="requirement-editor">
+      <summary>
+        <Settings2 size={15} />
+        {b("前置条件与数量限制", "Prerequisites & count limits")}{" "}
+        {current.length > 0 && " · " + current.length + b(" 项改动", " edits")}
+      </summary>
+      <div>
+        <p>
+          {b("原有单位条件", "Original unit conditions")}:{" "}
+          {base.units.length
+            ? base.units
+                .map(
+                  (r) => "#" + r.id + " [" + r.min + ", " + (r.max === 65535 ? "∞" : r.max) + "]",
+                )
+                .join(" / ")
+            : b("无", "None")}
+        </p>
+        <p>
+          {b("保留科技前置", "Research prerequisites retained")}: ANY [
+          {base.researchAny.join(", ") || "—"}] · ALL [{base.researchAll.join(", ") || "—"}]
+        </p>
+        {current.map((r) => (
+          <p className="condition-preview" key={r.requiredUnitId}>
+            #{r.requiredUnitId}: {r.min}–{r.max === 65535 ? "∞" : r.max}
+          </p>
+        ))}
+        <p className="field-note">
+          {b(
+            "设置的是现存/已建成单位数量门槛。保留其他前置，最多4条单位条件；并行队列或同时放地基是否能越过上限仍需实测，不是强制人口锁。",
+            "Gates live/constructed counts and preserves other prerequisites. Up to four unit conditions; parallel queues or simultaneous foundations need testing. This is not a hard population lock.",
+          )}
+        </p>
+        {base.unitsAll === false ? (
+          <p className="field-note">
+            {b(
+              "此项为“任一条件满足”，暂时只读，避免改变原有逻辑。",
+              "This uses any-of conditions and remains read-only to preserve its logic.",
+            )}
+          </p>
+        ) : (
+          <>
+            <div className="condition-inputs">
+              <label>
+                {b("前置单位 ID", "Required unit ID")}
+                <Input
+                  aria-label={b("前置单位 ID ", "Required unit ID ") + target.key}
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={id}
+                  onChange={(e) => setId(e.target.value)}
+                />
+                <small>
+                  {selected
+                    ? locale !== "zh"
+                      ? selected.nameEn
+                      : selected.name
+                    : b("未找到单位", "Unknown unit")}
+                </small>
+              </label>
+              <label>
+                {b("至少拥有", "At least")}
+                <Input
+                  aria-label={b("最小数量 ", "Minimum count ") + target.key}
+                  type="number"
+                  min={0}
+                  max={65535}
+                  step={1}
+                  value={min}
+                  onChange={(e) => setMin(e.target.value)}
+                />
+              </label>
+              <label>
+                {b("最多拥有", "At most")}
+                <Input
+                  aria-label={b("最大数量 ", "Maximum count ") + target.key}
+                  type="number"
+                  min={0}
+                  max={65535}
+                  step={1}
+                  value={max}
+                  onChange={(e) => setMax(e.target.value)}
+                />
+                <small>65535 = {b("不设上限", "no bound")}</small>
+              </label>
+            </div>
+            <div className="condition-actions">
+              <Button className="button" variant="outline" onClick={add}>
+                {b("加入 / 更新条件", "Add / update condition")}
+              </Button>
+              <button
+                onClick={() => {
+                  setId(String(unit.id));
+                  setMin("0");
+                  setMax("3");
+                }}
+              >
+                {b("填写本单位最多3个", "Fill: this unit, max 3")}
+              </button>
+            </div>
+          </>
+        )}
+        {error && (
+          <p role="alert" className="workbench-error">
+            {error}
+          </p>
+        )}
+      </div>
+    </details>
+  );
+}
+function Help({ catalog }: { catalog: Catalog }) {
+  const { locale, t } = useI18n(),
+    b = (zh: string, en: string) => (locale !== "zh" ? en : zh);
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button className="button" variant="outline">
+          <HelpCircle size={16} />
+          {t("使用与来源")}
+        </Button>
+      </DialogTrigger>
+      <DialogContent
+        className="workbench-help"
+        style={{ maxWidth: 800, maxHeight: "85vh", overflowY: "auto" }}
+      >
+        <DialogTitle>{t("把改动带进 War Selection")}</DialogTitle>
+        <DialogDescription>
+          {t("工作台生成玩法脚本；游戏内创建、测试与发布仍需由作者完成。")}
+        </DialogDescription>
+        <ol>
+          <li>
+            {t("搜索名称或 ID，修改需要调整的参数。右侧显示原版与修改值，未改字段不会导出。")}
+          </li>
+          <li>
+            {t("先保存工程 JSON 作为备份，再下载 Lua。JSON 用于本站继续编辑，Lua 用于游戏。")}
+          </li>
+          <li>
+            {t(
+              "在游戏地图编辑器中新建“游戏玩法修改”Mod，保存草稿；在开发测试局中打开该 Mod 的“编辑脚本”，用导出的 Lua 替换完整脚本并保存。",
+            )}
+          </li>
+          <li>
+            {t(
+              "重新开始私人测试局，查看控制台的 [WS ATLAS] 日志，测试新生产的单位。先单独加载，再验证与地图其他 Mod 的加载顺序。",
+            )}
+          </li>
+        </ol>
+        <h3>{b("这次可以改什么", "What can be edited")}</h3>
+        <p>
+          {b(
+            "基础属性、现有武器与护甲、人口、生产和科技队列费用/时间、建筑地基与施工费用、已有技能、采集与交资源、运输和飞机补给，以及建造/生产前置单位数量。",
+            "General stats, existing weapons and armor, population, production/research costs and time, foundation/construction costs, existing abilities, gathering/deposits, transport/airfield service and unit-count prerequisites.",
+          )}
+        </p>
+        <h3>{b("不会自动完成的部分", "Not automated")}</h3>
+        <p>
+          {b(
+            "不新增模型、单位、技能按钮、弹道、目标标签或科技效果。不是改现有 Mod 的源码；导入只接受本站工程 JSON。无法保证与所有国家科技、其他 Mod 和后续版本兼容。",
+            "Does not create models, units, buttons, projectiles, targeting tags or research effects. It does not edit arbitrary existing mod source. Imports accept only this workbench's JSON projects; compatibility is not guaranteed.",
+          )}
+        </p>
+        <p>
+          {b(
+            "默认遇到基线冲突时停止。建造费用按每个已存在阵营的 Build ID 写入，包括中立阵营；单位属性作用于所有阵营。不进行高频循环扫描。",
+            "Baseline conflicts stop by default. Build costs target each existing faction's Build ID, including neutral; unit properties affect all factions. No high-frequency scanning.",
+          )}
+        </p>
+        <h3>{t("数据与兼容性")}</h3>
+        <p>
+          Steam {catalog.provenance.steamBuild} / Gameplay {catalog.provenance.gameplayVersion}.{" "}
+          {b(
+            "高级选项包含版本相关原始值，已逐项标注；所有导出仍需实机测试。",
+            "Advanced options include labeled version-dependent raw values. All exports still require in-game testing.",
+          )}
+        </p>
+        <div className="library-sources">
+          <a
+            href="https://github.com/AdrienRmd/War_Selection_Modding"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Modding guide
+          </a>
+          <a href="https://github.com/IbubussI/wsunitstats-static" target="_blank" rel="noreferrer">
+            WS Unit Stats
+          </a>
+          <a href="https://wsunitstats.com/cn/units" target="_blank" rel="noreferrer">
+            {b("单位资料站", "Unit reference")}
+          </a>
+        </div>
+        <p>
+          {t(
+            "仅整理单位标识与事实参数，未复制第三方网站源码或游戏美术资源。War Selection 游戏及名称归原权利方所有。",
+          )}
+        </p>
+      </DialogContent>
+    </Dialog>
+  );
 }

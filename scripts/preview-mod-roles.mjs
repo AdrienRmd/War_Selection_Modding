@@ -24,10 +24,18 @@ const port = 5174;
 
 await Promise.all([access(scriptPath), access(clientRoot), access(d1Persist)]);
 const builtConfig = JSON.parse(await readFile(configPath, "utf8"));
-if (!builtConfig.d1_databases?.some(database => database.binding === "DB" && database.database_id === databaseId)) {
+if (
+  !builtConfig.d1_databases?.some(
+    (database) => database.binding === "DB" && database.database_id === databaseId,
+  )
+) {
   throw new Error("Expected the retained local DB binding and placeholder database ID.");
 }
-if (!builtConfig.r2_buckets?.some(bucket => bucket.binding === "BUCKET" && bucket.bucket_name === "site-creator-r2")) {
+if (
+  !builtConfig.r2_buckets?.some(
+    (bucket) => bucket.binding === "BUCKET" && bucket.bucket_name === "site-creator-r2",
+  )
+) {
   throw new Error("Expected the retained local BUCKET binding.");
 }
 
@@ -46,7 +54,9 @@ for (const name of (await readdir(serverRoot, { recursive: true })).sort()) {
 await new Promise((resolve, reject) => {
   const probe = createServer();
   probe.once("error", reject);
-  probe.listen(port, host, () => probe.close(error => error ? reject(error) : resolve(undefined)));
+  probe.listen(port, host, () =>
+    probe.close((error) => (error ? reject(error) : resolve(undefined))),
+  );
 });
 
 /** @type {import("miniflare").MiniflareOptions} */
@@ -70,11 +80,11 @@ const options = {
     binding: "ASSETS",
     routerConfig: {
       has_user_worker: true,
-      invoke_user_worker_ahead_of_assets: false
-    }
+      invoke_user_worker_ahead_of_assets: false,
+    },
   },
   cf: false,
-  log: new Log(LogLevel.INFO)
+  log: new Log(LogLevel.INFO),
 };
 
 const worker = new Miniflare(options);
@@ -86,10 +96,13 @@ async function stop() {
 }
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.once(signal, () => {
-    void stop().then(() => process.exit(0), error => {
-      console.error("Direct Miniflare shutdown failed:", error);
-      process.exit(1);
-    });
+    void stop().then(
+      () => process.exit(0),
+      (error) => {
+        console.error("Direct Miniflare shutdown failed:", error);
+        process.exit(1);
+      },
+    );
   });
 }
 try {
@@ -97,16 +110,22 @@ try {
   if (ready.hostname !== host || ready.port !== String(port)) {
     throw new Error("Miniflare started at an unexpected address: " + ready.href);
   }
-  console.log(JSON.stringify({
-    ready: ready.origin,
-    runtime: "Direct Miniflare; no Wrangler ProxyWorker or hot-reload controller",
-    localOnly: true,
-    databaseId,
-    d1Persist,
-    assets: clientRoot,
-    roleIdentity: "Local trusted-upstream simulation; not production authentication",
-    next: "node scripts/test-mod-roles.mjs"
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        ready: ready.origin,
+        runtime: "Direct Miniflare; no Wrangler ProxyWorker or hot-reload controller",
+        localOnly: true,
+        databaseId,
+        d1Persist,
+        assets: clientRoot,
+        roleIdentity: "Local trusted-upstream simulation; not production authentication",
+        next: "node scripts/test-mod-roles.mjs",
+      },
+      null,
+      2,
+    ),
+  );
 } catch (error) {
   await stop();
   throw error;

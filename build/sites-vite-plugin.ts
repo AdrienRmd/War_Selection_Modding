@@ -86,15 +86,11 @@ export function sites(): Plugin {
         const signInCookies = cookies
           .filter((cookie) => cookie.startsWith(`${localCookieName}=`))
           .map((cookie) => cookie.slice(localCookieName.length + 1));
-        const applicationCookies = cookies.filter(
-          (cookie) => !cookie.startsWith(`${localCookieName}=`),
-        );
-        if (applicationCookies.length !== cookies.length) {
-          removeHeader(request, "cookie");
-          if (applicationCookies.length) {
-            setHeader(request, "cookie", applicationCookies.join("; "));
-          }
-        }
+        // The local auth cookie stays in the forwarded request: the
+        // application's dev-only sign-in shim reads __sites_local_auth
+        // directly because session-based auth never trusts the identity
+        // headers injected below. Incoming oai-authenticated-user-* headers
+        // are still stripped above, so nothing is spoofable.
 
         if (url.pathname === "/callback") {
           respond(response, 501);

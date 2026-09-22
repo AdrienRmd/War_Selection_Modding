@@ -23,6 +23,15 @@ const eslintConfig = defineConfig([
       "react-hooks/set-state-in-effect": "off",
     },
   },
+  {
+    // Cover images and archive previews are served by the custom R2-backed
+    // API routes plus raw static files, with explicit alt text and mastered
+    // loading="lazy"; the next/image optimization pipeline does not fit
+    // these hand-controlled <img> usages.
+    rules: {
+      "@next/next/no-img-element": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

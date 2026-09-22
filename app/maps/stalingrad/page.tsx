@@ -1,14 +1,187 @@
+import { StalingradProvenance } from "@/components/map-provenance";
+import { LocalizedImage } from "@/components/localized-media";
 
-import {StalingradProvenance} from "@/components/map-provenance";
-import {LocalizedImage} from "@/components/localized-media";
-
-import {T} from "@/components/i18n";
+import { T } from "@/components/i18n";
 import Link from "@/components/site-link";
-import {ArrowLeft,Users,Layers3,Pencil,Download,Map,ArrowUpRight} from "lucide-react";
-import {AtlasHeader,AtlasFooter} from "@/components/atlas-shell";
-import {Dossier} from "@/components/dossier";
-import {getFeaturedMap} from "@/lib/featured-server";
-import {identity} from "@/lib/atlas-server";
-export const dynamic="force-dynamic";
-export const metadata={title:"斯大林格勒 · 地图档案 | WS ATLAS"};
-export default async function Stalingrad(){const {admin}=await identity();let m;try{m=await getFeaturedMap();}catch{return <><AtlasHeader/><main className="shell"><p className="notice error"><T text={"地图档案暂时无法读取，请稍后刷新。"}/></p></main><AtlasFooter/></>;}return <><AtlasHeader/><main className="shell"><div className="detail-topline"><Link href="/maps" className="back-link"><ArrowLeft size={16}/>  <T text={"地图档案"}/></Link>{admin&&<Link href="/maps/stalingrad/edit" className="button"><Pencil size={16}/>  <T text={"编辑斯大林格勒"}/></Link>}</div><section className="feature detail-feature"><div className="feature-art" style={m.has_cover?{backgroundImage:"url('/api/featured?asset=cover')"}:undefined}/><div className="feature-content"><span className="tag"><T text={"MAP 001 · 作者维护"}/></span><p className="eyebrow">1942 / THE VOLGA FRONT</p><h2><T text={m.title}/></h2><p className="feature-description"><T text={m.summary}/></p><div className="feature-meta"><span><Users size={17}/> <T text={m.players}/>  <T text={"人"}/></span><span><Map size={17}/> <T text={m.category}/></span><span><T text={m.author}/></span></div></div></section><StalingradProvenance/><div className="overview-grid"><section className="panel"><p className="eyebrow"><T text={"BRIEFING / 战场说明"}/></p><h2><T text={"玩法与使用说明"}/></h2><p className="preserve-text"><T text={m.description}/></p><LocalizedImage className="tactical-map mt-6" src="/stalingrad-map.png" alt="作者提供的斯大林格勒地图俯视图"/><p className="caption"><T text={"历史地图缩略图 · 最新版本以作者地图包为准"}/></p><h3 className="mt-6"><T text={"所需 Mod 与加载顺序"}/></h3><p className="preserve-text"><T text={m.mods}/></p><Link href="/mods?map=stalingrad" className="text-link mt-4"><Layers3 size={18}/>  <T text={"在独立资料库查看 Mod"}/> <ArrowUpRight size={16}/></Link></section><aside className="detail-aside"><section className="panel"><p className="eyebrow">RULES OF ENGAGEMENT</p><h2><T text={"规则速览"}/></h2><dl className="key-values">{m.rules?.map((r,i)=><div key={i}><dt><T text={r.label}/></dt><dd><T text={r.value}/></dd></div>)}</dl></section><section className="panel download-panel"><h2><T text={"加入这场战役"}/></h2><dl className="key-values"><div><dt><T text={"测试版本"}/></dt><dd><T text={m.game_version}/></dd></div><div><dt><T text={"资料更新"}/></dt><dd><T text={m.updated_at?.slice(0,10)||"2026-09-09"}/></dd></div></dl>{m.map_code?<p className="mt-4"><T text={"地图分享码："}/><code><T text={m.map_code}/></code></p>:<p className="caption"><T text={"作者尚未填写地图分享码。"}/></p>}{m.has_file?<><a className="button primary" href="/api/featured?asset=file"><Download size={18}/>  <T text={"下载地图包"}/></a><p className="caption"><T text={m.file_name}/> · <T text={(m.file_size/1024/1024).toFixed(2)}/> MB</p></>:<p className="notice subtle"><T text={"正式地图包待作者上传。"}/></p>}{admin&&<Link href="/maps/stalingrad/edit" className="text-link mt-3"><Pencil size={16}/>  <T text={"补充资料与文件"}/></Link>}</section></aside></div><Dossier technicalOnly/></main><AtlasFooter/></>}
+import { ArrowLeft, Users, Layers3, Pencil, Download, Map, ArrowUpRight } from "lucide-react";
+import { AtlasHeader, AtlasFooter } from "@/components/atlas-shell";
+import { Dossier } from "@/components/dossier";
+import { getFeaturedMap } from "@/lib/featured-server";
+import { identity } from "@/lib/atlas-server";
+export const dynamic = "force-dynamic";
+export const metadata = { title: "斯大林格勒 · 地图档案 | WS ATLAS" };
+export default async function Stalingrad() {
+  const { admin } = await identity();
+  let m;
+  try {
+    m = await getFeaturedMap();
+  } catch {
+    return (
+      <>
+        <AtlasHeader />
+        <main className="shell">
+          <p className="notice error">
+            <T text={"地图档案暂时无法读取，请稍后刷新。"} />
+          </p>
+        </main>
+        <AtlasFooter />
+      </>
+    );
+  }
+  return (
+    <>
+      <AtlasHeader />
+      <main className="shell">
+        <div className="detail-topline">
+          <Link href="/maps" className="back-link">
+            <ArrowLeft size={16} /> <T text={"地图档案"} />
+          </Link>
+          {admin && (
+            <Link href="/maps/stalingrad/edit" className="button">
+              <Pencil size={16} /> <T text={"编辑斯大林格勒"} />
+            </Link>
+          )}
+        </div>
+        <section className="feature detail-feature">
+          <div
+            className="feature-art"
+            style={
+              m.has_cover ? { backgroundImage: "url('/api/featured?asset=cover')" } : undefined
+            }
+          />
+          <div className="feature-content">
+            <span className="tag">
+              <T text={"MAP 001 · 作者维护"} />
+            </span>
+            <p className="eyebrow">1942 / THE VOLGA FRONT</p>
+            <h2>
+              <T text={m.title} />
+            </h2>
+            <p className="feature-description">
+              <T text={m.summary} />
+            </p>
+            <div className="feature-meta">
+              <span>
+                <Users size={17} /> <T text={m.players} /> <T text={"人"} />
+              </span>
+              <span>
+                <Map size={17} /> <T text={m.category} />
+              </span>
+              <span>
+                <T text={m.author} />
+              </span>
+            </div>
+          </div>
+        </section>
+        <StalingradProvenance />
+        <div className="overview-grid">
+          <section className="panel">
+            <p className="eyebrow">
+              <T text={"BRIEFING / 战场说明"} />
+            </p>
+            <h2>
+              <T text={"玩法与使用说明"} />
+            </h2>
+            <p className="preserve-text">
+              <T text={m.description} />
+            </p>
+            <LocalizedImage
+              className="tactical-map mt-6"
+              src="/stalingrad-map.png"
+              alt="作者提供的斯大林格勒地图俯视图"
+            />
+            <p className="caption">
+              <T text={"历史地图缩略图 · 最新版本以作者地图包为准"} />
+            </p>
+            <h3 className="mt-6">
+              <T text={"所需 Mod 与加载顺序"} />
+            </h3>
+            <p className="preserve-text">
+              <T text={m.mods} />
+            </p>
+            <Link href="/mods?map=stalingrad" className="text-link mt-4">
+              <Layers3 size={18} /> <T text={"在独立资料库查看 Mod"} /> <ArrowUpRight size={16} />
+            </Link>
+          </section>
+          <aside className="detail-aside">
+            <section className="panel">
+              <p className="eyebrow">RULES OF ENGAGEMENT</p>
+              <h2>
+                <T text={"规则速览"} />
+              </h2>
+              <dl className="key-values">
+                {m.rules?.map((r, i) => (
+                  <div key={i}>
+                    <dt>
+                      <T text={r.label} />
+                    </dt>
+                    <dd>
+                      <T text={r.value} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+            <section className="panel download-panel">
+              <h2>
+                <T text={"加入这场战役"} />
+              </h2>
+              <dl className="key-values">
+                <div>
+                  <dt>
+                    <T text={"测试版本"} />
+                  </dt>
+                  <dd>
+                    <T text={m.game_version} />
+                  </dd>
+                </div>
+                <div>
+                  <dt>
+                    <T text={"资料更新"} />
+                  </dt>
+                  <dd>
+                    <T text={m.updated_at?.slice(0, 10) || "2026-09-09"} />
+                  </dd>
+                </div>
+              </dl>
+              {m.map_code ? (
+                <p className="mt-4">
+                  <T text={"地图分享码："} />
+                  <code>
+                    <T text={m.map_code} />
+                  </code>
+                </p>
+              ) : (
+                <p className="caption">
+                  <T text={"作者尚未填写地图分享码。"} />
+                </p>
+              )}
+              {m.has_file ? (
+                <>
+                  <a className="button primary" href="/api/featured?asset=file">
+                    <Download size={18} /> <T text={"下载地图包"} />
+                  </a>
+                  <p className="caption">
+                    <T text={m.file_name} /> · <T text={(m.file_size / 1024 / 1024).toFixed(2)} />{" "}
+                    MB
+                  </p>
+                </>
+              ) : (
+                <p className="notice subtle">
+                  <T text={"正式地图包待作者上传。"} />
+                </p>
+              )}
+              {admin && (
+                <Link href="/maps/stalingrad/edit" className="text-link mt-3">
+                  <Pencil size={16} /> <T text={"补充资料与文件"} />
+                </Link>
+              )}
+            </section>
+          </aside>
+        </div>
+        <Dossier technicalOnly />
+      </main>
+      <AtlasFooter />
+    </>
+  );
+}

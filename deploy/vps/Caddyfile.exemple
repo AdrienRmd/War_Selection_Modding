@@ -1,0 +1,14 @@
+# Alternative à nginx : Caddy avec HTTPS automatique (Let's Encrypt géré par Caddy).
+# À ajouter au Caddyfile du serveur (souvent /etc/caddy/Caddyfile), puis :
+#   sudo systemctl reload caddy
+# Caddy obtient et renouvelle seul le certificat de ws.aremond.ovh
+# (nécessite que l'entrée DNS A ws -> IP du VPS soit propagée).
+
+ws.aremond.ovh {
+	reverse_proxy 127.0.0.1:8787
+
+	# L'app limite elle-même les uploads à ~13 MB ; 20MB = marge.
+	request_body {
+		max_size 20MB
+	}
+}

@@ -1,0 +1,13 @@
+package-lock.json
+dist/
+.wrangler/
+.sites-runtime/
+node_modules/
+public/
+**/*seeds.json
+drizzle/
+vendor/
+.git/
+.next/
+.vinext/
+build/
