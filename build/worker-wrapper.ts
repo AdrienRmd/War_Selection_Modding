@@ -51,17 +51,55 @@ function withoutIdentityHeaders(request: Request): Request {
   return new Request(request, { headers });
 }
 
+// Applied to every outgoing response so the Worker stays self-sufficient on
+// Cloudflare. No HSTS header: Apache owns it in production and it would break
+// plain-http local development. `X-Content-Type-Options` duplicates Apache on
+// purpose; identical values stay idempotent.
+const SECURITY_HEADERS: readonly (readonly [string, string])[] = [
+  ["x-frame-options", "DENY"],
+  ["referrer-policy", "strict-origin-when-cross-origin"],
+  ["permissions-policy", "camera=(), microphone=(), geolocation=(), payment=()"],
+  ["x-content-type-options", "nosniff"],
+  [
+    "content-security-policy",
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests",
+  ],
+];
+
+function applySecurityHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  for (const [name, value] of SECURITY_HEADERS) {
+    // Skip headers the app already set: browsers only honor one CSP
+    // (multiple policies intersect), so overriding it could break the app.
+    if (headers.get(name) === null) {
+      headers.set(name, value);
+    }
+  }
+  // Rebuilding with `response.body` passes the stream through without
+  // consuming it. Body-less statuses (204, 304, ...) reject the constructor,
+  // in which case the response is returned untouched.
+  try {
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  } catch {
+    return response;
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     // Dev short-circuit: see the file comment. Keep this check first so the
     // simulated identity injected by the dev middleware reaches vinext.
     if (import.meta.env.DEV) {
-      return handler.fetch(request, env, ctx);
+      return applySecurityHeaders(await handler.fetch(request, env, ctx));
     }
     // Fast path: leave untouched requests completely unmodified.
     const sanitizedRequest = hasIdentityHeader(request)
       ? withoutIdentityHeaders(request)
       : request;
-    return handler.fetch(sanitizedRequest, env, ctx);
+    return applySecurityHeaders(await handler.fetch(sanitizedRequest, env, ctx));
   },
 } satisfies ExportedHandler<Cloudflare.Env>;

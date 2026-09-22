@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 // Server-only account/session helpers for email+password authentication.
 // Crypto primitives (PBKDF2 hashing, token generation) use only the WebCrypto
 // globals so this module stays runnable in unit tests; D1 access and
@@ -9,7 +10,12 @@ export const SESSION_COOKIE = "atlas_session";
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const SESSION_TTL_SECONDS = SESSION_TTL_MS / 1000;
 
-const PBKDF2_ITERATIONS = 120000;
+// OWASP Password Storage Cheat Sheet calls for hundreds of thousands of
+// PBKDF2 iterations; new hashes use 210,000 (up from the original 120,000).
+// hashPassword() only ever emits the current constant while verifyPassword()
+// reads the iteration count stored in the hash, so pre-existing 120k hashes
+// keep verifying without a migration.
+export const PBKDF2_ITERATIONS = 210000;
 const SALT_BYTES = 16;
 const HASH_BYTES = 32;
 const TOKEN_BYTES = 32;
@@ -156,31 +162,260 @@ export async function destroySession(token: string): Promise<void> {
   await (await db()).prepare("DELETE FROM sessions WHERE token_hash = ?").bind(tokenHash).run();
 }
 
-// Best-effort anti brute-force throttle, deliberately isolate-local: each
-// Worker isolate keeps its own small in-memory counter per email, with no
-// shared state and a full reset on deploy/restart. It is a cheap deterrent,
-// not a distributed rate limit.
-const MAX_FAILURES = 10;
-const FAILURE_WINDOW_MS = 15 * 60 * 1000;
-const failures = new Map<string, { count: number; resetAt: number }>();
-
-export function isAuthThrottled(email: string): boolean {
-  const entry = failures.get(email.toLowerCase());
-  if (!entry) return false;
-  if (entry.resetAt <= Date.now()) {
-    failures.delete(email.toLowerCase());
-    return false;
-  }
-  return entry.count >= MAX_FAILURES;
+// Reusable GC for expired session rows (cron jobs, opportunistic cleanups...).
+export async function deleteExpiredSessions(): Promise<void> {
+  await (await db()).prepare("DELETE FROM sessions WHERE expires_at < ?").bind(Date.now()).run();
 }
 
-export function recordAuthFailure(email: string): void {
-  const key = email.toLowerCase();
+// "Sign out everywhere": drop every active session of a user, revoking all
+// other devices while keeping multi-device sessions otherwise possible.
+export async function revokeAllSessions(userId: string): Promise<void> {
+  await (await db()).prepare("DELETE FROM sessions WHERE user_id = ?").bind(userId).run();
+}
+
+// ---------------------------------------------------------------------------
+// Persisted (D1) brute-force throttling, backed by the auth_attempts table.
+//
+// Each attempt key ("email:<lower(email)>" or "ip:<ip>") maps to one live
+// window row. checkAndRecordFailure() reads the row, starts a fresh window
+// when the previous one expired and otherwise bumps the counter while under
+// the limit; recordSuccess() clears the row after a successful auth. Counters
+// are best-effort: concurrent requests can both slip through a nearly
+// exhausted budget, and unavailability of D1 must not break auth flows —
+// callers treat a thrown error as "limiting unavailable".
+//
+// Dev escape hatch: the local scripts/test-*.mjs suites hammer signin/signup
+// far beyond any sane budget, so rate limiting is compiled out in dev.
+// import.meta.env.DEV is a build-time constant (see app/chatgpt-auth.ts), so
+// RATE_LIMITS_ENABLED folds to a literal and every guarded branch vanishes
+// from dev bundles; production always enforces the limits.
+export const RATE_LIMITS_ENABLED = !import.meta.env.DEV;
+
+export function emailAttemptKey(email: string): string {
+  return `email:${email.toLowerCase()}`;
+}
+
+export function ipAttemptKey(ip: string): string {
+  return `ip:${ip}`;
+}
+
+// The site sits behind a trusted Apache reverse proxy that appends the client
+// address to X-Forwarded-For; the first hop is the original client. Requests
+// without the header (local dev, direct origin access) collapse into the
+// shared "unknown" bucket. The value is capped so it cannot bloat the key.
+export function clientIp(req: Request): string {
+  const first = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return first ? first.slice(0, 64) : "unknown";
+}
+
+// Widest window any caller may configure; doubles as the global GC cutoff.
+const RATE_WINDOW_CEILING_MS = 60 * 60 * 1000;
+
+export type RateVerdict = { allowed: boolean; retryAfterSec: number };
+
+export async function checkAndRecordFailure(
+  key: string,
+  limit: number,
+  windowMs: number,
+): Promise<RateVerdict> {
   const now = Date.now();
-  const entry = failures.get(key);
-  if (!entry || entry.resetAt <= now) {
-    failures.set(key, { count: 1, resetAt: now + FAILURE_WINDOW_MS });
-    return;
+  const DB = await db();
+  const row = await DB.prepare(
+    "SELECT window_start, count FROM auth_attempts WHERE attempt_key = ?",
+  )
+    .bind(key)
+    .first<{ window_start: number; count: number }>();
+  if (!row || row.window_start + windowMs <= now) {
+    // Absent or expired window: open a fresh one and GC stale rows in the
+    // same batch (best effort). The upsert absorbs the read/write race.
+    await DB.batch([
+      DB.prepare("DELETE FROM auth_attempts WHERE window_start < ?").bind(
+        now - RATE_WINDOW_CEILING_MS,
+      ),
+      DB.prepare(
+        "INSERT INTO auth_attempts (attempt_key, window_start, count) VALUES (?, ?, 1) ON CONFLICT(attempt_key) DO UPDATE SET window_start = excluded.window_start, count = 1",
+      ).bind(key, now),
+    ]);
+    return { allowed: true, retryAfterSec: 0 };
   }
-  entry.count += 1;
+  if (row.count >= limit) {
+    return {
+      allowed: false,
+      retryAfterSec: Math.max(1, Math.ceil((row.window_start + windowMs - now) / 1000)),
+    };
+  }
+  await DB.prepare("UPDATE auth_attempts SET count = count + 1 WHERE attempt_key = ?")
+    .bind(key)
+    .run();
+  return { allowed: true, retryAfterSec: 0 };
+}
+
+export async function recordSuccess(key: string): Promise<void> {
+  await (await db()).prepare("DELETE FROM auth_attempts WHERE attempt_key = ?").bind(key).run();
+}
+
+// ---------------------------------------------------------------------------
+// Common-password blacklist.
+//
+// Embedded top-passwords list (~120 entries, English globals + French
+// classics, cf. SecLists/rockyou-style top lists) plus deterministic checks
+// for all-repeated and monotonic digit sequences. Comparison is
+// case-insensitive and exact: a cheap first line of defense on signup, not a
+// strength meter.
+const COMMON_PASSWORDS: ReadonlySet<string> = new Set([
+  // EN classics
+  "password",
+  "password1",
+  "password123",
+  "password1234",
+  "passw0rd",
+  "p@ssword",
+  "p@ssw0rd",
+  "letmein",
+  "welcome",
+  "welcome1",
+  "welcome123",
+  "admin",
+  "admin123",
+  "admin1234",
+  "administrator",
+  "root",
+  "toor",
+  "login",
+  "guest",
+  "test",
+  "test123",
+  "abc123",
+  "iloveyou",
+  "monkey",
+  "dragon",
+  "sunshine",
+  "princess",
+  "master",
+  "hello",
+  "freedom",
+  "whatever",
+  "trustno1",
+  "starwars",
+  "superman",
+  "batman",
+  "spiderman",
+  "pokemon",
+  "snoopy",
+  "shadow",
+  "michael",
+  "jennifer",
+  "jordan",
+  "harley",
+  "ranger",
+  "hunter",
+  "buster",
+  "charlie",
+  "thomas",
+  "tigger",
+  "pepper",
+  "purple",
+  "banana",
+  "chocolate",
+  "cookie",
+  "summer",
+  // Sports / teams
+  "soccer",
+  "baseball",
+  "football",
+  "hockey",
+  "basketball",
+  "liverpool",
+  "chelsea",
+  "arsenal",
+  "barcelona",
+  "realmadrid",
+  "psg",
+  // Numeric dictionary
+  "123456",
+  "1234567",
+  "12345678",
+  "123456789",
+  "1234567890",
+  "0987654321",
+  "987654321",
+  "9876543210",
+  "0123456789",
+  "123123",
+  "112233",
+  "111111",
+  "000000",
+  "121212",
+  "123321",
+  "654321",
+  "159753",
+  "147258369",
+  "123654789",
+  "102030",
+  "10203040",
+  "12341234",
+  "520520",
+  "111222",
+  "121314",
+  "666666",
+  "888888",
+  // Keyboard rows / patterns (EN + FR layouts)
+  "qwerty",
+  "qwerty123",
+  "qwertyuiop",
+  "azerty",
+  "azerty123",
+  "azertyuiop",
+  "qwe123",
+  "asd123",
+  "zxc123",
+  "qweasd",
+  "asdf",
+  "asdfgh",
+  "asdfghjkl",
+  "zxcvbn",
+  "zxcvbnm",
+  "qsdfghjklm",
+  "wxcvbn",
+  "1q2w3e4r",
+  "1qaz2wsx",
+  "zaq12wsx",
+  "qazwsx",
+  "qazwsxedc",
+  // FR classics
+  "motdepasse",
+  "motdepasse123",
+  "soleil",
+  "loulou",
+  "louloute",
+  "doudou",
+  "chouchou",
+  "mimi",
+  "nounours",
+  "marseille",
+  "paris",
+  "toulouse",
+  "bordeaux",
+  "lyon",
+  "lille",
+  "jetaime",
+  "chocolat",
+  "nicolas",
+  "marie",
+  "julie",
+  "camille",
+  "manon",
+  "hugo",
+]);
+
+// 14 cycles cover any 128-char monotonic run with wrap-around.
+const DIGIT_RUN_ASC = "0123456789".repeat(14);
+const DIGIT_RUN_DESC = "9876543210".repeat(14);
+
+export function isCommonPassword(password: string): boolean {
+  const p = password.toLowerCase();
+  if (COMMON_PASSWORDS.has(p)) return true;
+  if (/^(.)\1+$/.test(p)) return true; // aaaaaaaaaa, 1111111111...
+  if (/^\d{4,}$/.test(p) && (DIGIT_RUN_ASC.includes(p) || DIGIT_RUN_DESC.includes(p))) return true; // 1234567890, 4567890123, 9876543210...
+  return false;
 }

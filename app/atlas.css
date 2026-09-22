@@ -7,6 +7,16 @@
   color: var(--muted-foreground);
   font-size: 14px;
 }
+button.account-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+button.account-link:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
 .account-name {
   color: var(--muted-foreground);
   font-size: 14px;

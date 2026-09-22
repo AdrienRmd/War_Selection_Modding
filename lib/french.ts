@@ -1401,6 +1401,8 @@ export const french: Record<string, string> = {
   "该邮箱已注册，请直接登录。": "Cette adresse e-mail est déjà enregistrée. Connectez-vous plutôt.",
   "邮箱或密码不正确。": "Adresse e-mail ou mot de passe incorrect.",
   "尝试次数过多，请 15 分钟后再试。": "Trop de tentatives. Réessayez dans 15 minutes.",
+  "密码过于常见，请选择更安全的密码。": "Ce mot de passe est trop courant, choisis-en un plus sûr.",
+  退出所有设备: "Se déconnecter de partout",
   "服务暂时不可用，请稍后重试。":
     "Le service est temporairement indisponible. Réessayez plus tard.",
 };

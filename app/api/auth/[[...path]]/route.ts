@@ -1,14 +1,20 @@
 import { z } from "zod";
 import { bindings, HttpError, sameOrigin, limitedBody } from "@/lib/atlas-server";
 import {
+  checkAndRecordFailure,
   clearedSessionCookie,
+  clientIp,
   createSession,
   destroySession,
+  emailAttemptKey,
   getSessionUser,
   hashPassword,
-  isAuthThrottled,
+  ipAttemptKey,
+  isCommonPassword,
+  RATE_LIMITS_ENABLED,
   readSessionToken,
-  recordAuthFailure,
+  recordSuccess,
+  revokeAllSessions,
   sessionCookie,
   sessionUserByToken,
   verifyPassword,
@@ -27,6 +33,24 @@ const signinInput = z.object({
   password: z.string().min(1).max(128),
 });
 
+// Persisted rate-limit budgets (auth_attempts table): signin is throttled per
+// email and per source IP, signup per source IP. Disabled in dev — see
+// RATE_LIMITS_ENABLED in lib/auth-server.ts.
+const SIGNIN_EMAIL_BUDGET = { limit: 10, windowMs: 15 * 60 * 1000 };
+const SIGNIN_IP_BUDGET = { limit: 30, windowMs: 15 * 60 * 1000 };
+const SIGNUP_IP_BUDGET = { limit: 20, windowMs: 60 * 60 * 1000 };
+
+// Existing i18n key (lib/english.ts / lib/french.ts both translate it).
+const TOO_MANY_ATTEMPTS_CN = "尝试次数过多，请 15 分钟后再试。";
+// NEW i18n key — EN/FR translations to be added by the i18n agent.
+const COMMON_PASSWORD_CN = "密码过于常见，请选择更安全的密码。";
+
+class RateLimitError extends HttpError {
+  constructor(public retryAfterSec: number) {
+    super(429, TOO_MANY_ATTEMPTS_CN);
+  }
+}
+
 // Same no-store posture as the other API routes, plus the session cookie.
 function jsonWithCookie(data: unknown, cookie: string, status = 200) {
   return Response.json(data, {
@@ -39,8 +63,21 @@ function jsonWithCookie(data: unknown, cookie: string, status = 200) {
   });
 }
 
+// Secure flag: trust X-Forwarded-Proto from the Apache proxy first (req.url
+// is plain http at the origin), then fall back to the request URL scheme.
 function isSecure(req: Request): boolean {
+  if (req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() === "https") return true;
   return new URL(req.url).protocol === "https:";
+}
+
+// Throws a 429 (with Retry-After) when the key's budget is exhausted.
+async function enforceRateLimit(
+  key: string,
+  budget: { limit: number; windowMs: number },
+): Promise<void> {
+  if (!RATE_LIMITS_ENABLED) return;
+  const verdict = await checkAndRecordFailure(key, budget.limit, budget.windowMs);
+  if (!verdict.allowed) throw new RateLimitError(verdict.retryAfterSec);
 }
 
 async function readJson(req: Request): Promise<unknown> {
@@ -52,7 +89,10 @@ function delay(ms: number) {
 }
 
 // Well-formed dummy hash (16-byte salt, 32-byte hash) burned for unknown
-// emails so response timing does not reveal whether the address exists.
+// emails so response timing does not reveal whether the address exists. Kept
+// at 120000 iterations on purpose: it matches the pre-210k hashes of every
+// account created before the hardening, which is also where a drift would be
+// least exploitable (the 300ms failure delay dominates the difference).
 const DUMMY_HASH = `pbkdf2$120000$${"A".repeat(22)}$${"A".repeat(43)}`;
 
 async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }) {
@@ -74,6 +114,9 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
 
     if (action === "signup" && req.method === "POST") {
       const input = signupInput.parse(await readJson(req));
+      const ipKey = ipAttemptKey(clientIp(req));
+      await enforceRateLimit(ipKey, SIGNUP_IP_BUDGET);
+      if (isCommonPassword(input.password)) throw new HttpError(400, COMMON_PASSWORD_CN);
       const { DB } = bindings();
       const exists = await DB.prepare("SELECT id FROM users WHERE email = ?")
         .bind(input.email)
@@ -92,6 +135,7 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
           throw new HttpError(409, "该邮箱已注册，请直接登录。");
         throw e;
       }
+      await recordSuccess(ipKey);
       const token = await createSession(id);
       return jsonWithCookie(
         {
@@ -104,8 +148,19 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
 
     if (action === "signin" && req.method === "POST") {
       const input = signinInput.parse(await readJson(req));
-      if (isAuthThrottled(input.email))
-        throw new HttpError(429, "尝试次数过多，请 15 分钟后再试。");
+      const emailKey = emailAttemptKey(input.email);
+      const ipKey = ipAttemptKey(clientIp(req));
+      // Throttle per compromised-credential target AND per source IP; both
+      // budgets consume an attempt on every signin request.
+      if (RATE_LIMITS_ENABLED) {
+        const [emailVerdict, ipVerdict] = await Promise.all([
+          checkAndRecordFailure(emailKey, SIGNIN_EMAIL_BUDGET.limit, SIGNIN_EMAIL_BUDGET.windowMs),
+          checkAndRecordFailure(ipKey, SIGNIN_IP_BUDGET.limit, SIGNIN_IP_BUDGET.windowMs),
+        ]);
+        const blocked = [emailVerdict, ipVerdict].find((v) => !v.allowed);
+        if (blocked)
+          throw new RateLimitError(Math.max(emailVerdict.retryAfterSec, ipVerdict.retryAfterSec));
+      }
       const row = await bindings()
         .DB.prepare("SELECT id, display_name, email, password_hash FROM users WHERE email = ?")
         .bind(input.email)
@@ -116,10 +171,12 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
         ? await verifyPassword(input.password, row.password_hash)
         : await verifyPassword(input.password, DUMMY_HASH);
       if (!row || !ok) {
-        recordAuthFailure(input.email);
+        // The consumed attempts stay counted; no cleanup on failure.
         await delay(300);
         throw new HttpError(401, "邮箱或密码不正确。");
       }
+      // Successful signin resets both budgets.
+      await Promise.all([recordSuccess(emailKey), recordSuccess(ipKey)]);
       const token = await createSession(row.id);
       return jsonWithCookie(
         {
@@ -135,6 +192,16 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       return jsonWithCookie({ ok: true }, clearedSessionCookie(secure));
     }
 
+    // "Sign out everywhere": requires a live session, revokes every session
+    // of the user (all devices) and clears the cookie. The UI button is
+    // wired by a separate agent against POST /api/auth/signout-all.
+    if (action === "signout-all" && req.method === "POST") {
+      const user = await sessionUserByToken(readSessionToken(req));
+      if (!user) throw new HttpError(401, "请先登录。");
+      await revokeAllSessions(user.userId);
+      return jsonWithCookie({ ok: true }, clearedSessionCookie(secure));
+    }
+
     if (!action) {
       const token = readSessionToken(req);
       const user = await sessionUserByToken(token);
@@ -146,6 +213,18 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
 
     throw new HttpError(404, "接口不存在。");
   } catch (e) {
+    if (e instanceof RateLimitError)
+      return Response.json(
+        { error: e.message },
+        {
+          status: 429,
+          headers: {
+            "Cache-Control": "no-store",
+            "X-Content-Type-Options": "nosniff",
+            "Retry-After": String(Math.max(1, e.retryAfterSec)),
+          },
+        },
+      );
     if (e instanceof HttpError) return Response.json({ error: e.message }, { status: e.status });
     if (e instanceof z.ZodError)
       return Response.json({ error: "表单字段不完整或超出限制，请检查输入。" }, { status: 400 });

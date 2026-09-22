@@ -1,8 +1,8 @@
 // Drizzle schema for WS ATLAS. Defines the D1 tables — maps, reviews,
-// featured_maps, community_mods, mod_reviews, users, sessions — plus their
-// indexes. Drizzle is only used to generate the SQL migrations in drizzle/;
-// the runtime reads and writes through hand-written, parameterized D1 SQL,
-// not the query builder.
+// featured_maps, community_mods, mod_reviews, users, sessions, auth_attempts —
+// plus their indexes. Drizzle is only used to generate the SQL migrations in
+// drizzle/; the runtime reads and writes through hand-written, parameterized
+// D1 SQL, not the query builder.
 import { sql } from "drizzle-orm";
 import { sqliteTable, text, integer, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 export const maps = sqliteTable(
@@ -125,4 +125,17 @@ export const sessions = sqliteTable(
     createdAt: integer("created_at").notNull(),
   },
   (t) => [index("idx_sessions_user").on(t.userId), index("idx_sessions_expires").on(t.expiresAt)],
+);
+// Persisted brute-force counters for the auth endpoints, one row per live
+// window, keyed by attempt identity ("email:<lower(email)>" or "ip:<ip>").
+// Rows are deleted when their window resets, when the attempt succeeds, or
+// opportunistically GC'd alongside other writes.
+export const authAttempts = sqliteTable(
+  "auth_attempts",
+  {
+    attemptKey: text("attempt_key").primaryKey(),
+    windowStart: integer("window_start").notNull(),
+    count: integer("count").notNull(),
+  },
+  (t) => [index("idx_auth_attempts_window").on(t.windowStart)],
 );

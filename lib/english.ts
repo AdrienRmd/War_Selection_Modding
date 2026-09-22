@@ -1351,7 +1351,7 @@ export const english: Record<string, string> = {
     "Map and mod submission limits are counted separately. For each category, you may have up to 3 pending submissions and make up to 5 new submissions in 24 hours. If a network problem occurs, retry using the current form instead of repeatedly opening new pages.",
   "登录 WS ATLAS。": "Sign in to WS ATLAS.",
   "使用邮箱与密码登录，继续投稿与管理你的作品。":
-    "Sign in with your email and password to keep submitting and managing your work.",
+    "Sign in with your email address and password to keep submitting and managing your creations.",
   "创建你的账号。": "Create your account.",
   "注册后即可投稿地图与 Mod，并管理你的作品。":
     "Sign up to submit maps and mods and manage your creations.",
@@ -1375,5 +1375,7 @@ export const english: Record<string, string> = {
   "该邮箱已注册，请直接登录。": "This email is already registered. Sign in instead.",
   "邮箱或密码不正确。": "Incorrect email or password.",
   "尝试次数过多，请 15 分钟后再试。": "Too many attempts. Try again in 15 minutes.",
+  "密码过于常见，请选择更安全的密码。": "This password is too common. Please choose a safer one.",
+  退出所有设备: "Sign out of all devices",
   "服务暂时不可用，请稍后重试。": "The service is temporarily unavailable. Please try again later.",
 };

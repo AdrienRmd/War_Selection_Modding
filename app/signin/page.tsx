@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
-import { SignInForm } from "@/components/auth-forms";
+import { SignInForm } from "@/components/auth/signin-form";
 
 export const dynamic = "force-dynamic";
 

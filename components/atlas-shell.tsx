@@ -4,6 +4,7 @@ import { LanguageSwitcher, T } from "@/components/i18n";
 import { AtlasNav } from "@/components/atlas-nav";
 import { identity } from "@/lib/atlas-server";
 import { chatGPTSignInPath, chatGPTSignOutPath } from "@/app/chatgpt-auth";
+import { SignOutAllButton } from "@/components/auth/signout-all-button";
 export async function AtlasHeader() {
   const { user, admin } = await identity();
   return (
@@ -25,6 +26,7 @@ export async function AtlasHeader() {
               <a className="account-link" href={chatGPTSignOutPath()} target="_top">
                 <T text={"退出登录"} />
               </a>
+              <SignOutAllButton />
             </>
           ) : (
             <a className="account-link" href={chatGPTSignInPath("/")} target="_top">
