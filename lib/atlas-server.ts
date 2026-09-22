@@ -83,7 +83,15 @@ export class HttpError extends Error {
 }
 export function sameOrigin(req: Request) {
   const origin = req.headers.get("origin");
-  if (!origin || origin !== new URL(req.url).origin)
+  // Behind the trusted reverse proxy the worker is reached over plain HTTP,
+  // so req.url carries the origin-internal scheme; the browser-facing one
+  // only arrives via X-Forwarded-Proto (first hop of the chain, set by the
+  // proxy). Without that header (local dev, direct loopback traffic) req.url
+  // stays authoritative.
+  const url = new URL(req.url);
+  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase();
+  const expectedOrigin = forwardedProto ? `${forwardedProto}://${url.host}` : url.origin;
+  if (!origin || origin !== expectedOrigin)
     throw new HttpError(403, "请求来源校验失败，请刷新页面后重试。");
 }
 export async function limitedBody(req: Request, limit: number) {
