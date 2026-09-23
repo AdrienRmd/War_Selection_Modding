@@ -20,7 +20,7 @@ export function safeReturnTo(value: string | undefined): string {
 }
 
 export async function postAuth(
-  action: "signin" | "signup",
+  action: "signin" | "signup" | "change-password",
   body: Record<string, string>,
 ): Promise<{ ok: boolean; error?: string }> {
   try {

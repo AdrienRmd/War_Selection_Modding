@@ -485,6 +485,11 @@ button.account-link:disabled {
   background: #33393480;
   border-color: #52594f;
 }
+.status.admin {
+  color: #e5c992;
+  background: #6b562426;
+  border-color: #9a7f4573;
+}
 .mod-card h3 {
   font-size: 20px;
   font-weight: 500;

@@ -24,6 +24,9 @@ export async function AtlasHeader() {
           {user ? (
             <>
               <span className="account-name">{user.displayName}</span>
+              <Link className="account-link" href="/account">
+                <T text="我的账号" />
+              </Link>
               <a className="account-link" href={chatGPTSignOutPath()} target="_top">
                 <T text={"退出登录"} />
               </a>

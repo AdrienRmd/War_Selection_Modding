@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { bindings, HttpError, sameOrigin, limitedBody } from "@/lib/atlas-server";
+import { bindings, HttpError, isAdmin, json, sameOrigin, limitedBody } from "@/lib/atlas-server";
+import { getChatGPTUser } from "@/app/chatgpt-auth";
 import {
   checkAndRecordFailure,
   clearedSessionCookie,
@@ -7,7 +8,6 @@ import {
   createSession,
   destroySession,
   emailAttemptKey,
-  getSessionUser,
   hashPassword,
   ipAttemptKey,
   isCommonPassword,
@@ -15,6 +15,7 @@ import {
   readSessionToken,
   recordSuccess,
   revokeAllSessions,
+  revokeOtherSessions,
   sessionCookie,
   sessionUserByToken,
   verifyPassword,
@@ -32,6 +33,10 @@ const signinInput = z.object({
   email: emailField,
   password: z.string().min(1).max(128),
 });
+const changePasswordInput = z.object({
+  currentPassword: z.string().min(1).max(128),
+  newPassword: z.string().min(10).max(128),
+});
 
 // Persisted rate-limit budgets (auth_attempts table): signin is throttled per
 // email and per source IP, signup per source IP. Disabled in dev — see
@@ -42,8 +47,9 @@ const SIGNUP_IP_BUDGET = { limit: 20, windowMs: 60 * 60 * 1000 };
 
 // Existing i18n key (lib/english.ts / lib/french.ts both translate it).
 const TOO_MANY_ATTEMPTS_CN = "尝试次数过多，请 15 分钟后再试。";
-// NEW i18n key — EN/FR translations to be added by the i18n agent.
+// i18n keys (lib/english.ts / lib/french.ts both translate them).
 const COMMON_PASSWORD_CN = "密码过于常见，请选择更安全的密码。";
+const CURRENT_PASSWORD_CN = "当前密码不正确。";
 
 class RateLimitError extends HttpError {
   constructor(public retryAfterSec: number) {
@@ -103,9 +109,11 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
     if (req.method !== "GET") sameOrigin(req);
 
     if (action === "me" && req.method === "GET") {
-      const user = await getSessionUser();
+      // Same identity source as the server-rendered header (identity()), so
+      // { user } keeps its original shape and isAdmin mirrors ADMIN_EMAILS.
+      const user = await getChatGPTUser();
       return Response.json(
-        { user },
+        { user, isAdmin: isAdmin(user) },
         {
           headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" },
         },
@@ -200,6 +208,34 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       if (!user) throw new HttpError(401, "请先登录。");
       await revokeAllSessions(user.userId);
       return jsonWithCookie({ ok: true }, clearedSessionCookie(secure));
+    }
+
+    // "Change password": requires a live session, verifies the current
+    // password, rehashes with the current PBKDF2 setting and revokes every
+    // OTHER session of the user; the calling device stays signed in. The
+    // bounded body is consumed before any rejection so an early 401/400 never
+    // leaves an unread body that would reset a reused keep-alive connection
+    // under local Wrangler (see VALIDATION.md — same fix as the mods route).
+    if (action === "change-password" && req.method === "POST") {
+      const bytes = await limitedBody(req, 4096);
+      const token = readSessionToken(req);
+      const user = await sessionUserByToken(token);
+      if (!user || !token) throw new HttpError(401, "请先登录。");
+      const input = changePasswordInput.parse(JSON.parse(new TextDecoder().decode(bytes)));
+      if (isCommonPassword(input.newPassword)) throw new HttpError(400, COMMON_PASSWORD_CN);
+      const row = await bindings()
+        .DB.prepare("SELECT password_hash FROM users WHERE id = ?")
+        .bind(user.userId)
+        .first<{ password_hash: string }>();
+      if (!row || !(await verifyPassword(input.currentPassword, row.password_hash)))
+        throw new HttpError(401, CURRENT_PASSWORD_CN);
+      const passwordHash = await hashPassword(input.newPassword);
+      await bindings()
+        .DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?")
+        .bind(passwordHash, user.userId)
+        .run();
+      await revokeOtherSessions(user.userId, token);
+      return json({ ok: true });
     }
 
     if (!action) {

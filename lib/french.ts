@@ -597,7 +597,7 @@ export const french: Record<string, string> = {
   地图档案: "Archive de cartes",
   "Mod 资料库": "Bibliothèque de mods",
   我的创作: "Mes créations",
-  管理: "Gestion",
+  管理: "Administration",
   选择你的: "Choisissez votre ",
   "下一场战役。": "prochaine bataille.",
   "地图归地图，规则归规则。创作者在这里开始。":
@@ -1410,6 +1410,30 @@ export const french: Record<string, string> = {
   退出所有设备: "Se déconnecter de partout",
   "服务暂时不可用，请稍后重试。":
     "Le service est temporairement indisponible. Réessayez plus tard.",
+  // Page compte (/account) et changement de mot de passe — clés sources CN.
+  我的账号: "Mon compte",
+  ACCOUNT: "COMPTE",
+  "查看账号资料、修改密码并管理登录会话。":
+    "Consultez les informations du compte, modifiez le mot de passe et gérez vos sessions de connexion.",
+  账号资料: "Profil du compte",
+  管理员: "Administrateur",
+  修改密码: "Changer le mot de passe",
+  当前密码: "Mot de passe actuel",
+  新密码: "Nouveau mot de passe",
+  确认新密码: "Confirmer le nouveau mot de passe",
+  更新密码: "Mettre à jour le mot de passe",
+  "正在更新…": "Mise à jour…",
+  "密码已更新。其他设备的会话已退出。":
+    "Mot de passe mis à jour. Les sessions des autres appareils ont été déconnectées.",
+  "请输入当前密码。": "Saisissez le mot de passe actuel.",
+  "新密码至少 10 个字符。": "Le nouveau mot de passe doit contenir au moins 10 caractères.",
+  "新密码最多 128 个字符。": "Le nouveau mot de passe doit contenir au plus 128 caractères.",
+  "两次输入的新密码不一致。": "Les deux nouveaux mots de passe ne correspondent pas.",
+  "修改失败，请稍后重试。": "Échec de la modification. Réessayez plus tard.",
+  "当前密码不正确。": "Le mot de passe actuel est incorrect.",
+  登录会话: "Sessions",
+  "此账号可以审核地图与 Mod 投稿。": "Ce compte peut modérer les soumissions de cartes et de mods.",
+  打开管理员审核台: "Ouvrir la console de modération",
   // Clés EN (texte source rendu) ajoutées pour la couverture française.
   ".lua / .zip · Up to 10 MB": ".lua / .zip · 10 Mo maximum",
   "· Hidden": "· Masquée",

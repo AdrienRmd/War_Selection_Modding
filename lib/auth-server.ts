@@ -173,6 +173,19 @@ export async function revokeAllSessions(userId: string): Promise<void> {
   await (await db()).prepare("DELETE FROM sessions WHERE user_id = ?").bind(userId).run();
 }
 
+// Password-change companion to revokeAllSessions(): invalidate every session
+// of the user except the one that performed the change, so the current device
+// stays signed in while stolen copies of the old password are locked out.
+export async function revokeOtherSessions(userId: string, keepToken: string): Promise<void> {
+  const keepHash = await sha256Hex(keepToken);
+  await (
+    await db()
+  )
+    .prepare("DELETE FROM sessions WHERE user_id = ? AND token_hash != ?")
+    .bind(userId, keepHash)
+    .run();
+}
+
 // ---------------------------------------------------------------------------
 // Persisted (D1) brute-force throttling, backed by the auth_attempts table.
 //
