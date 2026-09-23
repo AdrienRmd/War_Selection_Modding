@@ -7,6 +7,7 @@ import {
   clientIp,
   createSession,
   destroySession,
+  DUMMY_HASH,
   emailAttemptKey,
   hashPassword,
   ipAttemptKey,
@@ -94,13 +95,6 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Well-formed dummy hash (16-byte salt, 32-byte hash) burned for unknown
-// emails so response timing does not reveal whether the address exists. Kept
-// at 120000 iterations on purpose: it matches the pre-210k hashes of every
-// account created before the hardening, which is also where a drift would be
-// least exploitable (the 300ms failure delay dominates the difference).
-const DUMMY_HASH = `pbkdf2$120000$${"A".repeat(22)}$${"A".repeat(43)}`;
-
 async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }) {
   try {
     const path = (await ctx.params).path || [];
@@ -143,7 +137,10 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
           throw new HttpError(409, "该邮箱已注册，请直接登录。");
         throw e;
       }
-      await recordSuccess(ipKey);
+      // No recordSuccess() on the IP key on purpose: the 20 signups/hour/IP
+      // budget must also bound successes, not only failures (otherwise a
+      // burst of valid signups resets the window after each account). Only
+      // the signin flow clears its buckets on success.
       const token = await createSession(id);
       return jsonWithCookie(
         {

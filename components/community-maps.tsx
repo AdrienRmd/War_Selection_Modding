@@ -51,8 +51,10 @@ export function CommunityMaps() {
       const d = await loadMaps(offset);
       setItems((a) => (offset ? [...a, ...d.items] : d.items));
       setMore(d.hasMore);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "暂时无法加载地图");
+    } catch {
+      // Raw browser/network messages (e.message) are never user-facing; show
+      // the i18n key instead so every locale gets a real translation.
+      setError("网络错误，请重试。");
     } finally {
       setLoading(false);
     }
@@ -63,8 +65,8 @@ export function CommunityMaps() {
         setItems(d.items);
         setMore(d.hasMore);
       })
-      .catch((e) => {
-        setError(e instanceof Error ? e.message : "暂时无法加载地图");
+      .catch(() => {
+        setError("网络错误，请重试。");
       })
       .finally(() => {
         setLoading(false);

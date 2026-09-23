@@ -11,6 +11,7 @@ export type ChatGPTUser = {
 };
 
 const SIGN_IN_PATH = "/signin";
+const SIGN_UP_PATH = "/signup";
 const SIGN_OUT_PATH = "/signout";
 const CALLBACK_PATH = "/callback";
 const LOCAL_AUTH_COOKIE = "__sites_local_auth";
@@ -70,5 +71,13 @@ function safeRelativeReturnPath(value: string): string {
 }
 
 function isReservedAuthPath(pathname: string): boolean {
-  return pathname === SIGN_IN_PATH || pathname === SIGN_OUT_PATH || pathname === CALLBACK_PATH;
+  // /signup is reserved like its siblings: a return_to pointing at an auth
+  // page would bounce users through flows they did not choose (and /signup
+  // redirects signed-in users back, which a crafted link could weaponize).
+  return (
+    pathname === SIGN_IN_PATH ||
+    pathname === SIGN_UP_PATH ||
+    pathname === SIGN_OUT_PATH ||
+    pathname === CALLBACK_PATH
+  );
 }

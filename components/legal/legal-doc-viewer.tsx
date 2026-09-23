@@ -19,8 +19,10 @@ export function LegalDocViewer({ docKey }: { docKey: LegalDocKey }) {
       {doc.sections.map((section) => (
         <section key={section.heading}>
           <h2>{section.heading}</h2>
-          {section.paragraphs.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
+          {section.paragraphs.map((paragraph, index) => (
+            // Index-suffixed key: legal texts may contain verbatim repeated
+            // paragraphs, which would collide under key={paragraph} alone.
+            <p key={`${paragraph}-${index}`}>{paragraph}</p>
           ))}
         </section>
       ))}

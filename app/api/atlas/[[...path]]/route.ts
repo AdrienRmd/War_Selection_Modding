@@ -25,7 +25,36 @@ const fields = z.object({
   rights: z.literal("true"),
 });
 const checks = ["ownership", "files", "gameplay", "description"] as const;
+// Drain rejected, bounded uploads without retaining bytes. Returning with an
+// unread/cancelled small body can reset a reused local HTTP/1.1 connection.
+// Same pattern as app/api/mods/[[...path]]/route.ts; the cap mirrors this
+// route's 13 MB limitedBody bound.
+async function discardUnusedBody(req: Request) {
+  if (!req.body || req.bodyUsed || req.body.locked) return;
+  const reader = req.body.getReader();
+  let size = 0;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      size += value.length;
+      if (size > 13 * 1024 * 1024) {
+        await reader.cancel();
+        break;
+      }
+    }
+  } catch {
+    /* Client disconnected; preserve the original response. */
+  } finally {
+    reader.releaseLock();
+  }
+}
 async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }) {
+  // R2 objects written for the in-flight submission; removed in the finally
+  // block unless the DB row committed and references them.
+  const uploaded: string[] = [];
+  let committed = false;
+  let submissionId = "";
   try {
     const path = (await ctx.params).path || [];
     const action = path[0];
@@ -35,7 +64,9 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       return json({
         signedIn: !!user,
         admin,
-        displayName: user?.fullName || "玩家",
+        // Sessions never carry a fullName (always null), so this response is
+        // the same for every signed-in user.
+        displayName: "玩家",
         email: user?.email || null,
       });
     if (action === "maps" && req.method === "GET") {
@@ -102,6 +133,7 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
     }
     if (action === "submissions" && req.method === "POST") {
       const id = uuid.parse(req.headers.get("x-submission-id"));
+      submissionId = id;
       const exists = await DB.prepare("SELECT id, owner_id FROM maps WHERE id = ?")
         .bind(id)
         .first<{ id: string; owner_id: string }>();
@@ -163,9 +195,14 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       const key = `submissions/${id}/${attempt}/map.zip`;
       const coverKey = coverBytes ? `submissions/${id}/${attempt}/cover` : null;
       const now = new Date().toISOString();
+      // Both objects are tracked so a failure between or after the puts can
+      // never strand a half-uploaded pair in R2 (see finally below).
       await BUCKET.put(key, fileBytes, { httpMetadata: { contentType: "application/zip" } });
-      if (coverBytes && coverKey)
+      uploaded.push(key);
+      if (coverBytes && coverKey) {
         await BUCKET.put(coverKey, coverBytes, { httpMetadata: { contentType: coverType! } });
+        uploaded.push(coverKey);
+      }
       try {
         const r = await DB.prepare(
           "INSERT INTO maps (id, owner_id, author, title, summary, description, game_version, players, category, mods, map_code, status, file_name, file_key, file_size, sha256, cover_key, cover_type, created_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,'pending',?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM maps WHERE owner_id = ? AND status = 'pending') < 3 AND (SELECT COUNT(*) FROM maps WHERE owner_id = ? AND created_at > ?) < 5",
@@ -203,6 +240,7 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
           await BUCKET.delete([key, ...(coverKey ? [coverKey] : [])]);
         if (!saved) throw e;
       }
+      committed = true;
       return json({ id, status: "pending" }, 201);
     }
     if (action === "review" && path[1] && req.method === "PATCH") {
@@ -263,6 +301,28 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
     if (e instanceof SyntaxError) return json({ error: "请求格式有误。" }, 400);
     console.error("Atlas request failed", e instanceof Error ? e.message : "Unknown failure");
     return json({ error: "服务暂时不可用，输入内容仍保留。请稍后重试。" }, 503);
+  } finally {
+    if (!committed && uploaded.length) {
+      // Conservative cleanup (pattern of app/api/editor/[id]/route.ts): drop
+      // only the uploaded objects no committed row references. On any
+      // uncertainty — DB error, raced insert, unknown state — keep the
+      // objects rather than delete something possibly referenced.
+      try {
+        const { DB, BUCKET } = bindings();
+        const current = submissionId
+          ? await DB.prepare("SELECT file_key, cover_key FROM maps WHERE id = ?")
+              .bind(submissionId)
+              .first<{ file_key: string | null; cover_key: string | null }>()
+          : null;
+        const orphaned = uploaded.filter(
+          (candidate) => candidate !== current?.file_key && candidate !== current?.cover_key,
+        );
+        if (orphaned.length) await BUCKET.delete(orphaned);
+      } catch {
+        /* Best effort only; never mask the original response. */
+      }
+    }
+    await discardUnusedBody(req);
   }
 }
 export { route as GET, route as POST, route as PATCH };

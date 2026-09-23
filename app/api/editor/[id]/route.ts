@@ -32,6 +32,31 @@ const metadata = z.object({
     .max(12)
     .optional(),
 });
+// Drain rejected, bounded uploads without retaining bytes. Returning with an
+// unread/cancelled small body can reset a reused local HTTP/1.1 connection.
+// Same pattern as app/api/mods/[[...path]]/route.ts; the cap mirrors this
+// route's 13 MB limitedBody bound. Early 401/403/409 rejections return before
+// the body is ever read, so the finally block drains it.
+async function discardUnusedBody(req: Request) {
+  if (!req.body || req.bodyUsed || req.body.locked) return;
+  const reader = req.body.getReader();
+  let size = 0;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      size += value.length;
+      if (size > 13 * 1024 * 1024) {
+        await reader.cancel();
+        break;
+      }
+    }
+  } catch {
+    /* Client disconnected; preserve the original response. */
+  } finally {
+    reader.releaseLock();
+  }
+}
 async function handle(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const uploaded: string[] = [];
   let committed = false;
@@ -190,6 +215,7 @@ async function handle(req: Request, { params }: { params: Promise<{ id: string }
         console.error("Map editor temporary upload cleanup failed");
       }
     }
+    await discardUnusedBody(req);
   }
 }
 export const GET = handle;

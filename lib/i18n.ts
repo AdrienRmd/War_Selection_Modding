@@ -96,13 +96,24 @@ export function translate(text: string, locale: Locale) {
   const key = `${text}\u0000${locale}`;
   const cached = cache.get(key);
   if (cached !== undefined) return cached;
-  const translated = lookup(chains[locale], text);
-  if (translated !== undefined) return remember(key, translated);
-  if (text.startsWith(validationPrefix))
+  const direct = exactThrough(chains[locale], text);
+  if (direct !== undefined) return remember(key, direct);
+  if (text.startsWith(validationPrefix)) {
+    // The remainder after the prefix is itself a workbench message (e.g.
+    // "${unit.name} #… · ${field.label}：请填写 …"): run it through the normal
+    // lookup — exact key first, then templates — and keep it verbatim when
+    // nothing matches, so composed validation errors are fully translated.
+    // This must happen BEFORE the generic template pass below: the bare
+    // "${unit.name} …" patterns would otherwise swallow the prefix into the
+    // unit.name slot instead of splitting the message.
+    const remainder = text.slice(validationPrefix.length);
+    const remainderTranslated = lookup(chains[locale], remainder) ?? remainder;
     return remember(
       key,
-      (exactThrough(chains[locale], validationPrefix) ?? validationPrefix) +
-        text.slice(validationPrefix.length),
+      (exactThrough(chains[locale], validationPrefix) ?? validationPrefix) + remainderTranslated,
     );
+  }
+  const translated = lookup(chains[locale], text);
+  if (translated !== undefined) return remember(key, translated);
   return remember(key, text);
 }

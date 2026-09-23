@@ -12,6 +12,11 @@ export const english: Record<string, string> = {
   "资料已更新，请重新载入后再提交。": "This archive has changed. Reload before submitting again.",
   "保存失败，当前草稿仍保留，请稍后重试。":
     "Save failed. Your draft is retained; please try again later.",
+  "地图不存在。": "Map not found.",
+  "暂时无法读取收藏地图。": "The saved-map archive is temporarily unavailable.",
+  "提交内容不是有效 JSON。": "The submitted content is not valid JSON.",
+  "缺少有效修订号，请刷新后重试。":
+    "Missing a valid revision number; refresh the page and try again.",
   收藏地图档案: "Saved-map archives",
   管理收藏地图: "Manage saved maps",
   "补充地图名称与原作者，记录测试状态，隐藏或恢复收藏。":
@@ -734,7 +739,7 @@ export const english: Record<string, string> = {
   "稿件将停止公开展示和下载，保留原文件与审核记录。若要恢复，编辑保存后重新提交审核。":
     "The submission will no longer be displayed or downloadable publicly. The original files and review records will be retained. To restore it, edit and save it, then resubmit for review.",
   确认撤回: "Confirm withdrawal",
-  暂时无法加载地图: "Maps are temporarily unavailable",
+  "网络错误，请重试。": "Network error, please try again.",
   社区战场: "Community battlefields",
   搜索已加载的玩家地图: "Search loaded player maps",
   "搜索已加载地图、作者…": "Search loaded maps or authors…",

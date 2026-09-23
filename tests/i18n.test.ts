@@ -41,6 +41,29 @@ describe("dictionnaire français", () => {
     );
   });
 
+  it("traduit les 4 erreurs de l'API collection en EN et FR", () => {
+    const keys = [
+      "地图不存在。",
+      "暂时无法读取收藏地图。",
+      "提交内容不是有效 JSON。",
+      "缺少有效修订号，请刷新后重试。",
+    ];
+    for (const key of keys) {
+      expect(translate(key, "en")).not.toBe(key);
+      expect(translate(key, "fr")).not.toBe(key);
+    }
+    expect(translate("地图不存在。", "en")).toBe("Map not found.");
+    expect(translate("地图不存在。", "fr")).toBe("Carte introuvable.");
+  });
+
+  it("traduit le préfixe ET le remainder d'une erreur de validation d'export", () => {
+    const input =
+      "导出校验未通过，请检查改动：Mk-II #7 · Blindage：请填写 0–100 之间的有效数值（最小精度 0.5）。";
+    expect(translate(input, "fr")).toBe(
+      "Échec de la validation d'export. Vérifiez vos modifications : Mk-II #7 · Blindage : saisissez une valeur valide entre 0 et 100, par pas de 0.5.",
+    );
+  });
+
   it("garde le chinois inchangé et laisse le repli EN puis texte original", () => {
     expect(translate("地图", "zh")).toBe("地图");
     expect(translate("地图", "en")).toBe("Maps");

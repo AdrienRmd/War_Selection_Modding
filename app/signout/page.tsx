@@ -14,7 +14,13 @@ function safeRelativeReturnPath(value: string): string {
     return "/";
   }
   if (url.origin !== "https://app.local") return "/";
-  if (url.pathname === "/signin" || url.pathname === "/signout" || url.pathname === "/callback")
+  // Mirror of isReservedAuthPath() in app/chatgpt-auth.ts; /signup included.
+  if (
+    url.pathname === "/signin" ||
+    url.pathname === "/signup" ||
+    url.pathname === "/signout" ||
+    url.pathname === "/callback"
+  )
     return "/";
 
   return `${url.pathname}${url.search}${url.hash}`;

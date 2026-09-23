@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DUMMY_HASH,
   hashPassword,
   isCommonPassword,
   PBKDF2_ITERATIONS,
@@ -59,6 +60,21 @@ describe("hashPassword / verifyPassword", () => {
     expect(parts[1]).toBe("210000");
     expect(parts[2]).toMatch(/^[A-Za-z0-9_-]{22}$/); // 16 bytes base64url
     expect(parts[3]).toMatch(/^[A-Za-z0-9_-]{43}$/); // 32 bytes base64url
+  });
+
+  it("brûle un hash factice au nombre d'itérations courant (210k)", async () => {
+    // Le hash factice des emails inconnus suit le format complet et l'indice
+    // d'itérations actuel : le temps de réponse ne fuit ni l'existence du
+    // compte ni le niveau de durcissement. verifyPassword lit l'itération
+    // stockée dans le hash, donc rétrocompatible avec les anciens comptes.
+    const parts = DUMMY_HASH.split("$");
+    expect(parts).toHaveLength(4);
+    expect(parts[0]).toBe("pbkdf2");
+    expect(parts[1]).toBe(String(PBKDF2_ITERATIONS));
+    expect(parts[1]).toBe("210000");
+    expect(parts[2]).toMatch(/^[A-Za-z0-9_-]{22}$/); // 16 bytes base64url
+    expect(parts[3]).toMatch(/^[A-Za-z0-9_-]{43}$/); // 32 bytes base64url
+    expect(await verifyPassword("whatever-password", DUMMY_HASH)).toBe(false);
   });
 
   it("rétrocompatible : vérifie un hash 120k forgé à la main", async () => {

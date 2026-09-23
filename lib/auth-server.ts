@@ -62,6 +62,13 @@ export async function hashPassword(password: string): Promise<string> {
   return `pbkdf2$${PBKDF2_ITERATIONS}$${b64urlEncode(salt)}$${b64urlEncode(hash)}`;
 }
 
+// Well-formed dummy hash (16-byte salt, 32-byte hash) burned for unknown
+// emails so signin response timing does not reveal whether the address
+// exists. Built from the current PBKDF2_ITERATIONS so the burned work matches
+// today's real hashes; verifyPassword() reads the iteration count stored in
+// the hash string, so this stays retrocompatible with any legacy count.
+export const DUMMY_HASH = `pbkdf2$${PBKDF2_ITERATIONS}$${"A".repeat(22)}$${"A".repeat(43)}`;
+
 export async function verifyPassword(password: string, stored: string): Promise<boolean> {
   const parts = stored.split("$");
   if (parts.length !== 4 || parts[0] !== "pbkdf2") return false;
@@ -212,13 +219,19 @@ export function ipAttemptKey(ip: string): string {
   return `ip:${ip}`;
 }
 
-// The site sits behind a trusted Apache reverse proxy that appends the client
-// address to X-Forwarded-For; the first hop is the original client. Requests
-// without the header (local dev, direct origin access) collapse into the
-// shared "unknown" bucket. The value is capped so it cannot bloat the key.
+// The site sits behind a trusted reverse proxy configured to RESET
+// X-Forwarded-For (Apache kit: `RequestHeader unset X-Forwarded-For early` +
+// `RequestHeader set ... "expr=%{REMOTE_ADDR}"`; nginx kit: `$remote_addr`
+// instead of $proxy_add_x_forwarded_for). The header therefore contains at
+// most the one value our proxy wrote, and any leading hop would be a
+// client-forged chain: the LAST hop — the closest to the server, set by the
+// proxy we control — is the only trustworthy one, so it is the one used.
+// Requests without the header (local dev, direct origin access) collapse into
+// the shared "unknown" bucket. The value is capped so it cannot bloat the key.
 export function clientIp(req: Request): string {
-  const first = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return first ? first.slice(0, 64) : "unknown";
+  const hops = req.headers.get("x-forwarded-for")?.split(",");
+  const last = hops?.[hops.length - 1]?.trim();
+  return last ? last.slice(0, 64) : "unknown";
 }
 
 // Widest window any caller may configure; doubles as the global GC cutoff.

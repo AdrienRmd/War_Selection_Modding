@@ -15,6 +15,11 @@ export const french: Record<string, string> = {
     "Cette fiche a été mise à jour. Rechargez la page avant de soumettre à nouveau.",
   "保存失败，当前草稿仍保留，请稍后重试。":
     "Échec de l'enregistrement. Votre brouillon est conservé ; réessayez plus tard.",
+  "地图不存在。": "Carte introuvable.",
+  "暂时无法读取收藏地图。": "L'archive de cartes sauvegardées est temporairement indisponible.",
+  "提交内容不是有效 JSON。": "Le contenu soumis n'est pas un JSON valide.",
+  "缺少有效修订号，请刷新后重试。":
+    "Numéro de révision valide manquant ; actualisez la page puis réessayez.",
   收藏地图档案: "Archives de cartes sauvegardées",
   管理收藏地图: "Gérer les cartes sauvegardées",
   "补充地图名称与原作者，记录测试状态，隐藏或恢复收藏。":
@@ -756,7 +761,7 @@ export const french: Record<string, string> = {
   "稿件将停止公开展示和下载，保留原文件与审核记录。若要恢复，编辑保存后重新提交审核。":
     "La soumission ne sera plus affichée ni téléchargeable publiquement. Les fichiers d'origine et les relevés de modération sont conservés. Pour la rétablir, modifiez-la, enregistrez-la, puis soumettez-la à nouveau à la modération.",
   确认撤回: "Confirmer le retrait",
-  暂时无法加载地图: "Les cartes sont temporairement indisponibles",
+  "网络错误，请重试。": "Erreur réseau, réessaie.",
   社区战场: "Champs de bataille communautaires",
   搜索已加载的玩家地图: "Rechercher parmi les cartes de joueurs chargées",
   "搜索已加载地图、作者…": "Rechercher des cartes chargées ou des auteurs…",
