@@ -1,11 +1,12 @@
 "use client";
 import Link from "@/components/site-link";
-import { useI18n } from "@/components/i18n";
+import { useBilingual, useI18n } from "@/components/i18n";
 import type { MapProvenance as Provenance } from "@/lib/collection";
 import { GitBranch, ExternalLink } from "lucide-react";
 
 export function MapProvenance({ map }: { map: Provenance }) {
   const { locale } = useI18n();
+  const l = useBilingual();
   const en = locale !== "zh";
   if (!map.sources?.length && !map.relation_note && !map.related_maps?.length) return null;
   const editions = {
@@ -18,15 +19,17 @@ export function MapProvenance({ map }: { map: Provenance }) {
       <div className="section-head">
         <h2>
           <GitBranch size={20} />
-          {en ? "Origins & editions" : "来源与版本关系"}
+          {l("来源与版本关系", "Origins & editions")}
         </h2>
         {map.edition && (
-          <span className="collection-state">{editions[map.edition][en ? 1 : 0]}</span>
+          <span className="collection-state">
+            {l(editions[map.edition][0], editions[map.edition][1])}
+          </span>
         )}
       </div>
       {map.map_version && (
         <p className="caption">
-          {en ? "Map version in source: " : "原帖地图版本："}
+          {l("原帖地图版本：", "Map version in source: ")}
           {map.map_version}
         </p>
       )}
@@ -51,9 +54,10 @@ export function MapProvenance({ map }: { map: Provenance }) {
             </a>
           ))}
           <small>
-            {en
-              ? "Discord may require sign-in and server access. Source rules are not current-version test results."
-              : "Discord 原帖可能需要登录并加入服务器。原帖规则不代表当前版本实测结果。"}
+            {l(
+              "Discord 原帖可能需要登录并加入服务器。原帖规则不代表当前版本实测结果。",
+              "Discord may require sign-in and server access. Source rules are not current-version test results.",
+            )}
           </small>
         </div>
       )}

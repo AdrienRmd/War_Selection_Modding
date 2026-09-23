@@ -1,7 +1,7 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import Link from "@/components/site-link";
-import { useI18n } from "@/components/i18n";
+import { useBilingual, useI18n } from "@/components/i18n";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,10 @@ import {
 } from "@/lib/collection";
 export function CollectedMapEditor({ initial }: { initial: CollectedMap }) {
   const { locale, t } = useI18n();
+  const l = useBilingual();
   const en = locale !== "zh";
+  const label = (pair: readonly [string, string] | undefined) =>
+    pair ? (locale === "zh" ? pair[0] : t(pair[1])) : "";
   const [body, setBody] = useState<CollectionBody>(() => collectionBody(initial)),
     [revision, setRevision] = useState(initial.revision),
     [busy, setBusy] = useState(false),
@@ -40,7 +43,7 @@ export function CollectedMapEditor({ initial }: { initial: CollectedMap }) {
       if (!r.ok) throw new Error(d.error || "保存失败");
       setRevision(d.revision);
       setOk(true);
-      setMessage(en ? "Archive saved." : "档案已保存。");
+      setMessage(l("档案已保存。", "Archive saved."));
     } catch (e) {
       setMessage(
         e instanceof Error
@@ -101,7 +104,7 @@ export function CollectedMapEditor({ initial }: { initial: CollectedMap }) {
   return (
     <form onSubmit={submit} className="panel collection-editor">
       <Link className="back-link" href={`/maps/${initial.id}`}>
-        {en ? "← Return to archive" : "← 返回地图档案"}
+        {l("← 返回地图档案", "← Return to archive")}
       </Link>
       <p className="notice">
         {en
@@ -109,13 +112,13 @@ export function CollectedMapEditor({ initial }: { initial: CollectedMap }) {
           : "只填写已知信息。收录不代表实测；名称、作者、人数不确定时可以留空。"}
       </p>
       <label>
-        {en ? "Original map code (stable archive identity)" : "原地图码（档案固定标识）"}
+        {l("原地图码（档案固定标识）", "Original map code (stable archive identity)")}
         <Input readOnly value={initial.map_code} />
       </label>
       <div className="collection-editor-fields">
         {lines.map(({ key, zh, en: labelEn, max, area }) => (
           <label key={key} className={area ? "wide" : ""}>
-            {en ? labelEn : zh}
+            {locale === "zh" ? zh : t(labelEn)}
             {area ? (
               <Textarea
                 value={String(body[key] ?? "")}
@@ -133,7 +136,7 @@ export function CollectedMapEditor({ initial }: { initial: CollectedMap }) {
           </label>
         ))}
         <label>
-          {en ? "Player count (source notes)" : "地图人数（原记录）"}
+          {l("地图人数（原记录）", "Player count (source notes)")}
           <Input
             type="number"
             min={1}
@@ -145,46 +148,46 @@ export function CollectedMapEditor({ initial }: { initial: CollectedMap }) {
           />
         </label>
         <label>
-          {en ? "Map type" : "地图类型"}
+          {l("地图类型", "Map type")}
           <select
             value={body.category}
             onChange={(e) => field("category", e.target.value as CollectionBody["category"])}
           >
             {collectionCategories.map((k) => (
               <option key={k} value={k}>
-                {collectionLabels[k][en ? 1 : 0]}
+                {label(collectionLabels[k])}
               </option>
             ))}
           </select>
         </label>
       </div>
-      <h2>{en ? "Testing and visibility" : "实测与公开状态"}</h2>
+      <h2>{l("实测与公开状态", "Testing and visibility")}</h2>
       <div className="collection-editor-fields">
         <label>
-          {en ? "Test status" : "测试状态"}
+          {l("测试状态", "Test status")}
           <select
             value={body.test_status}
             onChange={(e) => field("test_status", e.target.value as CollectionBody["test_status"])}
           >
             {collectionTestStates.map((k) => (
               <option key={k} value={k}>
-                {collectionLabels[k][en ? 1 : 0]}
+                {label(collectionLabels[k])}
               </option>
             ))}
           </select>
         </label>
         <label>
-          {en ? "Public collection" : "公开收藏"}
+          {l("公开收藏", "Public collection")}
           <select
             value={body.visibility}
             onChange={(e) => field("visibility", e.target.value as "listed" | "hidden")}
           >
-            <option value="listed">{en ? "Listed" : "已收录 · 公开"}</option>
-            <option value="hidden">{en ? "Hidden (reversible)" : "隐藏（可恢复）"}</option>
+            <option value="listed">{l("已收录 · 公开", "Listed")}</option>
+            <option value="hidden">{l("隐藏（可恢复）", "Hidden (reversible)")}</option>
           </select>
         </label>
         <label>
-          {en ? "Game version tested" : "实测游戏版本"}
+          {l("实测游戏版本", "Game version tested")}
           <Input
             maxLength={100}
             value={body.game_version}
@@ -192,7 +195,7 @@ export function CollectedMapEditor({ initial }: { initial: CollectedMap }) {
           />
         </label>
         <label>
-          {en ? "Test date" : "测试日期"}
+          {l("测试日期", "Test date")}
           <Input
             type="date"
             max={new Date().toISOString().slice(0, 10)}
@@ -201,7 +204,7 @@ export function CollectedMapEditor({ initial }: { initial: CollectedMap }) {
           />
         </label>
         <label className="wide">
-          {en ? "Chinese test notes" : "中文实测记录"}
+          {l("中文实测记录", "Chinese test notes")}
           <Textarea
             rows={4}
             maxLength={4000}
@@ -210,7 +213,7 @@ export function CollectedMapEditor({ initial }: { initial: CollectedMap }) {
           />
         </label>
         <label className="wide">
-          {en ? "English test notes" : "英文实测记录"}
+          {l("英文实测记录", "English test notes")}
           <Textarea
             rows={4}
             maxLength={5000}
@@ -230,7 +233,7 @@ export function CollectedMapEditor({ initial }: { initial: CollectedMap }) {
         </p>
       )}
       <Button type="submit" disabled={busy}>
-        {busy ? (en ? "Saving…" : "保存中…") : en ? "Save archive" : "保存地图档案"}
+        {busy ? l("保存中…", "Saving…") : l("保存地图档案", "Save archive")}
       </Button>
     </form>
   );

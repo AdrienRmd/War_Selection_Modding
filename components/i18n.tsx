@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { Languages } from "lucide-react";
 import { translate, type Locale } from "@/lib/i18n";
 const htmlLang: Record<Locale, string> = { zh: "zh-CN", en: "en", fr: "fr" };
@@ -17,7 +17,24 @@ export function LocaleProvider({ initial, children }: { initial: Locale; childre
 }
 export function useI18n() {
   const { locale, setLocale } = useContext(Context);
-  return { locale, setLocale, t: (s: string) => translate(s, locale) };
+  const t = useCallback((s: string) => translate(s, locale), [locale]);
+  return { locale, setLocale, t };
+}
+// Bilingual helper for UI strings authored as (zh, en) pairs. zh keeps the
+// source text, en keeps the English literal, and fr resolves through the
+// dictionary: first the zh key, then the English text as key, else English.
+// Memoized so the helper is a stable effect dependency.
+export function useBilingual() {
+  const { locale, t } = useI18n();
+  return useCallback(
+    (zh: string, en: string): string => {
+      if (locale === "zh") return zh;
+      if (locale === "en") return en;
+      const direct = translate(zh, locale);
+      return direct === zh || direct === en ? t(en) : direct;
+    },
+    [locale, t],
+  );
 }
 export function T({ text }: { text: ReactNode }) {
   const { locale } = useContext(Context);
@@ -28,10 +45,10 @@ export function Bilingual({ zh, en }: { zh: string; en?: string }) {
   return locale !== "zh" && en ? en : t(zh);
 }
 export function LanguageSwitcher() {
-  const { locale, setLocale } = useI18n();
+  const { locale, setLocale, t } = useI18n();
   return (
     <div className="language-bar">
-      <div className="language-control" aria-label="Language / 语言">
+      <div className="language-control" aria-label={t("Language / 语言")}>
         <Languages size={14} />
         <button
           type="button"

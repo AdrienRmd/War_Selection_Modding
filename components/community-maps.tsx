@@ -80,7 +80,9 @@ export function CommunityMaps() {
     <section className="community-section">
       <div className="section-head">
         <div>
-          <p className="eyebrow">PLAYER SUBMISSIONS</p>
+          <p className="eyebrow">
+            <T text="PLAYER SUBMISSIONS" />
+          </p>
           <h2>
             <T text={"社区战场"} />
           </h2>

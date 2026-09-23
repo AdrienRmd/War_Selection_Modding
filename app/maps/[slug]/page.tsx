@@ -163,7 +163,7 @@ export default async function MapPage({ params }: { params: Promise<{ slug: stri
               <Download size={18} /> <T text={"下载地图 ZIP 包"} />
             </a>
             <p className="checksum">
-              SHA-256: <T text={m.sha256} />
+              <T text="SHA-256:" /> <T text={m.sha256} />
             </p>
             <p className="caption">
               <T text={"审核不等于官方认证或自动病毒扫描。请自行扫描文件并备份游戏内容。"} />

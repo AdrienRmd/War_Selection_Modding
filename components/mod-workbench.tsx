@@ -15,7 +15,7 @@ import {
   Check,
   Settings2,
 } from "lucide-react";
-import { useI18n } from "@/components/i18n";
+import { T, useBilingual, useI18n } from "@/components/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -136,7 +136,8 @@ export function ModWorkbench() {
 }
 function Workspace({ catalog }: { catalog: Catalog }) {
   const { t, locale } = useI18n();
-  const b = (zh: string, en: string) => (locale !== "zh" ? en : zh);
+
+  const b = useBilingual();
   const [selected, setSelected] = useState(6),
     [query, setQuery] = useState(""),
     [nation, setNation] = useState("all"),
@@ -391,20 +392,22 @@ function Workspace({ catalog }: { catalog: Catalog }) {
     ) : null;
   };
   const tabs = [
-    ["base", "基础", "General"],
-    ["weapons", "武器", "Weapons"],
-    ["armor", "护甲", "Armor"],
-    ["work", "生产与科技", "Work & research"],
-    ["build", "建造", "Building"],
-    ["economy", "经济", "Economy"],
-    ["transport", "运输与航空", "Transport & air"],
-    ["skills", "技能", "Abilities"],
+    ["base", b("基础", "General")],
+    ["weapons", b("武器", "Weapons")],
+    ["armor", b("护甲", "Armor")],
+    ["work", b("生产与科技", "Work & research")],
+    ["build", b("建造", "Building")],
+    ["economy", b("经济", "Economy")],
+    ["transport", b("运输与航空", "Transport & air")],
+    ["skills", b("技能", "Abilities")],
   ];
   return (
     <>
       <div className="workbench-heading">
         <div>
-          <p className="eyebrow">MOD WORKBENCH / FIELD GUIDE</p>
+          <p className="eyebrow">
+            <T text="MOD WORKBENCH / FIELD GUIDE" />
+          </p>
           <h1>{t("Mod 工作台")}</h1>
           <p>
             {b(
@@ -534,7 +537,7 @@ function Workspace({ catalog }: { catalog: Catalog }) {
             </div>
             <div>
               <p className="eyebrow">
-                UNIT {unit.id} / {t(unit.nation)}
+                <T text="UNIT" /> {unit.id} / {t(unit.nation)}
               </p>
               <h2>{unitName(unit)}</h2>
               <p>{locale === "en" ? unit.name : unit.nameEn}</p>
@@ -573,9 +576,9 @@ function Workspace({ catalog }: { catalog: Catalog }) {
           <Tabs defaultValue="base">
             <div className="editor-tabs">
               <TabsList aria-label={t("参数分组")}>
-                {tabs.map(([key, zh, en]) => (
+                {tabs.map(([key, label]) => (
                   <TabsTrigger value={key} key={key}>
-                    {b(zh, en)}
+                    {label}
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -754,9 +757,9 @@ function Workspace({ catalog }: { catalog: Catalog }) {
               <div className="ability-reference">
                 {unit.abilityItems.map((a) => (
                   <p key={a.id}>
-                    Ability {a.id} · type {a.type}
-                    {a.target !== undefined && " · Unit " + a.target}
-                    {a.research !== undefined && " · Research " + a.research}
+                    {t("Ability")} {a.id} · {t("type")} {a.type}
+                    {a.target !== undefined && " · " + t("Unit") + " " + a.target}
+                    {a.research !== undefined && " · " + t("Research") + " " + a.research}
                     {a.action && " · " + b("由动作触发", "action-triggered")}
                   </p>
                 ))}
@@ -951,7 +954,7 @@ function Workspace({ catalog }: { catalog: Catalog }) {
         <FileCode2 size={22} />
         <div>
           <strong>
-            Gameplay {catalog.provenance.gameplayVersion} · Steam {catalog.provenance.steamBuild}
+            {`Gameplay ${catalog.provenance.gameplayVersion} · Steam ${catalog.provenance.steamBuild}`}
           </strong>
           <p>
             {b("数据更新 ", "Snapshot updated ")}
@@ -1001,8 +1004,9 @@ function RuleEditor({
   rules: Rule[];
   setRules: React.Dispatch<React.SetStateAction<Rule[]>>;
 }) {
-  const { locale } = useI18n(),
-    b = (zh: string, en: string) => (locale !== "zh" ? en : zh);
+  const { locale } = useI18n();
+
+  const b = useBilingual();
   const [id, setId] = useState("201"),
     [min, setMin] = useState("1"),
     [max, setMax] = useState("65535"),
@@ -1058,8 +1062,9 @@ function RuleEditor({
             : b("无", "None")}
         </p>
         <p>
-          {b("保留科技前置", "Research prerequisites retained")}: ANY [
-          {base.researchAny.join(", ") || "—"}] · ALL [{base.researchAll.join(", ") || "—"}]
+          {`${b("保留科技前置", "Research prerequisites retained")}: ANY [${
+            base.researchAny.join(", ") || "—"
+          }] · ALL [${base.researchAll.join(", ") || "—"}]`}
         </p>
         {current.map((r) => (
           <p className="condition-preview" key={r.requiredUnitId}>
@@ -1152,8 +1157,9 @@ function RuleEditor({
   );
 }
 function Help({ catalog }: { catalog: Catalog }) {
-  const { locale, t } = useI18n(),
-    b = (zh: string, en: string) => (locale !== "zh" ? en : zh);
+  const { t } = useI18n();
+
+  const b = useBilingual();
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -1210,7 +1216,7 @@ function Help({ catalog }: { catalog: Catalog }) {
         </p>
         <h3>{t("数据与兼容性")}</h3>
         <p>
-          Steam {catalog.provenance.steamBuild} / Gameplay {catalog.provenance.gameplayVersion}.{" "}
+          {`Steam ${catalog.provenance.steamBuild} / Gameplay ${catalog.provenance.gameplayVersion}. `}
           {b(
             "高级选项包含版本相关原始值，已逐项标注；所有导出仍需实机测试。",
             "Advanced options include labeled version-dependent raw values. All exports still require in-game testing.",
@@ -1222,7 +1228,7 @@ function Help({ catalog }: { catalog: Catalog }) {
             target="_blank"
             rel="noreferrer"
           >
-            Modding guide
+            <T text="Modding guide" />
           </a>
           <a href="https://github.com/IbubussI/wsunitstats-static" target="_blank" rel="noreferrer">
             WS Unit Stats

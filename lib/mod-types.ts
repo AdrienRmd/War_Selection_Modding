@@ -25,6 +25,13 @@ export const kindLabels: Record<string, [string, string]> = {
   tool: ["工具", "Tool"],
   tutorial: ["教程 / 示例", "Tutorial / example"],
 };
+export const publicationLabels: Record<string, [string, string]> = {
+  all: ["全部", "All"],
+  pending: ["待审核", "Pending"],
+  approved: ["已公开", "Published"],
+  rejected: ["需修改 / 下架", "Changes requested"],
+  withdrawn: ["已撤回", "Withdrawn"],
+};
 export type ModBody = {
   title: string;
   title_en: string;

@@ -252,7 +252,7 @@ function SubmissionCard({
           <span>
             <T text={m.file_name} />
             <small>
-              <T text={(m.file_size / 1024 / 1024).toFixed(2)} /> MB · ZIP
+              <T text={(m.file_size / 1024 / 1024).toFixed(2)} /> <T text="MB · ZIP" />
             </small>
           </span>
           <a className="button" href={`/api/atlas/files/${m.id}`}>
@@ -260,7 +260,7 @@ function SubmissionCard({
           </a>
         </div>
         <p className="checksum">
-          SHA-256: <T text={m.sha256} />
+          <T text="SHA-256:" /> <T text={m.sha256} />
         </p>
       </details>
       {m.feedback && (

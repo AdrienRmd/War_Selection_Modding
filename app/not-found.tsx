@@ -4,7 +4,9 @@ export default function NotFound() {
   return (
     <main className="shell">
       <div className="empty-surface">
-        <p className="eyebrow">404 / OUTSIDE THE ARCHIVE</p>
+        <p className="eyebrow">
+          <T text="404 / OUTSIDE THE ARCHIVE" />
+        </p>
         <h1>
           <T text={"这份战场档案还没有公开。"} />
         </h1>

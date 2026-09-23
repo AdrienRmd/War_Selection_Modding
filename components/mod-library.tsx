@@ -10,10 +10,11 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Bilingual, useI18n } from "@/components/i18n";
+import { Bilingual, T, useBilingual, useI18n } from "@/components/i18n";
 import { usageLabels, kindLabels, type ModEntry } from "@/lib/mod-types";
 export function UsageBadge({ value }: { value: string }) {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
+  const pair = usageLabels[value];
   return (
     <span
       className={
@@ -27,13 +28,13 @@ export function UsageBadge({ value }: { value: string }) {
               : "testing")
       }
     >
-      {(usageLabels[value] || [value, value])[locale !== "zh" ? 1 : 0]}
+      {pair ? (locale === "zh" ? pair[0] : t(pair[1])) : value}
     </span>
   );
 }
 export function ModLibrary({ entries }: { entries: ModEntry[] }) {
-  const { locale } = useI18n(),
-    l = (z: string, e: string) => (locale !== "zh" ? e : z);
+  const { locale, t } = useI18n(),
+    l = useBilingual();
   const [query, setQuery] = useState(""),
     [status, setStatus] = useState("all"),
     [source, setSource] = useState("all");
@@ -65,7 +66,9 @@ export function ModLibrary({ entries }: { entries: ModEntry[] }) {
       </div>
       <div className="library-layout">
         <aside className="library-sidebar">
-          <p className="eyebrow">FILTER / DISCOVER</p>
+          <p className="eyebrow">
+            <T text="FILTER / DISCOVER" />
+          </p>
           <h2>{l("Mod 状态", "Usage status")}</h2>
           {["all", ...new Set(entries.map((m) => m.usage_status))].map((s) => (
             <button
@@ -75,7 +78,13 @@ export function ModLibrary({ entries }: { entries: ModEntry[] }) {
               onClick={() => setStatus(s)}
               aria-pressed={s === status}
             >
-              {s === "all" ? l("全部", "All") : usageLabels[s]?.[locale !== "zh" ? 1 : 0]}
+              {s === "all"
+                ? l("全部", "All")
+                : usageLabels[s]
+                  ? locale === "zh"
+                    ? usageLabels[s][0]
+                    : t(usageLabels[s][1])
+                  : s}
               <span>{entries.filter((m) => s === "all" || m.usage_status === s).length}</span>
             </button>
           ))}
@@ -84,14 +93,16 @@ export function ModLibrary({ entries }: { entries: ModEntry[] }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {[
-                ["all", "全部来源", "All sources"],
-                ["stalingrad", "斯大林格勒", "Stalingrad"],
-                ["github", "GitHub 项目", "GitHub projects"],
-                ["community", "社区投稿", "Community"],
-              ].map(([v, z, e]) => (
+              {(
+                [
+                  ["all", l("全部来源", "All sources")],
+                  ["stalingrad", l("斯大林格勒", "Stalingrad")],
+                  ["github", l("GitHub 项目", "GitHub projects")],
+                  ["community", l("社区投稿", "Community")],
+                ] as const
+              ).map(([v, label]) => (
                 <SelectItem key={v} value={v}>
-                  {l(z, e)}
+                  {label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -125,7 +136,13 @@ export function ModLibrary({ entries }: { entries: ModEntry[] }) {
             {items.map((m) => (
               <article className="mod-card" key={m.id}>
                 <div className="mod-card-head">
-                  <span className="mod-index">{kindLabels[m.kind]?.[locale !== "zh" ? 1 : 0]}</span>
+                  <span className="mod-index">
+                    {kindLabels[m.kind]
+                      ? locale === "zh"
+                        ? kindLabels[m.kind][0]
+                        : t(kindLabels[m.kind][1])
+                      : m.kind}
+                  </span>
                   <UsageBadge value={m.usage_status} />
                 </div>
                 <h3>
@@ -143,7 +160,7 @@ export function ModLibrary({ entries }: { entries: ModEntry[] }) {
                       ? "GitHub"
                       : m.origin === "stalingrad"
                         ? "Stalingrad"
-                        : "Community"}
+                        : l("社区", "Community")}
                   </span>
                   <Link href={"/mods/" + m.id} className="text-link">
                     {l("查看资料", "Explore")}

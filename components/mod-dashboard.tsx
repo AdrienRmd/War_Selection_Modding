@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "@/components/site-link";
-import { Bilingual, useI18n } from "@/components/i18n";
+import { Bilingual, useBilingual, useI18n } from "@/components/i18n";
 import type { ModEntry } from "@/lib/mod-types";
+import { publicationLabels } from "@/lib/mod-types";
 import { UsageBadge } from "@/components/mod-library";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,13 +25,6 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-const states: Record<string, [string, string]> = {
-  all: ["全部", "All"],
-  pending: ["待审核", "Pending"],
-  approved: ["已公开", "Published"],
-  rejected: ["需修改 / 下架", "Changes requested"],
-  withdrawn: ["已撤回", "Withdrawn"],
-};
 async function getMods(admin: boolean, signal?: AbortSignal) {
   const r = await fetch("/api/mods/submissions" + (admin ? "?scope=admin" : ""), { signal }),
     d = (await r.json()) as { error?: string; items: ModEntry[] };
@@ -38,8 +32,8 @@ async function getMods(admin: boolean, signal?: AbortSignal) {
   return d.items;
 }
 export function ModDashboard({ admin = false }: { admin?: boolean }) {
-  const { locale } = useI18n(),
-    l = (z: string, e: string) => (locale !== "zh" ? e : z);
+  const { locale, t } = useI18n(),
+    l = useBilingual();
   const [items, setItems] = useState<ModEntry[]>([]),
     [busy, setBusy] = useState(true),
     [error, setError] = useState(""),
@@ -50,7 +44,7 @@ export function ModDashboard({ admin = false }: { admin?: boolean }) {
     try {
       setItems(await getMods(admin));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to load");
+      setError(e instanceof Error ? e.message : l("无法加载稿件", "Unable to load"));
     } finally {
       setBusy(false);
     }
@@ -62,13 +56,14 @@ export function ModDashboard({ admin = false }: { admin?: boolean }) {
         if (!c.signal.aborted) setItems(data);
       })
       .catch((e) => {
-        if (!c.signal.aborted) setError(e instanceof Error ? e.message : "Unable to load");
+        if (!c.signal.aborted)
+          setError(e instanceof Error ? e.message : l("无法加载稿件", "Unable to load"));
       })
       .finally(() => {
         if (!c.signal.aborted) setBusy(false);
       });
     return () => c.abort();
-  }, [admin]);
+  }, [admin, l]);
   const shown = items.filter((m) => filter === "all" || m.status === filter);
   return (
     <>
@@ -78,9 +73,9 @@ export function ModDashboard({ admin = false }: { admin?: boolean }) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {Object.entries(states).map(([v, labels]) => (
+            {Object.entries(publicationLabels).map(([v, labels]) => (
               <SelectItem value={v} key={v}>
-                {labels[locale !== "zh" ? 1 : 0]} (
+                {locale === "zh" ? labels[0] : t(labels[1])} (
                 {items.filter((m) => v === "all" || m.status === v).length})
               </SelectItem>
             ))}
@@ -138,8 +133,8 @@ function ModReview({
   admin: boolean;
   refresh: () => Promise<void>;
 }) {
-  const { locale } = useI18n(),
-    l = (z: string, e: string) => (locale !== "zh" ? e : z);
+  const { locale, t } = useI18n(),
+    l = useBilingual();
   const [checks, setChecks] = useState<string[]>([]),
     [feedback, setFeedback] = useState(m.feedback || ""),
     [busy, setBusy] = useState(false),
@@ -158,7 +153,7 @@ function ModReview({
       if (!r.ok) throw Error(d.error);
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to save");
+      setError(e instanceof Error ? e.message : l("保存失败", "Unable to save"));
     } finally {
       setBusy(false);
     }
@@ -168,7 +163,12 @@ function ModReview({
       <div className="section-head">
         <div>
           <p className="eyebrow">
-            {m.origin.toUpperCase()} · {states[m.status]?.[locale !== "zh" ? 1 : 0]}
+            {m.origin.toUpperCase()} ·{" "}
+            {publicationLabels[m.status]
+              ? locale === "zh"
+                ? publicationLabels[m.status][0]
+                : t(publicationLabels[m.status][1])
+              : m.status}
           </p>
           <h2>
             <Bilingual zh={m.title} en={m.title_en} />
@@ -202,16 +202,17 @@ function ModReview({
       {admin && m.origin === "community" && m.status !== "withdrawn" && (
         <div className="review-controls">
           <h3>{l("人工审核", "Manual review")}</h3>
-          {[
-            ["ownership", "已核对授权、作者与来源", "Rights, attribution and source checked"],
+          {(
             [
-              "files",
-              "已检查文件或发布码及依赖",
-              "Files or published codes and dependencies checked",
-            ],
-            ["gameplay", "已在标注版本完成游戏测试", "Tested in the stated game version"],
-            ["description", "说明与实际效果一致", "Description matches actual behavior"],
-          ].map(([v, z, e]) => (
+              ["ownership", l("已核对授权、作者与来源", "Rights, attribution and source checked")],
+              [
+                "files",
+                l("已检查文件或发布码及依赖", "Files or published codes and dependencies checked"),
+              ],
+              ["gameplay", l("已在标注版本完成游戏测试", "Tested in the stated game version")],
+              ["description", l("说明与实际效果一致", "Description matches actual behavior")],
+            ] as const
+          ).map(([v, label]) => (
             <label className="check-line" key={v}>
               <Checkbox
                 checked={checks.includes(v)}
@@ -219,7 +220,7 @@ function ModReview({
                   setChecks((c) => (yes === true ? [...c, v] : c.filter((x) => x !== v)))
                 }
               />
-              {l(z, e)}
+              {label}
             </label>
           ))}
           <label>

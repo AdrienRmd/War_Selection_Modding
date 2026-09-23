@@ -53,7 +53,9 @@ export default async function Stalingrad() {
             <span className="tag">
               <T text={"MAP 001 · 作者维护"} />
             </span>
-            <p className="eyebrow">1942 / THE VOLGA FRONT</p>
+            <p className="eyebrow">
+              <T text="1942 / THE VOLGA FRONT" />
+            </p>
             <h2>
               <T text={m.title} />
             </h2>
@@ -105,7 +107,9 @@ export default async function Stalingrad() {
           </section>
           <aside className="detail-aside">
             <section className="panel">
-              <p className="eyebrow">RULES OF ENGAGEMENT</p>
+              <p className="eyebrow">
+                <T text="RULES OF ENGAGEMENT" />
+              </p>
               <h2>
                 <T text={"规则速览"} />
               </h2>

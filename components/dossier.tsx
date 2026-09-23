@@ -212,7 +212,9 @@ export function Dossier({ technicalOnly = false }: { technicalOnly?: boolean }) 
             <section className="panel">
               <div className="section-head">
                 <div>
-                  <p className="eyebrow">TACTICAL OVERVIEW</p>
+                  <p className="eyebrow">
+                    <T text="TACTICAL OVERVIEW" />
+                  </p>
                   <h2>
                     <T text={"一条河，三座城区。"} />
                   </h2>
@@ -264,7 +266,9 @@ export function Dossier({ technicalOnly = false }: { technicalOnly?: boolean }) 
             </section>
             <aside className="detail-aside">
               <section className="panel">
-                <p className="eyebrow">MATCH SETUP</p>
+                <p className="eyebrow">
+                  <T text="MATCH SETUP" />
+                </p>
                 <h2>
                   <T text={"战场规则"} />
                 </h2>
@@ -319,7 +323,9 @@ export function Dossier({ technicalOnly = false }: { technicalOnly?: boolean }) 
                 </p>
               </section>
               <section className="panel">
-                <p className="eyebrow">NATIONS & POSITIONS</p>
+                <p className="eyebrow">
+                  <T text="NATIONS & POSITIONS" />
+                </p>
                 <h2>
                   <T text={"国家分配"} />
                 </h2>
@@ -353,7 +359,9 @@ export function Dossier({ technicalOnly = false }: { technicalOnly?: boolean }) 
         <TabsContent value="mods">
           <div className="section-head">
             <div>
-              <p className="eyebrow">MOD MANIFEST</p>
+              <p className="eyebrow">
+                <T text="MOD MANIFEST" />
+              </p>
               <h2>
                 <T text={"规则，不再藏在一堆说明里。"} />
               </h2>
@@ -436,7 +444,9 @@ export function Dossier({ technicalOnly = false }: { technicalOnly?: boolean }) 
         <TabsContent value="balance">
           <div className="section-head">
             <div>
-              <p className="eyebrow">UNIT BALANCE / CURRENT CODE</p>
+              <p className="eyebrow">
+                <T text="UNIT BALANCE / CURRENT CODE" />
+              </p>
               <h2>
                 <T text={"火力有刻度，定位有区别。"} />
               </h2>
@@ -539,7 +549,9 @@ export function Dossier({ technicalOnly = false }: { technicalOnly?: boolean }) 
           <section className="heroes-section">
             <div className="section-head">
               <div>
-                <p className="eyebrow">LEGENDARY UNITS</p>
+                <p className="eyebrow">
+                  <T text="LEGENDARY UNITS" />
+                </p>
                 <h2>
                   <T text={"大学传奇英雄"} />
                 </h2>
@@ -558,7 +570,8 @@ export function Dossier({ technicalOnly = false }: { technicalOnly?: boolean }) 
                 <article className="hero-card" key={h.name}>
                   <div className="hero-monogram">
                     <span>
-                      ACE / 0<T text={i + 1} />
+                      <T text="ACE / 0" />
+                      <T text={i + 1} />
                     </span>
                     <Shield size={45} />
                     <small>
@@ -624,7 +637,9 @@ export function Dossier({ technicalOnly = false }: { technicalOnly?: boolean }) 
         <TabsContent value="economy">
           <div className="section-head">
             <div>
-              <p className="eyebrow">ECONOMY & LATE GAME</p>
+              <p className="eyebrow">
+                  <T text="ECONOMY & LATE GAME" />
+                </p>
               <h2>
                 <T text={"减少农民，不缩小战场。"} />
               </h2>
@@ -675,7 +690,9 @@ export function Dossier({ technicalOnly = false }: { technicalOnly?: boolean }) 
           <div className="panel">
             <div className="section-head">
               <div>
-                <p className="eyebrow">PASSIVE RESOURCE INCOME</p>
+                <p className="eyebrow">
+                  <T text="PASSIVE RESOURCE INCOME" />
+                </p>
                 <h2>
                   <T text={"让后期，有能力再打一次。"} />
                 </h2>
@@ -814,7 +831,9 @@ export function Dossier({ technicalOnly = false }: { technicalOnly?: boolean }) 
         <TabsContent value="roadmap">
           <div className="section-head">
             <div>
-              <p className="eyebrow">NEXT OPERATIONS</p>
+              <p className="eyebrow">
+                <T text="NEXT OPERATIONS" />
+              </p>
               <h2>
                 <T text={"先保证稳定，再做下一轮加强。"} />
               </h2>

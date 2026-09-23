@@ -9,7 +9,6 @@ import { CollectedMaps } from "@/components/collected-maps";
 import { collectedMaps } from "@/lib/collection-server";
 import { identity } from "@/lib/atlas-server";
 import type { CollectedMap } from "@/lib/collection";
-import { Bilingual } from "@/components/i18n";
 import { getFeaturedMap } from "@/lib/featured-server";
 import { stalingradDefault } from "@/lib/map-content";
 export const dynamic = "force-dynamic";
@@ -35,7 +34,9 @@ export default async function Home() {
       <main className="shell">
         <div className="page-heading">
           <div>
-            <p className="eyebrow">WAR SELECTION / FIELD ARCHIVE</p>
+            <p className="eyebrow">
+              <T text="WAR SELECTION / FIELD ARCHIVE" />
+            </p>
             <h1>
               <T text={"选择你的"} />
               <em>
@@ -65,12 +66,14 @@ export default async function Home() {
               <T text={"精选战场 / MAP 001"} />
             </span>
             <div className="command-art-title">
-              <p>THE VOLGA FRONT · 1942</p>
+              <p>
+                <T text="THE VOLGA FRONT · 1942" />
+              </p>
               <h2>
                 <T text={m.title} />
               </h2>
               <span>
-                STALINGRAD <ArrowUpRight size={32} />
+                <T text="STALINGRAD" /> <ArrowUpRight size={32} />
               </span>
             </div>
             <small>
@@ -78,7 +81,9 @@ export default async function Home() {
             </small>
           </Link>
           <div className="command-brief">
-            <p className="eyebrow">MISSION BRIEF</p>
+            <p className="eyebrow">
+              <T text="MISSION BRIEF" />
+            </p>
             <h2>
               <T text={"伏尔加河畔，"} />
               <br />
@@ -130,7 +135,9 @@ export default async function Home() {
           <Link href="/mods" className="portal-card">
             <Layers3 size={30} />
             <div>
-              <p className="eyebrow">LIBRARY / 01</p>
+              <p className="eyebrow">
+                <T text="LIBRARY / 01" />
+              </p>
               <h2>
                 <T text={"Mod 资料库"} />
               </h2>
@@ -143,7 +150,9 @@ export default async function Home() {
           <Link href="/workbench" className="portal-card">
             <SlidersHorizontal size={30} />
             <div>
-              <p className="eyebrow">WORKSHOP / 02</p>
+              <p className="eyebrow">
+                <T text="WORKSHOP / 02" />
+              </p>
               <h2>
                 <T text={"你的规则，你来写。"} />
               </h2>
@@ -156,10 +165,7 @@ export default async function Home() {
         </div>
         {collectionUnavailable ? (
           <p className="notice error">
-            <Bilingual
-              zh="收藏地图暂时无法读取，请稍后重试。"
-              en="Saved maps are temporarily unavailable. Please try again."
-            />
+            <T text="收藏地图暂时无法读取，请稍后重试。" />
           </p>
         ) : (
           <CollectedMaps items={collection} admin={viewer.admin} />

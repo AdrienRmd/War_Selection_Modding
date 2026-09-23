@@ -3,7 +3,7 @@ import { useState, type ReactNode, type KeyboardEvent } from "react";
 import { useI18n } from "@/components/i18n";
 import Link from "@/components/site-link";
 export function CreationTabs({ maps, mods }: { maps: ReactNode; mods: ReactNode }) {
-  const { locale } = useI18n();
+  const { t } = useI18n();
   const [active, setActive] = useState<"maps" | "mods">("mods");
   function keys(e: KeyboardEvent<HTMLButtonElement>) {
     if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
@@ -15,7 +15,7 @@ export function CreationTabs({ maps, mods }: { maps: ReactNode; mods: ReactNode 
   }
   return (
     <div className="submission-tabs">
-      <div role="tablist" aria-label={locale !== "zh" ? "Creation type" : "作品类型"}>
+      <div role="tablist" aria-label={t("作品类型")}>
         {(["maps", "mods"] as const).map((key) => (
           <button
             type="button"
@@ -29,13 +29,7 @@ export function CreationTabs({ maps, mods }: { maps: ReactNode; mods: ReactNode 
             onClick={() => setActive(key)}
             onKeyDown={keys}
           >
-            {key === "maps"
-              ? locale !== "zh"
-                ? "Maps"
-                : "地图"
-              : locale !== "zh"
-                ? "Mods"
-                : "Mod 作品"}
+            {key === "maps" ? t("地图") : t("Mod 作品")}
           </button>
         ))}
       </div>
@@ -55,14 +49,14 @@ export function CreationTabs({ maps, mods }: { maps: ReactNode; mods: ReactNode 
   );
 }
 export function CreationSwitch({ active }: { active: "maps" | "mods" }) {
-  const { locale } = useI18n();
+  const { t } = useI18n();
   return (
-    <nav className="creation-switch" aria-label={locale !== "zh" ? "Creation type" : "作品类型"}>
+    <nav className="creation-switch" aria-label={t("作品类型")}>
       <Link href="/submit" aria-current={active === "maps" ? "page" : undefined}>
-        {locale !== "zh" ? "Submit a map" : "提交地图"}
+        {t("提交地图")}
       </Link>
       <Link href="/submit/mod" aria-current={active === "mods" ? "page" : undefined}>
-        {locale !== "zh" ? "Submit a mod" : "提交 Mod"}
+        {t("提交 Mod")}
       </Link>
     </nav>
   );

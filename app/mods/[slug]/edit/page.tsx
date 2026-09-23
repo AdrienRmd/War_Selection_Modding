@@ -1,6 +1,6 @@
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
-import { Bilingual } from "@/components/i18n";
+import { T } from "@/components/i18n";
 import { ModEditor } from "@/components/mod-editor";
 import { identity } from "@/lib/atlas-server";
 import { publicMod, rawMod } from "@/lib/mod-server";
@@ -24,39 +24,24 @@ export default async function EditMod({ params }: { params: Promise<{ slug: stri
   }
   const content = failed ? (
     <p className="notice error">
-      <Bilingual
-        zh="暂时无法加载编辑内容，请稍后重试。"
-        en="The editor could not be loaded. Please try again later."
-      />
+      <T text="暂时无法加载编辑内容，请稍后重试。" />
     </p>
   ) : entry ? (
     <ModEditor initial={entry} admin={admin} />
   ) : (
     <p className="notice error">
-      <Bilingual
-        zh="没有可编辑的 Mod，或你没有此作品的编辑权限。"
-        en="This mod is unavailable, or you do not have permission to edit it."
-      />
+      <T text="没有可编辑的 Mod，或你没有此作品的编辑权限。" />
     </p>
   );
   return (
     <>
       <AtlasHeader />
       <main className="shell">
-        <div className="chinese-only">
-          <PageTitle
-            eyebrow="创作中心 / MOD 编辑"
-            title="编辑 Mod 档案"
-            text="维护分享码、使用说明与文件，让玩家看到可靠的当前版本。"
-          />
-        </div>
-        <div className="english-only">
-          <PageTitle
-            eyebrow="CREATOR / MOD EDITOR"
-            title="Edit mod dossier"
-            text="Maintain codes, instructions, and files so players can find a reliable current version."
-          />
-        </div>
+        <PageTitle
+          eyebrow="创作中心 / MOD 编辑"
+          title="编辑 Mod 档案"
+          text="维护分享码、使用说明与文件，让玩家看到可靠的当前版本。"
+        />
         {content}
       </main>
       <AtlasFooter />

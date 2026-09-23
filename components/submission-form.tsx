@@ -67,7 +67,9 @@ export function SubmissionForm() {
     return (
       <div className="success-surface">
         <CheckCircle2 size={52} />
-        <p className="eyebrow">SUBMISSION RECEIVED</p>
+        <p className="eyebrow">
+          <T text="SUBMISSION RECEIVED" />
+        </p>
         <h2>
           <T text={"已收到，等待管理员检阅。"} />
         </h2>
@@ -261,7 +263,9 @@ export function SubmissionForm() {
       <aside className="detail-aside">
         <section className="panel review-process">
           <ShieldCheck size={32} />
-          <p className="eyebrow">CURATED, NOT AUTOMATIC</p>
+          <p className="eyebrow">
+            <T text="CURATED, NOT AUTOMATIC" />
+          </p>
           <h2>
             <T text={"先检查，再上架。"} />
           </h2>

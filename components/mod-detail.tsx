@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { ArrowLeft, Layers3, Copy, ArrowUpRight, Download } from "lucide-react";
 import Link from "@/components/site-link";
-import { Bilingual, useI18n } from "@/components/i18n";
+import { Bilingual, T, useBilingual, useI18n } from "@/components/i18n";
 import { UsageBadge } from "@/components/mod-library";
 import { kindLabels, type ModEntry } from "@/lib/mod-types";
 type SourceRef = {
@@ -13,8 +13,8 @@ type SourceRef = {
   testedInGame: boolean;
 };
 export function ModDetail({ entry: m, reference }: { entry: ModEntry; reference?: SourceRef }) {
-  const { locale } = useI18n(),
-    l = (z: string, e: string) => (locale !== "zh" ? e : z);
+  const { locale, t } = useI18n(),
+    l = useBilingual();
   const [copied, setCopied] = useState(""),
     [copyError, setCopyError] = useState(false);
   async function copy(code: string) {
@@ -47,7 +47,16 @@ export function ModDetail({ entry: m, reference }: { entry: ModEntry; reference?
         </div>
         <div>
           <p className="eyebrow">
-            {kindLabels[m.kind]?.[locale !== "zh" ? 1 : 0]} / {m.origin.toUpperCase()}
+            {kindLabels[m.kind] ? (
+              locale === "zh" ? (
+                kindLabels[m.kind][0]
+              ) : (
+                t(kindLabels[m.kind][1])
+              )
+            ) : (
+              m.kind
+            )}{" "}
+            / {m.origin.toUpperCase()}
           </p>
           <h1>
             <Bilingual zh={m.title} en={m.title_en} />
@@ -121,7 +130,9 @@ export function ModDetail({ entry: m, reference }: { entry: ModEntry; reference?
         </article>
         <aside className="detail-aside">
           <section className="panel">
-            <p className="eyebrow">LOADOUT / ACCESS</p>
+            <p className="eyebrow">
+              <T text="LOADOUT / ACCESS" />
+            </p>
             <h2>{l("Mod 码", "Mod codes")}</h2>
             {m.mod_code ? (
               <div className="mod-code-list">
@@ -181,7 +192,7 @@ export function ModDetail({ entry: m, reference }: { entry: ModEntry; reference?
               <p className="checksum">
                 {m.file_name} · {(m.file_size / 1024).toFixed(1)} KB
                 <br />
-                SHA-256: {m.sha256}
+                <T text="SHA-256:" /> {m.sha256}
               </p>
             )}
             {m.source_url && (

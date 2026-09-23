@@ -3,7 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import { ArrowUpRight, FileArchive, Save, ShieldCheck } from "lucide-react";
 import Link from "@/components/site-link";
-import { useI18n } from "@/components/i18n";
+import { useBilingual } from "@/components/i18n";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -25,8 +25,7 @@ import {
 } from "@/lib/mod-types";
 
 export function ModEditor({ initial, admin = false }: { initial?: ModEntry; admin?: boolean }) {
-  const { locale } = useI18n();
-  const l = (zh: string, en: string) => (locale !== "zh" ? en : zh);
+  const l = useBilingual();
   const [data, setData] = useState<ModBody>(() => ({ ...emptyMod, ...initial }));
   const [rights, setRights] = useState(false);
   const [busy, setBusy] = useState(false);
