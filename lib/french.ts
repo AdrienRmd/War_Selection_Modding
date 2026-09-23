@@ -606,6 +606,11 @@ export const french: Record<string, string> = {
   "最新精选资料暂时不可读，以下显示初始档案。":
     "Les dernières informations mises en avant sont temporairement indisponibles. L'archive initiale s'affiche ci-dessous.",
   "查看${m.title}": "Voir ${m.title}",
+  "查看资料": "Explorer",
+  "查看完整资料": "Voir la fiche complète",
+  "查看核对时的原始发布码": "Voir les codes de publication de la source vérifiée",
+  "查看作者来源": "Voir la source de l'auteur",
+  "查看 Mod": "Voir le mod",
   "${m.title}的作者封面": "Couverture de l'auteur pour ${m.title}",
   斯大林格勒历史氛围插画: "Illustration d'ambiance historique de Stalingrad",
   "精选战场 / MAP 001": "CHAMP DE BATAILLE À LA UNE / MAP 001",

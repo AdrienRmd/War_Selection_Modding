@@ -589,6 +589,11 @@ export const english: Record<string, string> = {
   "最新精选资料暂时不可读，以下显示初始档案。":
     "The latest featured information is temporarily unavailable. The initial archive is shown below.",
   "查看${m.title}": "View ${m.title}",
+  "查看资料": "Explore",
+  "查看完整资料": "View full details",
+  "查看核对时的原始发布码": "View codes in the verified source snapshot",
+  "查看作者来源": "Visit author source",
+  "查看 Mod": "View mod",
   "${m.title}的作者封面": "Author's cover for ${m.title}",
   斯大林格勒历史氛围插画: "Stalingrad historical mood illustration",
   "精选战场 / MAP 001": "FEATURED BATTLEFIELD / MAP 001",
