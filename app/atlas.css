@@ -1445,3 +1445,122 @@ code {
 .dossier-tabs::-webkit-scrollbar-thumb {
   background: var(--border);
 }
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: #151a19;
+  padding: 0 4.5%;
+  font-size: 14px;
+  color: #b9c2ba;
+}
+.site-footer-grid {
+  max-width: 1510px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.2fr;
+  gap: 24px 30px;
+  padding: 42px 0 30px;
+}
+.site-footer-brandline {
+  font-size: 21px;
+  letter-spacing: 2px;
+  color: var(--foreground);
+  margin-bottom: 8px;
+}
+.site-footer-brandline b {
+  font-weight: 500;
+  color: var(--primary);
+}
+.site-footer-brand .muted {
+  max-width: 320px;
+  line-height: 1.7;
+}
+.site-footer-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  margin-bottom: 14px;
+}
+.site-footer ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+}
+.site-footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #b9c2ba;
+  transition: color 0.2s;
+}
+.site-footer a:hover {
+  color: var(--primary);
+}
+.site-footer-bottom {
+  max-width: 1510px;
+  margin: auto;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  flex-wrap: wrap;
+  padding: 16px 0 24px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: #8f9a92;
+}
+.site-footer-bottom b {
+  font-weight: 500;
+  color: #a9b3ab;
+}
+.legal-doc {
+  max-width: 780px;
+}
+.legal-doc h1 {
+  margin: 10px 0 4px;
+}
+.legal-doc-updated {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+.legal-doc .legal-doc-intro {
+  color: var(--foreground);
+  border-left: 2px solid var(--primary);
+  padding-left: 14px;
+}
+.legal-doc-links {
+  margin-top: 42px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px 20px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+.legal-doc-links a {
+  color: var(--primary);
+}
+.legal-doc-links a[aria-current="page"] {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+@media (max-width: 900px) {
+  .site-footer-grid {
+    grid-template-columns: 1fr 1fr;
+    padding: 32px 0 24px;
+  }
+}
+@media (max-width: 550px) {
+  .site-footer-grid {
+    grid-template-columns: 1fr;
+  }
+  .site-footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

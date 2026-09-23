@@ -2,6 +2,7 @@ import Link from "@/components/site-link";
 import { ArrowUpRight } from "lucide-react";
 import { LanguageSwitcher, T } from "@/components/i18n";
 import { AtlasNav } from "@/components/atlas-nav";
+import { SiteFooter } from "@/components/site-footer";
 import { identity } from "@/lib/atlas-server";
 import { chatGPTSignInPath, chatGPTSignOutPath } from "@/app/chatgpt-auth";
 import { SignOutAllButton } from "@/components/auth/signout-all-button";
@@ -42,25 +43,7 @@ export async function AtlasHeader() {
   );
 }
 export function AtlasFooter() {
-  return (
-    <footer className="footer">
-      <span>
-        WS ATLAS{" "}
-        <span className="muted">
-          <T text={"/ 地图与 Mod，玩家共创。"} />
-        </span>
-      </span>
-      <div>
-        <Link href="/guidelines">
-          <T text={"投稿与审核规范"} />
-        </Link>
-        <span>
-          {" "}
-          <T text={"· 非 War Selection 官方网站"} />
-        </span>
-      </div>
-    </footer>
-  );
+  return <SiteFooter />;
 }
 export function PageTitle({
   eyebrow,

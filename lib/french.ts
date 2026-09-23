@@ -606,10 +606,10 @@ export const french: Record<string, string> = {
   "最新精选资料暂时不可读，以下显示初始档案。":
     "Les dernières informations mises en avant sont temporairement indisponibles. L'archive initiale s'affiche ci-dessous.",
   "查看${m.title}": "Voir ${m.title}",
-  "查看资料": "Explorer",
-  "查看完整资料": "Voir la fiche complète",
-  "查看核对时的原始发布码": "Voir les codes de publication de la source vérifiée",
-  "查看作者来源": "Voir la source de l'auteur",
+  查看资料: "Explorer",
+  查看完整资料: "Voir la fiche complète",
+  查看核对时的原始发布码: "Voir les codes de publication de la source vérifiée",
+  查看作者来源: "Voir la source de l'auteur",
   "查看 Mod": "Voir le mod",
   "${m.title}的作者封面": "Couverture de l'auteur pour ${m.title}",
   斯大林格勒历史氛围插画: "Illustration d'ambiance historique de Stalingrad",
@@ -1859,4 +1859,22 @@ export const french: Record<string, string> = {
   "GitHub projects": "Projets GitHub",
   "没有可编辑的 Mod，或你没有此作品的编辑权限。":
     "Aucun mod modifiable trouvé, ou vous n'avez pas les droits d'édition sur cette fiche.",
+  "玩家共建的非官方社区档案。":
+    "Une archive communautaire non officielle, construite par les joueurs.",
+  探索: "Explorer",
+  法律信息: "Informations légales",
+  社区: "Communauté",
+  法律声明: "Mentions légales",
+  隐私政策: "Confidentialité",
+  使用条款: "Conditions d'utilisation",
+  源代码: "Code source",
+  "War Selection 官方网站": "War Selection (site officiel)",
+  联系我们: "Nous contacter",
+  相关文档: "Documents liés",
+  "最后更新于 ${date}": "Mise à jour le ${date}",
+  "法律声明 — WS ATLAS": "Mentions légales — WS ATLAS",
+  "隐私政策 — WS ATLAS": "Confidentialité — WS ATLAS",
+  "使用条款 — WS ATLAS": "Conditions d'utilisation — WS ATLAS",
+  "非官方粉丝项目，与 Glyph Worlds 无关联；游戏及全部内容归其各自所有者所有。":
+    "Projet de fans non officiel, sans affiliation avec Glyph Worlds ; le jeu et l'ensemble de ses contenus appartiennent à leurs propriétaires respectifs.",
 };
