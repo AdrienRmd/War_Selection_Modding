@@ -1906,4 +1906,46 @@ export const french: Record<string, string> = {
   "使用条款 — WS ATLAS": "Conditions d'utilisation — WS ATLAS",
   "非官方粉丝项目，与 Glyph Worlds 无关联；游戏及全部内容归其各自所有者所有。":
     "Projet de fans non officiel, sans affiliation avec Glyph Worlds ; le jeu et l'ensemble de ses contenus appartiennent à leurs propriétaires respectifs.",
+  // Créateurs : bannière rouge et gestion de la liste
+  网站创作者: "L'équipe du site",
+  "他们搭建并维护这个社区。": "Ils créent et entretiennent cette communauté.",
+  "THE CREW": "L'ÉQUIPE",
+  "暂时无法读取创作者名单。": "La liste des créateurs est momentanément indisponible.",
+  "创作者名单暂时无法读取，请稍后重试。":
+    "La liste des créateurs est indisponible. Réessayez plus tard.",
+  "只有管理员可以维护创作者名单。":
+    "Seuls les administrateurs peuvent gérer la liste des créateurs.",
+  "请检查名称（必填，最长 60 字）与职务。":
+    "Vérifiez le nom (obligatoire, 60 caractères max) et la fonction.",
+  "头像不能超过 2 MB。": "La photo ne doit pas dépasser 2 Mo.",
+  "创作者名单已满，请先移除成员。": "La liste est complète ; retirez d'abord un membre.",
+  "头像只接受 PNG 或 JPEG。": "La photo n'accepte que les formats PNG ou JPEG.",
+  "添加未完成，请稍后重试。": "Échec de l'ajout ; réessayez plus tard.",
+  "请检查名称与头像后重试。": "Vérifiez le nom et la photo, puis réessayez.",
+  "创作者不存在。": "Créateur introuvable.",
+  "此创作者没有头像。": "Ce créateur n'a pas de photo.",
+  "头像不可用。": "La photo est indisponible.",
+  "暂时无法读取头像。": "La photo est momentanément indisponible.",
+  "移除未完成，请稍后重试。": "Échec de la suppression ; réessayez plus tard.",
+  创作者名单: "Liste des créateurs",
+  "首页红色横幅按此名单显示。添加名称、职务与头像，或移除成员。":
+    "La bannière rouge de l'accueil reflète cette liste. Ajoutez un nom, une fonction et une photo, ou retirez un membre.",
+  添加未完成: "Échec de l'ajout",
+  移除未完成: "Échec de la suppression",
+  "创作者已添加。": "Créateur ajouté.",
+  "创作者已移除。": "Créateur retiré.",
+  "名称（必填）": "Nom (obligatoire)",
+  "职务（可选）": "Fonction (facultatif)",
+  创作者名称: "Nom du créateur",
+  创作者职务: "Fonction du créateur",
+  "例如：创始人、地图作者": "ex. Fondateur, auteur de cartes",
+  "头像（可选）": "Photo (facultatif)",
+  添加到横幅: "Ajouter à la bannière",
+  移除: "Retirer",
+  "移除此创作者？": "Retirer ce créateur ?",
+  "将从首页红色横幅移除该成员并删除其头像，此操作不可撤销。":
+    "Le membre disparaîtra de la bannière rouge de l'accueil et sa photo sera supprimée. Action irréversible.",
+  确认移除: "Confirmer le retrait",
+  "名单为空：横幅暂不显示。": "Liste vide : la bannière reste masquée.",
+  "处理中…": "Traitement…",
 };

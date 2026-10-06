@@ -909,6 +909,120 @@ body {
   font-size: 14px;
   color: var(--muted-foreground);
 }
+/* Creators red banner (homepage) */
+.creators-banner {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) 1fr;
+  gap: 28px;
+  align-items: center;
+  margin: 26px 0;
+  padding: 28px 30px;
+  border: 1px solid #8a2f24;
+  border-radius: 5px;
+  background:
+    radial-gradient(ellipse at 0% 0%, #c0392b2b, transparent 55%),
+    linear-gradient(140deg, #5a1512, #8c2018 48%, #461009);
+  box-shadow:
+    inset 0 1px 0 #ffffff12,
+    0 10px 30px #00000038;
+}
+.creators-banner .eyebrow {
+  color: #f2b8a6;
+}
+.creators-banner h2 {
+  font-size: clamp(24px, 2.6vw, 36px);
+  margin: 8px 0 6px;
+  letter-spacing: 2px;
+}
+.creators-head > p:not(.eyebrow) {
+  color: #eec9bd;
+  font-size: 15px;
+}
+.creators-row {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px 28px;
+}
+.creator-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 96px;
+  text-align: center;
+}
+.creator-card strong {
+  font-size: 15px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.creator-card small {
+  color: #f2b8a6;
+  font-size: 12px;
+}
+.creator-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f2b8a666;
+  background: #2a0d0a;
+  box-shadow: 0 6px 18px #00000055;
+}
+.creator-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 600;
+  color: #f6d7cb;
+  letter-spacing: 1px;
+}
+.creators-admin-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.creators-admin-list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.creators-admin-list .creator-avatar {
+  width: 52px;
+  height: 52px;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+.creators-admin-meta {
+  display: flex;
+  flex-direction: column;
+  margin-right: auto;
+  min-width: 0;
+}
+.creators-admin-meta strong {
+  overflow-wrap: anywhere;
+}
+.creators-admin-meta small {
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}
+.creators-form {
+  display: grid;
+  gap: 14px;
+  margin: 4px 0 18px;
+  max-width: 460px;
+}
+.creators-form > label:not(.upload-box) {
+  display: grid;
+  gap: 7px;
+}
 .footer {
   font-size: 13px;
   background: #0b1017;
@@ -1206,5 +1320,11 @@ body {
   }
   .editor-tabs [data-slot="tabs-trigger"] {
     padding: 7px 10px;
+  }
+}
+@media (max-width: 980px) {
+  .creators-banner {
+    grid-template-columns: 1fr;
+    padding: 24px 20px;
   }
 }

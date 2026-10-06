@@ -6,6 +6,7 @@ import { ArrowUpRight, Layers3, Map, Users, SlidersHorizontal, ChevronRight } fr
 import { AtlasHeader, AtlasFooter } from "@/components/atlas-shell";
 import { CommunityMaps } from "@/components/community-maps";
 import { CollectedMaps } from "@/components/collected-maps";
+import { CreatorsBanner } from "@/components/creators-banner";
 import { collectedMaps } from "@/lib/collection-server";
 import { identity } from "@/lib/atlas-server";
 import type { CollectedMap } from "@/lib/collection";
@@ -51,6 +52,7 @@ export default async function Home() {
             <SlidersHorizontal size={18} /> <T text={"打开 Mod 工作台"} />
           </Link>
         </div>
+        <CreatorsBanner />
         {unavailable && (
           <p className="notice error">
             <T text={"最新精选资料暂时不可读，以下显示初始档案。"} />

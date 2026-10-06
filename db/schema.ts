@@ -1,8 +1,8 @@
 // Drizzle schema for WS ATLAS. Defines the D1 tables — maps, reviews,
-// featured_maps, community_mods, mod_reviews, users, sessions, auth_attempts —
-// plus their indexes. Drizzle is only used to generate the SQL migrations in
-// drizzle/; the runtime reads and writes through hand-written, parameterized
-// D1 SQL, not the query builder.
+// featured_maps, community_mods, mod_reviews, users, sessions, auth_attempts,
+// creators — plus their indexes. Drizzle is only used to generate the SQL
+// migrations in drizzle/; the runtime reads and writes through hand-written,
+// parameterized D1 SQL, not the query builder.
 import { sql } from "drizzle-orm";
 import { sqliteTable, text, integer, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 export const maps = sqliteTable(
@@ -138,4 +138,19 @@ export const authAttempts = sqliteTable(
     count: integer("count").notNull(),
   },
   (t) => [index("idx_auth_attempts_window").on(t.windowStart)],
+);
+// Site creators shown in the homepage banner. Photos live in R2; rows are
+// managed exclusively by administrators.
+export const creators = sqliteTable(
+  "creators",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    role: text("role").notNull().default(""),
+    photoKey: text("photo_key"),
+    photoType: text("photo_type"),
+    position: integer("position").notNull().default(0),
+    createdAt: text("created_at").notNull(),
+  },
+  (t) => [index("idx_creators_position").on(t.position, t.createdAt)],
 );

@@ -1,7 +1,15 @@
 import { T } from "@/components/i18n";
 import Link from "@/components/site-link";
 import { Pencil, ArrowUpRight } from "lucide-react";
-export function CreatorFeatured() {
+import { CreatorsManager } from "@/components/creators-manager";
+import { listCreators, type Creator } from "@/lib/creators-server";
+export async function CreatorFeatured() {
+  let creators: Creator[] | null;
+  try {
+    creators = await listCreators();
+  } catch {
+    creators = null;
+  }
   return (
     <>
       <section className="creator-featured">
@@ -26,6 +34,7 @@ export function CreatorFeatured() {
           </Link>
         </div>
       </section>
+      <CreatorsManager initial={creators} />
       <section className="collection-management">
         <div>
           <h2>
