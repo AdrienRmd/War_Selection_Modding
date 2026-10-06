@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /submit
+Disallow: /submissions
+
+Sitemap: https://ws.aremond.ovh/sitemap.xml
