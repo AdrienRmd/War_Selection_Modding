@@ -78,7 +78,13 @@ async function handle(req: Request, { params }: { params: Promise<{ id: string }
       return json(
         featured
           ? await getFeaturedMap()
-          : { ...publicMap(row!), revision: row!.revision, status: row!.status, has_file: true },
+          : {
+              ...publicMap(row!),
+              revision: row!.revision,
+              status: row!.status,
+              // SB5 : une carte par code seul n'a pas de ZIP (file_key "").
+              has_file: !!row!.file_key,
+            },
       );
     sameOrigin(req);
     const bytes = await limitedBody(req, 13 * 1024 * 1024);
@@ -145,6 +151,11 @@ async function handle(req: Request, { params }: { params: Promise<{ id: string }
     }
     const now = new Date().toISOString();
     const { revision, ...body } = input;
+    // SB7 : l'instantané « créateur vérifié » suit chaque écriture de la
+    // ligne (match exact auteur ↔ displayName du compte). Un changement de
+    // pseudo ou d'auteur éteint le badge au prochain enregistrement — mais
+    // les publications existantes ne sont JAMAIS réécrites en tâche de fond.
+    const authorVerified = input.author.trim() === user.displayName.trim() ? 1 : 0;
     const result = featured
       ? await DB.prepare(
           "INSERT INTO featured_maps (id,body,revision,updated_at,updated_by,file_key,file_name,file_size,sha256,cover_key,cover_type) VALUES (?,?,1,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET body=excluded.body, revision=featured_maps.revision+1, updated_at=excluded.updated_at, updated_by=excluded.updated_by, file_key=excluded.file_key, file_name=excluded.file_name, file_size=excluded.file_size, sha256=excluded.sha256, cover_key=excluded.cover_key, cover_type=excluded.cover_type WHERE featured_maps.revision = ?",
@@ -164,7 +175,7 @@ async function handle(req: Request, { params }: { params: Promise<{ id: string }
           )
           .run()
       : await DB.prepare(
-          "UPDATE maps SET title=?,author=?,summary=?,description=?,game_version=?,players=?,category=?,mods=?,map_code=?,file_key=?,file_name=?,file_size=?,sha256=?,cover_key=?,cover_type=?,status='pending',feedback='',reviewed_at=NULL,review_token=NULL,revision=revision+1 WHERE id=? AND revision=? AND (status=\'pending\' OR (SELECT COUNT(*) FROM maps AS queue WHERE queue.owner_id=maps.owner_id AND queue.status=\'pending\')<3)",
+          "UPDATE maps SET title=?,author=?,summary=?,description=?,game_version=?,players=?,category=?,mods=?,map_code=?,file_key=?,file_name=?,file_size=?,sha256=?,cover_key=?,cover_type=?,status='pending',feedback='',reviewed_at=NULL,review_token=NULL,author_verified=?,revision=revision+1 WHERE id=? AND revision=? AND (status=\'pending\' OR (SELECT COUNT(*) FROM maps AS queue WHERE queue.owner_id=maps.owner_id AND queue.status=\'pending\')<3)",
         )
           .bind(
             input.title,
@@ -182,6 +193,7 @@ async function handle(req: Request, { params }: { params: Promise<{ id: string }
             sha,
             coverKey,
             coverType,
+            authorVerified,
             id,
             revision,
           )

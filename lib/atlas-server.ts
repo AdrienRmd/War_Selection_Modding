@@ -23,6 +23,14 @@ export type MapRecord = {
   reviewed_at: string | null;
   feedback: string;
   revision: number;
+  // V2-P2 (migration 0008, additive) — SB5/SB6/SB7. Ces colonnes manquent
+  // sur les lignes antérieures à 0008 uniquement en cas de rollback code,
+  // jamais en base (DEFAULT posés par la migration).
+  test_status: string;
+  test_updated_at: string | null;
+  test_set_by: string | null;
+  test_notes: string;
+  author_verified: number;
 };
 type Bindings = { DB: D1Database; BUCKET: R2Bucket; ADMIN_EMAILS?: string };
 export function bindings() {
@@ -62,6 +70,19 @@ export function publicMap(m: MapRecord) {
     file_size: m.file_size,
     sha256: m.sha256,
     has_cover: !!m.cover_key,
+    // SB5 : une carte peut être publiée avec un code de partage seul —
+    // les colonnes fichiers portent alors les défautes ""/0 (NOT NULL
+    // historiques, cf. db/schema.ts). Tout ce qui dépend d'un fichier
+    // téléchargeable se branchera sur has_file, jamais sur file_name.
+    has_file: !!m.file_key,
+    // SB6 : statut de test déclaré par l'auteur (+ date et dernier
+    // rédacteur « author »/« admin »). SB7 : badge créateur vérifié
+    // (instantané pris à l'écriture, jamais recalculé rétroactivement).
+    test_status: m.test_status,
+    test_updated_at: m.test_updated_at,
+    test_set_by: m.test_set_by,
+    test_notes: m.test_notes,
+    author_verified: !!m.author_verified,
   };
 }
 export async function approvedMaps(offset = 0) {

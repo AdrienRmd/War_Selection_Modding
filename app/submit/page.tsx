@@ -1,4 +1,4 @@
-import { requireChatGPTUser } from "@/app/chatgpt-auth";
+import { requireChatGPTUser, getChatGPTUser } from "@/app/chatgpt-auth";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/page-metadata";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
@@ -10,6 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 export default async function Submit() {
   await requireChatGPTUser("/submit");
+  // SB7-a : pré-remplissage de l'auteur avec le pseudo du compte (une saisie
+  // de moins) — le champ reste éditable pour les pseudonymes d'équipe.
+  const viewer = await getChatGPTUser();
   return (
     <>
       <AtlasHeader />
@@ -20,7 +23,7 @@ export default async function Submit() {
           text="提交地图与 Mod 说明，审核通过后收录到社区档案。"
         />
         <CreationSwitch active="maps" />
-        <SubmissionForm />
+        <SubmissionForm initialAuthor={viewer?.displayName || ""} />
       </main>
       <AtlasFooter />
     </>

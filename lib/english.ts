@@ -2150,4 +2150,52 @@ export const english: Record<string, string> = {
   "创建账号 | WS ATLAS": "Create an account | WS ATLAS",
   "我的账号 | WS ATLAS": "My account | WS ATLAS",
   "我的创作 | WS ATLAS": "My Creations | WS ATLAS",
+
+  // --- V2-P2 cartes : code de partage (SB5), statut de test (SB6), créateur vérifié (SB7) ---
+  "已复制到剪贴板": "Copied to clipboard",
+  "复制分享码": "Copy share code",
+  "浏览器不允许复制，请手动选择代码。":
+    "Clipboard unavailable; select and copy the code manually.",
+  "游戏内地图分享码": "In-game map share code",
+  "例如：map-1c54042c，与 ZIP 包至少提供一项":
+    "e.g. map-1c54042c — code or ZIP archive, at least one",
+  "这个代码的格式不像游戏导出的 map-XXXXXXXX，请核对后继续（仍可提交）。":
+    "This code does not look like a game-exported map-XXXXXXXX — please double-check (you can still submit).",
+  "请填写游戏内分享码，或上传地图 ZIP 包（至少一项）。":
+    "Enter an in-game share code or upload a map ZIP archive (at least one).",
+  "没有 ZIP 包？只填分享码也可以投稿。文件在审核前保持私有。":
+    "No ZIP archive? A share code alone is enough. Files stay private until review.",
+  "选填 · 最大 10 MB · 与分享码至少提供一项": "Optional · max 10 MB · code or ZIP, at least one",
+  "该地图未提供 ZIP 包，请使用游戏内分享码。":
+    "No ZIP archive for this map — use the in-game share code.",
+  "该投稿仅含分享码，未上传 ZIP 包。": "Code-only submission — no ZIP archive uploaded.",
+  "⚠ 分享码格式不像游戏导出的 map-XXXXXXXX，请核对。":
+    "⚠ Share code does not look like a game-exported map-XXXXXXXX — please verify.",
+  "⚠ 该分享码已用于另一张已发布地图（可能是变体，请人工判断）。":
+    "⚠ This share code is already used by another published map (possibly a variant — judge manually).",
+  "测试状态": "Test status",
+  "待实测": "Untested",
+  "已实测可用": "Tested · working",
+  "存在问题": "Known issues",
+  "已失效": "Unavailable",
+  "由作者申报": "Declared by the author",
+  "管理员已更新": "Updated by the team",
+  "测试状态 · 由作者申报": "Test status · declared by the author",
+  "测试状态 · 管理员已更新": "Test status · updated by the team",
+  "申报测试状态": "Declare test status",
+  "只更新测试状态，不重新进入审核。选择实际测试后的结果：未测试就保持“待实测”。":
+    "Updates only the test status — no re-review. Pick the outcome of your actual testing; keep “Untested” otherwise.",
+  "测试日期": "Test date",
+  "实测游戏版本": "Game version tested",
+  "状态不是“待实测”时必填：测试人数、时长、发现的问题。":
+    "Required unless “Untested”: players, duration, issues found.",
+  "测试状态已更新。": "Test status updated.",
+  "保存测试状态": "Save test status",
+  "按测试状态筛选": "Filter by test status",
+  "全部状态": "All statuses",
+  "已加载 ${count} 张：": "${count} maps loaded: ",
+  "创作者已验证": "Verified creator",
+  "创作者已验证：署名与账号一致。": "Verified creator: byline matches the account.",
+  "已按账号昵称预填，可修改；与昵称一致时展示“创作者已验证”。":
+    "Pre-filled with your account nickname — editable; keeping it exactly as-is shows the “Verified creator” badge.",
 };

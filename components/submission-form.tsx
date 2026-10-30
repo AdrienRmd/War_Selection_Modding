@@ -15,7 +15,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-export function SubmissionForm() {
+import { mapCodeLooksPlausible, normalizeMapCode } from "@/lib/map-code";
+export function SubmissionForm({ initialAuthor = "" }: { initialAuthor?: string }) {
   const { t } = useI18n();
   const [category, setCategory] = useState("历史战役"),
     [rights, setRights] = useState(false),
@@ -23,7 +24,8 @@ export function SubmissionForm() {
     [error, setError] = useState(""),
     [done, setDone] = useState(false),
     [fileName, setFileName] = useState(""),
-    [coverName, setCoverName] = useState("");
+    [coverName, setCoverName] = useState(""),
+    [mapCode, setMapCode] = useState("");
   const id = useRef<string | null>(null);
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -33,7 +35,19 @@ export function SubmissionForm() {
     data.set("rights", String(rights));
     const file = data.get("file");
     const cover = data.get("cover");
-    if (!(file instanceof File) || !file.size || file.size > 10 * 1024 * 1024) {
+    // SB5 : code de partage OU ZIP — au moins l'un des deux. Le serveur
+    // revalide (le contournement par requête directe est couvert par les
+    // tests) ; ce contrôle ne sert qu'au message immédiat côté client.
+    const hasCode = normalizeMapCode(String(data.get("map_code") || "")) !== "";
+    const hasFile = file instanceof File && file.size > 0;
+    if (!hasCode && !hasFile) {
+      setError("请填写游戏内分享码，或上传地图 ZIP 包（至少一项）。");
+      return;
+    }
+    if (
+      hasFile &&
+      (!(file instanceof File) || !file.name.toLowerCase().endsWith(".zip") || file.size > 10 * 1024 * 1024)
+    ) {
       setError("请选择 10 MB 以内的地图 ZIP 包。");
       return;
     }
@@ -113,8 +127,14 @@ export function SubmissionForm() {
               required
               minLength={2}
               maxLength={40}
+              defaultValue={initialAuthor}
               placeholder={t("公开显示的创作者名称")}
             />
+            {initialAuthor && (
+              <small className="field-hint">
+                <T text={"已按账号昵称预填，可修改；与昵称一致时展示“创作者已验证”。"} />
+              </small>
+            )}
           </label>
           <label>
             <T text={"游戏版本"} />{" "}
@@ -145,8 +165,23 @@ export function SubmissionForm() {
             </Select>
           </label>
           <label>
-            <T text={"游戏内地图分享码（选填）"} />
-            <Input name="map_code" maxLength={150} placeholder={t("请填写真实可用的分享码")} />
+            <T text={"游戏内地图分享码"} />
+            <Input
+              name="map_code"
+              maxLength={150}
+              value={mapCode}
+              onChange={(e) => setMapCode(e.target.value)}
+              placeholder={t("例如：map-1c54042c，与 ZIP 包至少提供一项")}
+            />
+            {mapCode.trim() && !mapCodeLooksPlausible(mapCode) && (
+              <small className="field-warning" role="status">
+                <T
+                  text={
+                    "这个代码的格式不像游戏导出的 map-XXXXXXXX，请核对后继续（仍可提交）。"
+                  }
+                />
+              </small>
+            )}
           </label>
         </div>
         <label>
@@ -190,7 +225,7 @@ export function SubmissionForm() {
               <T text={"上传地图包与封面"} />
             </h2>
             <p>
-              <T text={"文件将在审核前保持私有。"} />
+              <T text={"没有 ZIP 包？只填分享码也可以投稿。文件在审核前保持私有。"} />
             </p>
           </div>
         </div>
@@ -201,13 +236,12 @@ export function SubmissionForm() {
               <T text={fileName || "选择地图 ZIP 包"} />
             </strong>
             <span>
-              <T text={"必填 · 最大 10 MB · 包含使用说明"} />
+              <T text={"选填 · 最大 10 MB · 与分享码至少提供一项"} />
             </span>
             <Input
               type="file"
               name="file"
               accept=".zip,application/zip"
-              required
               onChange={(e) => setFileName(e.target.files?.[0]?.name || "")}
             />
           </label>

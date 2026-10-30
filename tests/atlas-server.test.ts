@@ -46,6 +46,11 @@ function mapRecord(id: number): MapRecord {
     reviewed_at: "2026-01-02T00:00:00Z",
     feedback: "",
     revision: 1,
+    test_status: "untested",
+    test_updated_at: null,
+    test_set_by: null,
+    test_notes: "",
+    author_verified: 0,
   };
 }
 

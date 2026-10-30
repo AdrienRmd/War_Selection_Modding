@@ -245,23 +245,42 @@ function SubmissionCard({
             <code>
               <T text={m.map_code} />
             </code>
+            {/* SB5-c/D6 — avertissements modérateur, jamais blocage. */}
+            {m.code_implausible && (
+              <small className="code-warning" role="status">
+                <T text={"⚠ 分享码格式不像游戏导出的 map-XXXXXXXX，请核对。"} />
+              </small>
+            )}
+            {m.code_duplicate && (
+              <small className="code-warning" role="status">
+                <T text={"⚠ 该分享码已用于另一张已发布地图（可能是变体，请人工判断）。"} />
+              </small>
+            )}
           </p>
         )}
-        <div className="file-row">
-          <Download size={20} />
-          <span>
-            <T text={m.file_name} />
-            <small>
-              <T text={(m.file_size / 1024 / 1024).toFixed(2)} /> <T text="MB · ZIP" />
-            </small>
-          </span>
-          <a className="button" href={`/api/atlas/files/${m.id}`}>
-            <T text={"下载检查"} />
-          </a>
-        </div>
-        <p className="checksum">
-          <T text="SHA-256:" /> <T text={m.sha256} />
-        </p>
+        {m.has_file ? (
+          <div className="file-row">
+            <Download size={20} />
+            <span>
+              <T text={m.file_name} />
+              <small>
+                <T text={(m.file_size / 1024 / 1024).toFixed(2)} /> <T text="MB · ZIP" />
+              </small>
+            </span>
+            <a className="button" href={`/api/atlas/files/${m.id}`}>
+              <T text={"下载检查"} />
+            </a>
+          </div>
+        ) : (
+          <p className="caption">
+            <T text={"该投稿仅含分享码，未上传 ZIP 包。"} />
+          </p>
+        )}
+        {m.has_file && (
+          <p className="checksum">
+            <T text="SHA-256:" /> <T text={m.sha256} />
+          </p>
+        )}
       </details>
       {m.feedback && (
         <div className="review-feedback">

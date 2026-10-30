@@ -11,6 +11,7 @@ import {
   type MapRecord,
 } from "@/lib/atlas-server";
 import { ownMaps } from "@/lib/account-server";
+import { mapCodeLooksPlausible, mapTestStates } from "@/lib/map-code";
 export const dynamic = "force-dynamic";
 const uuid = z.string().uuid();
 const fields = z.object({
@@ -92,7 +93,10 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
         throw new HttpError(404, "文件不可用。");
       const cover = new URL(req.url).searchParams.get("type") === "cover";
       const key = cover ? m.cover_key : m.file_key;
-      if (!key) throw new HttpError(404, "没有封面。");
+      // SB5 : les cartes publiées par code seul n'ont pas d'objet R2 — message
+      // distinct de la couverture manquante (file_key = "" par défaute).
+      if (!key)
+        throw new HttpError(404, cover ? "没有封面。" : "该地图未提供 ZIP 包，请使用游戏内分享码。");
       const obj = await BUCKET.get(key);
       if (!obj) throw new HttpError(404, "文件未找到。");
       return new Response(obj.body, {
@@ -120,12 +124,30 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
               "SELECT * FROM maps WHERE status != 'withdrawn' ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, created_at DESC LIMIT 100",
             ).all<MapRecord>()
           : { results: await ownMaps(user.userId) };
+      // SB5-c/D6 — file de modération : avertissements (jamais blocage) sur
+      // les codes de partage : format invraisemblable vs `map-XXXXXXXX`, et
+      // doublon du code sur une autre carte déjà approuvée (variantes
+      // d'éditions légitimes). Une seule requête groupée bornée à 100.
+      const flags = new Map<string, { code_implausible: boolean; code_duplicate: boolean }>();
+      if (mode === "admin") {
+        const dup = await DB.prepare(
+          "SELECT a.map_code AS code FROM maps a JOIN maps b ON a.map_code = b.map_code AND a.id != b.id WHERE a.status = 'approved' AND b.status != 'withdrawn' AND a.map_code != '' GROUP BY a.map_code LIMIT 100",
+        ).all<{ code: string }>();
+        const duplicates = new Set(dup.results.map((row) => row.code));
+        for (const m of r.results)
+          if (m.map_code)
+            flags.set(m.id, {
+              code_implausible: !mapCodeLooksPlausible(m.map_code),
+              code_duplicate: duplicates.has(m.map_code),
+            });
+      }
       return json({
         items: r.results.map((m) => ({
           ...publicMap(m),
           status: m.status,
           feedback: m.feedback,
           revision: m.revision,
+          ...(flags.get(m.id) || {}),
         })),
         limit: 100,
       });
@@ -159,20 +181,28 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       const input = fields.parse(Object.fromEntries(form.entries()));
       const file = form.get("file");
       const cover = form.get("cover");
-      if (
-        !(file instanceof File) ||
-        !file.name.toLowerCase().endsWith(".zip") ||
-        file.size < 4 ||
-        file.size > 10 * 1024 * 1024
-      )
+      // SB5 : code de partage OU ZIP — au moins l'un des deux (comme les
+      // mods : code OU fichier). Le refus est serveur, donc toute requête
+      // directe contournant le formulaire est couverte.
+      const hasFile =
+        file instanceof File &&
+        file.size >= 4 &&
+        file.name.toLowerCase().endsWith(".zip") &&
+        file.size <= 10 * 1024 * 1024;
+      if (file instanceof File && file.size > 0 && !hasFile)
         throw new HttpError(400, "地图包必须是 10 MB 以内的 ZIP 文件。");
-      const fileBytes = new Uint8Array(await file.arrayBuffer());
-      if (
-        fileBytes[0] !== 80 ||
-        fileBytes[1] !== 75 ||
-        !((fileBytes[2] === 3 && fileBytes[3] === 4) || (fileBytes[2] === 5 && fileBytes[3] === 6))
-      )
-        throw new HttpError(400, "文件不是有效的 ZIP 格式。请重新打包。");
+      if (!hasFile && !input.map_code)
+        throw new HttpError(400, "请填写游戏内分享码，或上传地图 ZIP 包（至少一项）。");
+      let fileBytes: Uint8Array<ArrayBuffer> | null = null;
+      if (hasFile) {
+        fileBytes = new Uint8Array(await (file as File).arrayBuffer());
+        if (
+          fileBytes[0] !== 80 ||
+          fileBytes[1] !== 75 ||
+          !((fileBytes[2] === 3 && fileBytes[3] === 4) || (fileBytes[2] === 5 && fileBytes[3] === 6))
+        )
+          throw new HttpError(400, "文件不是有效的 ZIP 格式。请重新打包。");
+      }
       let coverBytes: Uint8Array | null = null;
       let coverType: string | null = null;
       if (cover instanceof File && cover.size) {
@@ -187,24 +217,33 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
           coverType = "image/jpeg";
         else throw new HttpError(400, "封面仅支持 PNG 或 JPEG 图片。");
       }
-      const sha = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", fileBytes)))
-        .map((n) => n.toString(16).padStart(2, "0"))
-        .join("");
+      const sha = fileBytes
+        ? Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", fileBytes)))
+            .map((n) => n.toString(16).padStart(2, "0"))
+            .join("")
+        : "";
       const attempt = crypto.randomUUID();
-      const key = `submissions/${id}/${attempt}/map.zip`;
+      const key = fileBytes ? `submissions/${id}/${attempt}/map.zip` : "";
       const coverKey = coverBytes ? `submissions/${id}/${attempt}/cover` : null;
       const now = new Date().toISOString();
       // Both objects are tracked so a failure between or after the puts can
       // never strand a half-uploaded pair in R2 (see finally below).
-      await BUCKET.put(key, fileBytes, { httpMetadata: { contentType: "application/zip" } });
-      uploaded.push(key);
+      if (fileBytes) {
+        await BUCKET.put(key, fileBytes, { httpMetadata: { contentType: "application/zip" } });
+        uploaded.push(key);
+      }
       if (coverBytes && coverKey) {
         await BUCKET.put(coverKey, coverBytes, { httpMetadata: { contentType: coverType! } });
         uploaded.push(coverKey);
       }
       try {
+        // SB7 : instantané « créateur vérifié » — match EXACT (pas de fuzzy)
+        // entre l'auteur saisi et le displayName du compte propriétaire,
+        // figé à l'écriture. Aucune réécriture rétroactive des lignes
+        // existantes (la migration 0008 pose 0 par défaute).
+        const authorVerified = input.author.trim() === user.displayName.trim() ? 1 : 0;
         const r = await DB.prepare(
-          "INSERT INTO maps (id, owner_id, author, title, summary, description, game_version, players, category, mods, map_code, status, file_name, file_key, file_size, sha256, cover_key, cover_type, created_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,'pending',?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM maps WHERE owner_id = ? AND status = 'pending') < 3 AND (SELECT COUNT(*) FROM maps WHERE owner_id = ? AND created_at > ?) < 5",
+          "INSERT INTO maps (id, owner_id, author, title, summary, description, game_version, players, category, mods, map_code, status, file_name, file_key, file_size, sha256, cover_key, cover_type, created_at, author_verified) SELECT ?,?,?,?,?,?,?,?,?,?,?,'pending',?,?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM maps WHERE owner_id = ? AND status = 'pending') < 3 AND (SELECT COUNT(*) FROM maps WHERE owner_id = ? AND created_at > ?) < 5",
         )
           .bind(
             id,
@@ -218,13 +257,14 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
             input.category,
             input.mods,
             input.map_code,
-            file.name.replace(/[\x00-\x1f\x7f/\\]/g, "_").slice(0, 120),
+            fileBytes ? (file as File).name.replace(/[\x00-\x1f\x7f/\\]/g, "_").slice(0, 120) : "",
             key,
-            file.size,
+            fileBytes ? (file as File).size : 0,
             sha,
             coverKey,
             coverType,
             now,
+            authorVerified,
             user.userId,
             user.userId,
             since,
@@ -282,6 +322,75 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       ]);
       if (r[0].meta.changes !== 1) throw new HttpError(409, "稿件状态已变化，请刷新。");
       return json({ id: m.id, status: body.status });
+    }
+    if (action === "test-status" && path[1] && req.method === "PATCH") {
+      // SB6 — statut de test déclaré par l'auteur après publication (vocabulaire
+      // collection : untested/working/issues/unavailable). Surplomb admin possible.
+      // Ne repasse JAMAIS la carte en modération : seul le statut de test, ses
+      // notes, sa date et la révision bougent. L'instantané test_updated_at /
+      // test_set_by forme l'historique simple ; un surpassement admin est en
+      // plus journalisé dans reviews (action test_status) comme les décisions
+      // de modération.
+      if (!user) throw new HttpError(401, "请先登录。");
+      const body = z
+        .object({
+          status: z.enum(mapTestStates),
+          tested_at: z.string().trim().max(10).default(""),
+          game_version: z.string().trim().max(100).default(""),
+          notes: z.string().trim().max(4000),
+          revision: z.number().int().min(0),
+        })
+        .parse(JSON.parse(new TextDecoder().decode(await limitedBody(req, 12000))));
+      if (
+        body.tested_at &&
+        (!/^\d{4}-\d{2}-\d{2}$/.test(body.tested_at) ||
+          body.tested_at > new Date().toISOString().slice(0, 10))
+      )
+        throw new HttpError(400, "测试日期无效或晚于今天。");
+      if (body.status !== "untested" && (!body.tested_at || !body.notes))
+        throw new HttpError(400, "更新实测状态前，请填写测试日期和测试记录。");
+      const m = await DB.prepare("SELECT * FROM maps WHERE id = ?")
+        .bind(path[1])
+        .first<MapRecord>();
+      if (!m || m.status !== "approved") throw new HttpError(404, "仅已发布的地图可以更新测试状态。");
+      if (!admin && m.owner_id !== user.userId)
+        throw new HttpError(403, "只有地图作者或管理员可以更新测试状态。");
+      const now = new Date().toISOString();
+      const token = crypto.randomUUID();
+      const statements = [
+        DB.prepare(
+          "UPDATE maps SET test_status = ?, test_updated_at = ?, test_set_by = ?, test_notes = ?, game_version = ?, revision = revision + 1, review_token = ? WHERE id = ? AND revision = ? AND status = 'approved'",
+        ).bind(
+          body.status,
+          now,
+          admin ? "admin" : "author",
+          body.notes,
+          body.game_version || m.game_version,
+          token,
+          m.id,
+          body.revision,
+        ),
+      ];
+      if (admin && m.test_set_by !== (admin ? "admin" : "author"))
+        // Surpassement admin sur une déclaration existante → journal reviews.
+        statements.push(
+          DB.prepare(
+            "INSERT INTO reviews (id,map_id,reviewer_id,action,feedback,checklist,created_at) SELECT ?,?,?,?,?,?,? WHERE EXISTS (SELECT 1 FROM maps WHERE id = ? AND review_token = ?)",
+          ).bind(
+            token,
+            m.id,
+            user.userId,
+            "test_status",
+            `${body.status} · ${body.notes}`.slice(0, 2000),
+            "[]",
+            now,
+            m.id,
+            token,
+          ),
+        );
+      const r = await DB.batch(statements);
+      if (r[0].meta.changes !== 1) throw new HttpError(409, "档案已被更新，请刷新后重试。");
+      return json({ id: m.id, test_status: body.status, test_updated_at: now, revision: body.revision + 1 });
     }
     if (action === "withdraw" && path[1] && req.method === "POST") {
       const r = await DB.prepare(

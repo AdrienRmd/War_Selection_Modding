@@ -1711,3 +1711,186 @@ code {
   gap: 6px;
   min-width: 0;
 }
+
+/* ============================================================
+   V2-P2 — cartes : code de partage (SB5), statut de test (SB6),
+   créateur vérifié (SB7). Le badge map-test-badge est
+   VOLONTAIREMENT distinct du .collection-state admin de la
+   collection éditoriale : pilule arrondie + pictogramme texte
+   « 由作者申报 », jamais les mêmes classes (spec SB6-a).
+   ============================================================ */
+.share-code-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 18px 0;
+  padding: 14px;
+  border: 1px dashed var(--primary);
+  background: #1c2620;
+  min-width: 0;
+}
+.share-code-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-foreground);
+  font-size: 14px;
+}
+.share-code-value {
+  font-size: 19px;
+  letter-spacing: 1px;
+  overflow-wrap: anywhere;
+  color: #eef4ef;
+}
+.map-test-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 999px;
+  padding: 8px 16px;
+  margin: 10px 0 4px;
+  border: 1px solid #4a5568;
+  background: #232b33;
+  color: #d7dee5;
+  align-self: flex-start;
+}
+.map-test-badge strong {
+  font-size: 15px;
+}
+.map-test-badge small {
+  font-size: 12px;
+  opacity: 0.85;
+}
+.map-test-badge.state-untested {
+  border-color: #69532e;
+  background: #2b251a;
+  color: #efc983;
+}
+.map-test-badge.state-working {
+  border-color: #3e6858;
+  background: #19312a;
+  color: #b5e1cd;
+}
+.map-test-badge.state-issues {
+  border-color: #7a4a3a;
+  background: #31211b;
+  color: #e8b8a5;
+}
+.map-test-badge.state-unavailable {
+  border-color: #555c66;
+  background: #20262d;
+  color: #aeb7c0;
+}
+.test-notes {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+.verified-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-style: normal;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #9fd6b4;
+  background: #16281f;
+  border: 1px solid #35553f;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.map-author-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.map-card-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.map-card-author .verified-chip {
+  font-size: 11px;
+  padding: 1px 6px;
+}
+.map-test-chip {
+  display: block;
+  margin-top: 2px;
+  opacity: 0.8;
+  overflow-wrap: break-word;
+}
+.community-filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.test-filter select,
+.test-status-panel select {
+  height: 43px;
+  padding: 0 10px;
+  background: #171e1b;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 16px;
+  width: 100%;
+}
+.community-count {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+  overflow-wrap: break-word;
+}
+.code-warning {
+  display: block;
+  color: #efc983;
+  margin-top: 4px;
+  overflow-wrap: break-word;
+}
+.field-warning {
+  display: block;
+  color: #efc983;
+  margin-top: 4px;
+  overflow-wrap: break-word;
+}
+.field-hint {
+  display: block;
+  color: var(--muted-foreground);
+  margin-top: 4px;
+  overflow-wrap: break-word;
+}
+.test-status-panel {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.test-status-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.test-status-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 550px) {
+  .test-status-fields {
+    grid-template-columns: 1fr;
+  }
+  .share-code-box {
+    padding: 10px;
+  }
+  .share-code-value {
+    font-size: 16px;
+  }
+}

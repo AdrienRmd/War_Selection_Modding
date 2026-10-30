@@ -2186,4 +2186,52 @@ export const french: Record<string, string> = {
   "创建账号 | WS ATLAS": "Créer un compte | WS ATLAS",
   "我的账号 | WS ATLAS": "Mon compte | WS ATLAS",
   "我的创作 | WS ATLAS": "Mes créations | WS ATLAS",
+
+  // --- V2-P2 cartes : code de partage (SB5), statut de test (SB6), créateur vérifié (SB7) ---
+  "已复制到剪贴板": "Copié dans le presse-papiers",
+  "复制分享码": "Copier le code de partage",
+  "浏览器不允许复制，请手动选择代码。":
+    "Presse-papiers indisponible ; sélectionnez et copiez le code manuellement.",
+  "游戏内地图分享码": "Code de partage de carte en jeu",
+  "例如：map-1c54042c，与 ZIP 包至少提供一项":
+    "ex. map-1c54042c — code ou archive ZIP, au moins un des deux",
+  "这个代码的格式不像游戏导出的 map-XXXXXXXX，请核对后继续（仍可提交）。":
+    "Ce code ne ressemble pas à un map-XXXXXXXX exporté par le jeu — vérifiez-le (la soumission reste possible).",
+  "请填写游戏内分享码，或上传地图 ZIP 包（至少一项）。":
+    "Saisissez un code de partage en jeu ou téléversez une archive ZIP de carte (au moins un des deux).",
+  "没有 ZIP 包？只填分享码也可以投稿。文件在审核前保持私有。":
+    "Pas d'archive ZIP ? Un code de partage suffit. Les fichiers restent privés jusqu'à la relecture.",
+  "选填 · 最大 10 MB · 与分享码至少提供一项": "Facultatif · 10 Mo max · code ou ZIP, au moins un des deux",
+  "该地图未提供 ZIP 包，请使用游戏内分享码。":
+    "Aucune archive ZIP pour cette carte — utilisez le code de partage en jeu.",
+  "该投稿仅含分享码，未上传 ZIP 包。": "Soumission par code uniquement — aucune archive ZIP téléversée.",
+  "⚠ 分享码格式不像游戏导出的 map-XXXXXXXX，请核对。":
+    "⚠ Le code de partage ne ressemble pas à un map-XXXXXXXX exporté par le jeu — à vérifier.",
+  "⚠ 该分享码已用于另一张已发布地图（可能是变体，请人工判断）。":
+    "⚠ Ce code de partage est déjà utilisé par une autre carte publiée (variante possible — à juger manuellement).",
+  "测试状态": "Statut de test",
+  "待实测": "À tester",
+  "已实测可用": "Testé · fonctionnel",
+  "存在问题": "Problèmes connus",
+  "已失效": "Indisponible",
+  "由作者申报": "Déclaré par l'auteur",
+  "管理员已更新": "Mis à jour par l'équipe",
+  "测试状态 · 由作者申报": "Statut de test · déclaré par l'auteur",
+  "测试状态 · 管理员已更新": "Statut de test · mis à jour par l'équipe",
+  "申报测试状态": "Déclarer le statut de test",
+  "只更新测试状态，不重新进入审核。选择实际测试后的结果：未测试就保持“待实测”。":
+    "Met à jour uniquement le statut de test, sans nouvelle modération. Choisissez le résultat de vos tests réels ; sinon laissez « À tester ».",
+  "测试日期": "Date du test",
+  "实测游戏版本": "Version du jeu testée",
+  "状态不是“待实测”时必填：测试人数、时长、发现的问题。":
+    "Obligatoire sauf « À tester » : joueurs, durée, problèmes rencontrés.",
+  "测试状态已更新。": "Statut de test mis à jour.",
+  "保存测试状态": "Enregistrer le statut de test",
+  "按测试状态筛选": "Filtrer par statut de test",
+  "全部状态": "Tous les statuts",
+  "已加载 ${count} 张：": "${count} cartes chargées : ",
+  "创作者已验证": "Créateur vérifié",
+  "创作者已验证：署名与账号一致。": "Créateur vérifié : la signature correspond au compte.",
+  "已按账号昵称预填，可修改；与昵称一致时展示“创作者已验证”。":
+    "Prérempli avec le pseudo du compte — modifiable ; en le laissant identique, le badge « Créateur vérifié » s'affiche.",
 };
