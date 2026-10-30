@@ -1,4 +1,6 @@
 import Link from "@/components/site-link";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { Bilingual } from "@/components/i18n";
 import { CollectedMaps } from "@/components/collected-maps";
@@ -7,7 +9,9 @@ import { collectedMaps } from "@/lib/collection-server";
 import { identity } from "@/lib/atlas-server";
 import type { CollectedMap } from "@/lib/collection";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "地图档案 | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("maps");
+}
 export default async function Maps() {
   const viewer = await identity();
   let items: CollectedMap[] | null = null;

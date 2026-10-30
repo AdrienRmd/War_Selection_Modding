@@ -1,4 +1,6 @@
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { isAdmin } from "@/lib/atlas-server";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { SubmissionDashboard } from "@/components/submission-dashboard";
@@ -7,6 +9,9 @@ import { ModDashboard } from "@/components/mod-dashboard";
 import { CreationTabs } from "@/components/creation-tabs";
 import { Bilingual } from "@/components/i18n";
 export const dynamic = "force-dynamic";
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("admin");
+}
 export default async function Admin() {
   const user = await requireChatGPTUser("/admin");
   return (

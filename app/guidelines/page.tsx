@@ -1,7 +1,11 @@
 import { T } from "@/components/i18n";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "投稿与审核规范 | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("guidelines");
+}
 export default function Guidelines() {
   return (
     <>

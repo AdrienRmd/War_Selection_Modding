@@ -1,4 +1,6 @@
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { Bilingual } from "@/components/i18n";
 import { CollectedMaps } from "@/components/collected-maps";
@@ -6,7 +8,9 @@ import { collectedMaps } from "@/lib/collection-server";
 import { isAdmin } from "@/lib/atlas-server";
 import type { CollectedMap } from "@/lib/collection";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "收藏地图管理 | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("mapsCollectionManage");
+}
 export default async function ManageCollection() {
   const user = await requireChatGPTUser("/maps/collection/manage");
   const admin = isAdmin(user);

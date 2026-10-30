@@ -1,8 +1,12 @@
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { UnitsBrowser } from "@/components/units-browser";
 import { normalizeUnitDeepLink, unitsIndex } from "@/lib/units";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "单位档案 | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("units");
+}
 export default async function Units({
   searchParams,
 }: {

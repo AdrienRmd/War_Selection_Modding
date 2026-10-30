@@ -2130,4 +2130,28 @@ export const french: Record<string, string> = {
   "该工程创建于数据版本 ${version}，当前版本不同；下面逐项核对差异。": "Ce projet a été créé avec la version de données ${version}, différente de l'actuelle ; les différences sont vérifiées ci-dessous.",
   "${count} 项改动对应的参数在新数据中已不存在，已忽略。": "${count} modification(s) portent sur des paramètres absents des nouvelles données ; elles sont ignorées.",
   "数据 ${version} · ${count} 个可修改单位": "Données ${version} · ${count} unités modifiables",
+  // --- <title> / meta description localisés par page (lib/page-titles) ---
+  "WS ATLAS · 战场档案": "WS ATLAS · Archives du champ de bataille",
+  "War Selection 玩家地图与 Mod 社区档案。探索斯大林格勒战场，查阅配置、平衡数值与审核后的社区地图。":
+    "Archive communautaire des cartes et mods de War Selection. Explorez le champ de bataille de Stalingrad : configurations, valeurs d'équilibrage et cartes communautaires modérées.",
+  "单位档案 | WS ATLAS": "Archives des unités | WS ATLAS",
+  "科技档案 | WS ATLAS": "Archive des recherches | WS ATLAS",
+  "参数档案 | WS ATLAS": "Archive de modding | WS ATLAS",
+  "玩家地图档案 | WS ATLAS": "Archive des cartes de joueurs | WS ATLAS",
+  "编辑地图 | WS ATLAS": "Modifier la carte | WS ATLAS",
+  "收藏地图管理 | WS ATLAS": "Gérer les cartes sauvegardées | WS ATLAS",
+  "Mod 资料库 | WS ATLAS": "Bibliothèque de mods | WS ATLAS",
+  "Mod 档案 | WS ATLAS": "Fiche du mod | WS ATLAS",
+  "编辑 Mod | WS ATLAS": "Modifier le mod | WS ATLAS",
+  "提交 Mod | WS ATLAS": "Soumettre un mod | WS ATLAS",
+  "简易 Mod 工作台 | WS ATLAS": "Atelier de mods simple | WS ATLAS",
+  "编辑 War Selection 单位、武器、经济、建造、科技与技能参数，查看效果说明，设置前置条件并导出 Lua。":
+    "Modifiez unités, armes, économie, construction, recherches et compétences de War Selection, consultez les notes d'effet, définissez les prérequis et exportez en Lua.",
+  "三步创建 War Selection 平衡 Mod：选择单位、修改数值（原值可见）、导出 Lua。数据来自当前同步的游戏版本。":
+    "Créez un mod d'équilibrage War Selection en trois étapes : choisissez les unités, modifiez les valeurs (originaux visibles), exportez en Lua. Données issues de la version du jeu actuellement synchronisée.",
+  "斯大林格勒完整技术档案 | WS ATLAS": "Archive technique complète de Stalingrad | WS ATLAS",
+  "登录 | WS ATLAS": "Se connecter | WS ATLAS",
+  "创建账号 | WS ATLAS": "Créer un compte | WS ATLAS",
+  "我的账号 | WS ATLAS": "Mon compte | WS ATLAS",
+  "我的创作 | WS ATLAS": "Mes créations | WS ATLAS",
 };

@@ -1,4 +1,6 @@
 import { LocalizedNav } from "@/components/localized-media";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 
 import { T } from "@/components/i18n";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
@@ -12,7 +14,9 @@ import {
   TableCell,
 } from "@/components/ui/table";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "斯大林格勒完整技术档案 | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("reference");
+}
 function Document() {
   const lines = reference.split(/\r?\n/);
   const nodes: React.ReactNode[] = [];

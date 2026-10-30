@@ -1,4 +1,6 @@
 import { T } from "@/components/i18n";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { MapEditor } from "@/components/map-editor";
@@ -9,7 +11,9 @@ import { bindings, isAdmin, publicMap, type MapRecord } from "@/lib/atlas-server
 import { getFeaturedMap } from "@/lib/featured-server";
 import type { EditableMap } from "@/lib/map-content";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "编辑地图 | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("mapsSlugEdit");
+}
 export default async function EditMap({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   return <EditorContent slug={slug} />;

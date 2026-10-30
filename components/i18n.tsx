@@ -1,7 +1,16 @@
 "use client";
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { Languages } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { translate, type Locale } from "@/lib/i18n";
+import { localizePageMeta, resolvePageMeta } from "@/lib/page-titles";
 const htmlLang: Record<Locale, string> = { zh: "zh-CN", en: "en", fr: "fr" };
 const Context = createContext<{ locale: Locale; setLocale: (l: Locale) => void }>({
   locale: "zh",
@@ -9,10 +18,25 @@ const Context = createContext<{ locale: Locale; setLocale: (l: Locale) => void }
 });
 export function LocaleProvider({ initial, children }: { initial: Locale; children: ReactNode }) {
   const [locale, setLocale] = useState(initial);
+  const pathname = usePathname();
   useEffect(() => {
     document.documentElement.lang = htmlLang[locale];
     document.cookie = `atlas_locale=${locale}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
-  }, [locale]);
+    // <title> / meta description sont rendus côté serveur dans la locale de
+    // la requête : après un changement de langue (ou de route) côté client,
+    // on resynchronise via le registre partagé lib/page-titles. Route
+    // absente du registre → on laisse le titre posé par Next.
+    const meta = resolvePageMeta(pathname);
+    if (meta) {
+      const localized = localizePageMeta(meta, locale);
+      document.title = localized.title;
+      if (localized.description) {
+        document
+          .querySelector('meta[name="description"]')
+          ?.setAttribute("content", localized.description);
+      }
+    }
+  }, [locale, pathname]);
   return <Context.Provider value={{ locale, setLocale }}>{children}</Context.Provider>;
 }
 export function useI18n() {

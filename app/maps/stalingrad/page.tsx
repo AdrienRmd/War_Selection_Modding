@@ -1,4 +1,6 @@
 import { StalingradProvenance } from "@/components/map-provenance";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { LocalizedImage } from "@/components/localized-media";
 
 import { T } from "@/components/i18n";
@@ -9,7 +11,9 @@ import { Dossier } from "@/components/dossier";
 import { getFeaturedMap } from "@/lib/featured-server";
 import { identity } from "@/lib/atlas-server";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "斯大林格勒 · 地图档案 | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("mapsStalingrad");
+}
 export default async function Stalingrad() {
   const { admin } = await identity();
   let m;

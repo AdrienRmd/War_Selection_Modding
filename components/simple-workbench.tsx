@@ -439,7 +439,7 @@ function StepChoose({
             className={groupKey === g.key ? "on" : ""}
             onClick={() => setGroupKey(g.key)}
           >
-            {localizedGroupLabel(index, g, "zh") || localizedGroupLabel(index, g, "en") || g.key}{" "}
+            {localizedGroupLabel(index, g, locale) || g.key}{" "}
             · {perGroup[g.key] ?? 0}
           </button>
         ))}

@@ -1,4 +1,6 @@
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { T } from "@/components/i18n";
 import { ModEditor } from "@/components/mod-editor";
@@ -7,7 +9,9 @@ import { publicMod, rawMod } from "@/lib/mod-server";
 import type { ModEntry } from "@/lib/mod-types";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "编辑 Mod / Edit mod | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("modsSlugEdit");
+}
 
 export default async function EditMod({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

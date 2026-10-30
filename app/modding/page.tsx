@@ -1,9 +1,13 @@
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { ModdingTreeBrowser } from "@/components/modding-tree";
 import homeRaw from "@/lib/modding-home.json";
 import { moddingMeta, type ModdingHome } from "@/lib/modding";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "参数档案 | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("modding");
+}
 export default async function Modding({
   searchParams,
 }: {

@@ -1,9 +1,14 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { SignInForm } from "@/components/auth/signin-form";
 
 export const dynamic = "force-dynamic";
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("signin");
+}
 
 function safeRelativeReturnPath(value: string): string {
   if (!value.startsWith("/") || value.startsWith("//")) return "/";

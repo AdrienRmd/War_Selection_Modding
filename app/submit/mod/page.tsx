@@ -1,11 +1,15 @@
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { CreationSwitch } from "@/components/creation-tabs";
 import { ModEditor } from "@/components/mod-editor";
 import { identity } from "@/lib/atlas-server";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "提交 Mod / Submit mod | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("submitMod");
+}
 
 export default async function SubmitMod() {
   await requireChatGPTUser("/submit/mod");

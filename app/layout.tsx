@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { LocaleProvider } from "@/components/i18n";
-import type { Locale } from "@/lib/i18n";
+import { requestLocale } from "@/lib/page-metadata";
+import { localizePageMeta, pageRoutes } from "@/lib/page-titles";
 import "./globals.css";
 import "./atlas.css";
 import "./command.css";
@@ -13,23 +13,26 @@ import "./modding.css";
 import "./workbench.css";
 import "./simple.css";
 
-export const metadata: Metadata = {
-  title: "WS ATLAS · 战场档案",
-  description:
-    "War Selection 玩家地图与 Mod 社区档案。探索斯大林格勒战场，查阅配置、平衡数值与审核后的社区地图。",
-  icons: {
-    icon: "/atlas-emblem-v4.png",
-    shortcut: "/atlas-emblem-v4.png",
-  },
-};
+// Title/description localisés (cookie > Accept-Language > fr, voir
+// lib/page-metadata) pour l'accueil et toutes les pages sans metadata propre.
+export async function generateMetadata(): Promise<Metadata> {
+  const meta = localizePageMeta(pageRoutes.home.meta, await requestLocale());
+  return {
+    ...meta,
+    icons: {
+      icon: "/atlas-emblem-v4.png",
+      shortcut: "/atlas-emblem-v4.png",
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieLocale = (await cookies()).get("atlas_locale")?.value;
-  const locale: Locale = cookieLocale === "en" || cookieLocale === "fr" ? cookieLocale : "zh";
+  // Priorité D2 : cookie atlas_locale > en-tête Accept-Language > fr.
+  const locale = await requestLocale();
   return (
     <html lang={locale === "zh" ? "zh-CN" : locale}>
       <body className="antialiased">

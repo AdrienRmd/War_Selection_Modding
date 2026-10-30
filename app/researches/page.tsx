@@ -1,8 +1,12 @@
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { ResearchesBrowser } from "@/components/researches-browser";
 import { researchesIndex } from "@/lib/researches";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "科技档案 | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("researches");
+}
 export default async function Researches({
   searchParams,
 }: {

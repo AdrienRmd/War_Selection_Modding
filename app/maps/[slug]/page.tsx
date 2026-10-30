@@ -1,4 +1,6 @@
 import { LocalizedImage } from "@/components/localized-media";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 
 import { T } from "@/components/i18n";
 import Link from "@/components/site-link";
@@ -10,7 +12,9 @@ import { ArrowLeft, Download, ShieldCheck } from "lucide-react";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { bindings, publicMap, identity, type MapRecord } from "@/lib/atlas-server";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "玩家地图档案 | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("mapsSlug");
+}
 export default async function MapPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   if (collectionSeed(slug)) {

@@ -1,8 +1,12 @@
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { ModLibrary } from "@/components/mod-library";
 import { listMods } from "@/lib/mod-server";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Mod library | WS ATLAS" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("mods");
+}
 export default async function Mods() {
   const entries = await listMods();
   return (

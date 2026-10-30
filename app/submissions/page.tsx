@@ -1,4 +1,6 @@
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { SubmissionDashboard } from "@/components/submission-dashboard";
 import { CreatorFeatured } from "@/components/creator-featured";
@@ -6,6 +8,9 @@ import { ModDashboard } from "@/components/mod-dashboard";
 import { CreationTabs } from "@/components/creation-tabs";
 import { isAdmin } from "@/lib/atlas-server";
 export const dynamic = "force-dynamic";
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("submissions");
+}
 export default async function Submissions() {
   const user = await requireChatGPTUser("/submissions");
   return (

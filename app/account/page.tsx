@@ -1,4 +1,6 @@
 import { requireChatGPTUser, chatGPTSignOutPath } from "@/app/chatgpt-auth";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { isAdmin } from "@/lib/atlas-server";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { T } from "@/components/i18n";
@@ -7,6 +9,9 @@ import { SignOutAllButton } from "@/components/auth/signout-all-button";
 import { ChangePasswordForm } from "@/components/account/change-password-form";
 
 export const dynamic = "force-dynamic";
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("account");
+}
 
 export default async function AccountPage() {
   const user = await requireChatGPTUser("/account");

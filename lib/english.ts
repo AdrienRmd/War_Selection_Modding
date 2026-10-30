@@ -2096,4 +2096,28 @@ export const english: Record<string, string> = {
   "该工程创建于数据版本 ${version}，当前版本不同；下面逐项核对差异。": "This project was created with data version ${version}, which differs from the current one; differences are checked below.",
   "${count} 项改动对应的参数在新数据中已不存在，已忽略。": "${count} edit(s) target parameters that no longer exist in the new data; they are skipped.",
   "数据 ${version} · ${count} 个可修改单位": "Data ${version} · ${count} editable units",
+  // --- <title> / meta description localisés par page (lib/page-titles) ---
+  "WS ATLAS · 战场档案": "WS ATLAS · Battlefield Archive",
+  "War Selection 玩家地图与 Mod 社区档案。探索斯大林格勒战场，查阅配置、平衡数值与审核后的社区地图。":
+    "War Selection community archive of player maps and mods. Explore the Stalingrad battlefield, browse configurations, balance data and moderated community maps.",
+  "单位档案 | WS ATLAS": "Unit Archive | WS ATLAS",
+  "科技档案 | WS ATLAS": "Research Archive | WS ATLAS",
+  "参数档案 | WS ATLAS": "Modding Archive | WS ATLAS",
+  "玩家地图档案 | WS ATLAS": "Player Map Archive | WS ATLAS",
+  "编辑地图 | WS ATLAS": "Edit map | WS ATLAS",
+  "收藏地图管理 | WS ATLAS": "Manage saved maps | WS ATLAS",
+  "Mod 资料库 | WS ATLAS": "Mod library | WS ATLAS",
+  "Mod 档案 | WS ATLAS": "Mod Dossier | WS ATLAS",
+  "编辑 Mod | WS ATLAS": "Edit mod | WS ATLAS",
+  "提交 Mod | WS ATLAS": "Submit a mod | WS ATLAS",
+  "简易 Mod 工作台 | WS ATLAS": "Simple Mod Workbench | WS ATLAS",
+  "编辑 War Selection 单位、武器、经济、建造、科技与技能参数，查看效果说明，设置前置条件并导出 Lua。":
+    "Edit War Selection unit, weapon, economy, construction, research and ability parameters, review effect notes, set prerequisites and export Lua.",
+  "三步创建 War Selection 平衡 Mod：选择单位、修改数值（原值可见）、导出 Lua。数据来自当前同步的游戏版本。":
+    "Create a balanced War Selection mod in three steps: pick units, edit values (originals visible), export Lua. Data comes from the currently synced game version.",
+  "斯大林格勒完整技术档案 | WS ATLAS": "Complete Stalingrad Technical Archive | WS ATLAS",
+  "登录 | WS ATLAS": "Sign in | WS ATLAS",
+  "创建账号 | WS ATLAS": "Create an account | WS ATLAS",
+  "我的账号 | WS ATLAS": "My account | WS ATLAS",
+  "我的创作 | WS ATLAS": "My Creations | WS ATLAS",
 };

@@ -1,10 +1,15 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { AtlasHeader, AtlasFooter } from "@/components/atlas-shell";
 import { ModDetail } from "@/components/mod-detail";
 import { rawMod, publicMod } from "@/lib/mod-server";
 import { sourceReferences } from "@/lib/mod-seeds";
 import { identity } from "@/lib/atlas-server";
 export const dynamic = "force-dynamic";
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("modsSlug");
+}
 export default async function ModPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const m = await rawMod(slug),
