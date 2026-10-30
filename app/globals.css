@@ -54,6 +54,9 @@
 html {
   scroll-behavior: smooth;
   color-scheme: dark;
+  /* Anti-déformation mobile : appliqué sur la racine (propagé au viewport),
+     sans créer de conteneur de défilement qui casserait les position:sticky. */
+  overflow-x: hidden;
 }
 body {
   margin: 0;
