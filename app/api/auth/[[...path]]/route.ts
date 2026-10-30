@@ -118,14 +118,15 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
 
     if (action === "signup" && req.method === "POST") {
       const input = signupInput.parse(await readJson(req));
+      const ipKey = ipAttemptKey(clientIp(req));
+      await enforceRateLimit(ipKey, SIGNUP_IP_BUDGET);
       // MAJEUR #2 (audit V2-P4) : mêmes règles de pseudo strictes que le PATCH
       // profil — pattern Unicode, pseudos réservés (admin/official/官方…),
-      // contrôles/emoji/doubles espaces refusés dès l'inscription.
+      // contrôles/emoji/doubles espaces refusés dès l'inscription. La
+      // validation reste APRÈS le budget IP (couverture throttle d'origine).
       const issue = displayNameIssue(input.displayName);
       if (issue) throw new HttpError(400, issue);
       const displayName = input.displayName.trim();
-      const ipKey = ipAttemptKey(clientIp(req));
-      await enforceRateLimit(ipKey, SIGNUP_IP_BUDGET);
       if (isCommonPassword(input.password)) throw new HttpError(400, COMMON_PASSWORD_CN);
       const { DB } = bindings();
       const exists = await DB.prepare("SELECT id FROM users WHERE email = ?")
