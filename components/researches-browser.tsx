@@ -18,12 +18,23 @@ import {
   type ResearchesIndex,
 } from "@/lib/researches";
 
-export function ResearchesBrowser({ index }: { index: ResearchesIndex }) {
+export function ResearchesBrowser({
+  index,
+  initialGameId = null,
+}: {
+  index: ResearchesIndex;
+  /** Lien profond /researches?research=<gameId> : fiche ouverte dès le SSR. */
+  initialGameId?: number | null;
+}) {
   const { locale, t } = useI18n();
   const l = useBilingual();
   const [query, setQuery] = useState("");
   const [type, setType] = useState("all");
-  const [selected, setSelected] = useState<ResearchEntry | null>(null);
+  const [selected, setSelected] = useState<ResearchEntry | null>(() =>
+    initialGameId === null
+      ? null
+      : (index.researches.find((r) => r.gameId === initialGameId) ?? null),
+  );
   const [meta, setMeta] = useState<DatasetMeta | null>(null);
   const [metaFailed, setMetaFailed] = useState(false);
 
