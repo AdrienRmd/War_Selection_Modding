@@ -158,6 +158,7 @@ export function ProfileForm({
               <input
                 type="radio"
                 name="accountLocale"
+                value={option.value}
                 checked={accountLocale === option.value}
                 onChange={() => setAccountLocale(option.value)}
               />{" "}
