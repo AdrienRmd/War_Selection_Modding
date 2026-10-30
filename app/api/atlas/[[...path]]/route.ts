@@ -11,6 +11,7 @@ import {
   type MapRecord,
 } from "@/lib/atlas-server";
 import { ownMaps } from "@/lib/account-server";
+import { inspectCover } from "@/lib/profile";
 import { mapCodeLooksPlausible, mapTestStates } from "@/lib/map-code";
 import {
   creationDeleteAttemptKey,
@@ -214,16 +215,13 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       let coverBytes: Uint8Array | null = null;
       let coverType: string | null = null;
       if (cover instanceof File && cover.size) {
-        if (cover.size > 2 * 1024 * 1024) throw new HttpError(400, "封面不能超过 2 MB。");
-        coverBytes = new Uint8Array(await cover.arrayBuffer());
-        if (
-          coverBytes.length >= 8 &&
-          [137, 80, 78, 71, 13, 10, 26, 10].every((v, i) => coverBytes![i] === v)
-        )
-          coverType = "image/png";
-        else if (coverBytes[0] === 255 && coverBytes[1] === 216 && coverBytes[2] === 255)
-          coverType = "image/jpeg";
-        else throw new HttpError(400, "封面仅支持 PNG 或 JPEG 图片。");
+        // MINEUR #3 (audit V2-P4) : même norme que les avatars — magic bytes,
+        // structure parcourable, et purge EXIF/métadonnées AVANT le put R2.
+        // La couverture publiée ne peut plus fuiter de métadonnées (GPS…).
+        const inspection = inspectCover(new Uint8Array(await cover.arrayBuffer()));
+        if ("error" in inspection) throw new HttpError(400, inspection.error);
+        coverBytes = inspection.bytes;
+        coverType = inspection.type;
       }
       const sha = fileBytes
         ? Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", fileBytes)))
@@ -336,9 +334,10 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       // collection : untested/working/issues/unavailable). Surplomb admin possible.
       // Ne repasse JAMAIS la carte en modération : seul le statut de test, ses
       // notes, sa date et la révision bougent. L'instantané test_updated_at /
-      // test_set_by forme l'historique simple ; un surpassement admin est en
-      // plus journalisé dans reviews (action test_status) comme les décisions
-      // de modération.
+      // test_set_by forme l'historique simple ; toute bascule du dernier
+      // rédacteur (surplomb admin, ou écrasement par l'auteur d'un statut
+      // posé par un admin) est en plus journalisée dans reviews (action
+      // test_status) comme les décisions de modération.
       if (!user) throw new HttpError(401, "请先登录。");
       const body = z
         .object({
@@ -379,8 +378,12 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
           body.revision,
         ),
       ];
-      if (admin && m.test_set_by !== (admin ? "admin" : "author"))
-        // Surpassement admin sur une déclaration existante → journal reviews.
+      // MINEUR #4 (audit V2-P4) : traçabilité symétrique. Toute bascule du
+      // dernier rédacteur est journalisée dans reviews (action test_status) :
+      // surplomb admin sur une déclaration auteur, ET écrasement par l'auteur
+      // d'un statut posé par un admin. La première déclaration auteur (pas
+      // d'écrasement) n'est pas journalisée.
+      if ((admin && m.test_set_by !== "admin") || (!admin && m.test_set_by === "admin"))
         statements.push(
           DB.prepare(
             "INSERT INTO reviews (id,map_id,reviewer_id,action,feedback,checklist,created_at) SELECT ?,?,?,?,?,?,? WHERE EXISTS (SELECT 1 FROM maps WHERE id = ? AND review_token = ?)",

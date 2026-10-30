@@ -154,9 +154,9 @@ function makeDb(log: Log) {
 
 function makeBucket() {
   return {
-    puts: [] as string[],
-    async put(key: string) {
-      this.puts.push(key);
+    puts: [] as { key: string; bytes: Uint8Array; type: string }[],
+    async put(key: string, bytes: Uint8Array, opts: { httpMetadata: { contentType: string } }) {
+      this.puts.push({ key, bytes, type: opts.httpMetadata.contentType });
     },
     async delete() {},
     async get() {
@@ -279,6 +279,116 @@ describe("SB5 — soumission carte : code OU ZIP", () => {
   });
 });
 
+// --------------------------------------------- MINEUR #3 — couvertures : purge EXIF
+
+const chars = (s: string) => Array.from(s).map((c) => c.charCodeAt(0));
+const jpegSeg = (marker: number, payload: number[]) => {
+  const length = payload.length + 2;
+  return [0xff, marker, (length >> 8) & 0xff, length & 0xff, ...payload];
+};
+const jpegWithExif = () =>
+  new Uint8Array([
+    0xff,
+    0xd8,
+    ...jpegSeg(0xe0, [...chars("JFIF\0"), 1, 2, 0, 0, 0, 0]),
+    ...jpegSeg(0xe1, [...chars("Exif\0\0"), 0x4d, 0x4d, 0, 42, ...new Array(20).fill(7)]),
+    ...jpegSeg(0xfe, chars("Secret GPS stamp")),
+    ...jpegSeg(0xdb, [0, 1, 2, 3]),
+    ...jpegSeg(0xc0, [0, 1, 2, 3]),
+    0xff,
+    0xda,
+    0x12,
+    0x34,
+    0xff,
+    0xd9,
+  ]);
+const pngChunk = (type: string, data: number[]) => {
+  const body = [
+    data.length >>> 24,
+    (data.length >>> 16) & 255,
+    (data.length >>> 8) & 255,
+    data.length & 255,
+  ];
+  const crc = [1, 2, 3, 4];
+  return [...body, ...Array.from(type).map((c) => c.charCodeAt(0)), ...data, ...crc];
+};
+const pngWithMeta = () =>
+  new Uint8Array([
+    137,
+    80,
+    78,
+    71,
+    13,
+    10,
+    26,
+    10, // signature
+    ...pngChunk("IHDR", [0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0]),
+    ...pngChunk("eXIf", chars("GPS 48.8584,2.2945")),
+    ...pngChunk("tEXt", chars("Commentaire secret")),
+    ...pngChunk("IDAT", [1, 2, 3, 4]),
+    ...pngChunk("IEND", []),
+  ]);
+const textOf = (bytes: Uint8Array) =>
+  Array.from(bytes)
+    .map((b) => String.fromCharCode(b))
+    .join("");
+
+describe("MINEUR #3 — couverture : même norme que les avatars (purge EXIF avant R2)", () => {
+  it("couverture PNG avec eXIf + tEXt → stockée PURGÉE (aucune métadonnée publiée)", async () => {
+    const cover = new File([pngWithMeta()], "cover.png", { type: "image/png" });
+    const r = await postSubmission(
+      form({ ...baseFields, map_code: "map-1c54042c" }, { cover }),
+    );
+    expect(r.status).toBe(201);
+    const put = bucket.puts.find((p) => p.key.includes("/cover"));
+    expect(put, "objet cover stocké").toBeTruthy();
+    expect(put!.type).toBe("image/png");
+    const stored = textOf(put!.bytes);
+    expect(stored).not.toContain("GPS");
+    expect(stored).not.toContain("Commentaire secret");
+    expect(stored).toContain("IHDR"); // image conservée
+  });
+
+  it("couverture JPEG avec EXIF (APP1) + commentaire (COM) → stockée purgée", async () => {
+    const cover = new File([jpegWithExif()], "cover.jpg", { type: "image/jpeg" });
+    const r = await postSubmission(
+      form({ ...baseFields, map_code: "map-1c54042c" }, { cover }),
+    );
+    expect(r.status).toBe(201);
+    const put = bucket.puts.find((p) => p.key.includes("/cover"));
+    expect(put!.type).toBe("image/jpeg");
+    const stored = textOf(put!.bytes);
+    expect(stored).not.toContain("Exif");
+    expect(stored).not.toContain("Secret GPS stamp");
+    expect(stored).toContain("JFIF");
+  });
+
+  it("PNG structure invalide (magic bytes sans chunks cohérents) → 400, rien stocké", async () => {
+    const bad = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0xff, 0xff, 0xff]);
+    const cover = new File([bad], "cover.png", { type: "image/png" });
+    const r = await postSubmission(
+      form({ ...baseFields, map_code: "map-1c54042c" }, { cover }),
+    );
+    expect(r.status).toBe(400);
+    expect(((await r.json()) as { error: string }).error).toBe(
+      "封面文件无效，请重新选择。",
+    );
+    expect(bucket.puts.filter((p) => p.key.includes("/cover"))).toEqual([]);
+  });
+
+  it("GIF (magic bytes non PNG/JPEG) → 400", async () => {
+    const gif = new Uint8Array([...chars("GIF89a"), 1, 2, 3]);
+    const cover = new File([gif], "cover.gif", { type: "image/gif" });
+    const r = await postSubmission(
+      form({ ...baseFields, map_code: "map-1c54042c" }, { cover }),
+    );
+    expect(r.status).toBe(400);
+    expect(((await r.json()) as { error: string }).error).toBe(
+      "封面仅支持 PNG 或 JPEG 图片。",
+    );
+  });
+});
+
 // ---------------------------------------------------------------- SB6 — statut de test
 
 describe("SB6 — statut de test déclaré par l'auteur", () => {
@@ -345,6 +455,40 @@ describe("SB6 — statut de test déclaré par l'auteur", () => {
     const insertReview = log.updates.find((s) => s.includes("INSERT INTO reviews"));
     expect(insertReview, "journal du surpassement admin").toBeTruthy();
     expect(log.bindings.some((b) => b[0] === "unavailable")).toBe(true);
+  });
+
+  it("MINEUR #4 — l'auteur écrase un statut posé par un admin → journalisé dans reviews", async () => {
+    // Avant le correctif : l'auteur pouvait écraser sans trace un test_set_by
+    //='admin' ; désormais la bascule de dernier rédacteur est journalisée.
+    log.row = mapRecord({ test_set_by: "admin", test_status: "unavailable" });
+    const r = await patchTestStatus(mapId, {
+      status: "working",
+      tested_at: today,
+      notes: "Retesté après correctif de l'auteur : 2 parties complètes.",
+      revision: 1,
+    });
+    expect(r.status).toBe(200);
+    const insertReview = log.updates.find((s) => s.includes("INSERT INTO reviews"));
+    expect(insertReview, "journal de l'écrasement auteur → admin").toBeTruthy();
+    // L'entrée reviews porte l'id de l'auteur (reviewer_id) et le statut posé
+    // (bindings : id, map, reviewer, action, feedback, checklist, now, id, token).
+    const reviewArgs = log.bindings.find((b) => b.length === 9 && b[3] === "test_status");
+    expect(reviewArgs, "bindings INSERT INTO reviews (id,map,reviewer,action,...)").toBeTruthy();
+    expect(reviewArgs![1]).toBe(mapId);
+    expect(reviewArgs![2]).toBe(AUTHOR_ID);
+    expect(String(reviewArgs![4])).toContain("working");
+  });
+
+  it("première déclaration de l'auteur (pas d'écrasement) : PAS de journal reviews", async () => {
+    log.row = mapRecord({ test_set_by: null });
+    const r = await patchTestStatus(mapId, {
+      status: "working",
+      tested_at: today,
+      notes: "Premier test.",
+      revision: 1,
+    });
+    expect(r.status).toBe(200);
+    expect(log.updates.find((s) => s.includes("INSERT INTO reviews"))).toBeUndefined();
   });
 
   it("révision périmée → 409 (pas d'écrasement concurrent)", async () => {

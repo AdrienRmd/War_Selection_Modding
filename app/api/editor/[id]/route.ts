@@ -10,6 +10,7 @@ import {
   type MapRecord,
 } from "@/lib/atlas-server";
 import { featuredRow, getFeaturedMap } from "@/lib/featured-server";
+import { inspectCover } from "@/lib/profile";
 export const dynamic = "force-dynamic";
 const metadata = z.object({
   title: z.string().trim().min(2).max(60),
@@ -117,6 +118,7 @@ async function handle(req: Request, { params }: { params: Promise<{ id: string }
           kind === "file" ? "地图包不能超过 10 MB。" : "封面不能超过 2 MB。",
         );
       const content = new Uint8Array(await file.arrayBuffer());
+      let stored: Uint8Array<ArrayBufferLike> = content;
       let mime = "application/zip";
       if (kind === "file") {
         if (
@@ -127,15 +129,16 @@ async function handle(req: Request, { params }: { params: Promise<{ id: string }
         )
           throw new HttpError(400, "请选择有效 ZIP 地图包。");
       } else {
-        const png =
-          content.length > 8 && [137, 80, 78, 71, 13, 10, 26, 10].every((v, i) => content[i] === v);
-        const jpg =
-          content.length > 3 && content[0] === 255 && content[1] === 216 && content[2] === 255;
-        if (!png && !jpg) throw new HttpError(400, "封面只接受 PNG 或 JPEG。");
-        mime = png ? "image/png" : "image/jpeg";
+        // MINEUR #3 (audit V2-P4) : couvertures d'édition soumises à la même
+        // norme que les avatars — structure parcourable + purge EXIF/texte
+        // AVANT le put R2 (inspectCover, lib/profile.ts).
+        const inspection = inspectCover(content);
+        if ("error" in inspection) throw new HttpError(400, inspection.error);
+        stored = inspection.bytes;
+        mime = inspection.type;
       }
       const key = `edits/${id}/${crypto.randomUUID()}/${kind}`;
-      await BUCKET.put(key, content, { httpMetadata: { contentType: mime } });
+      await BUCKET.put(key, stored, { httpMetadata: { contentType: mime } });
       uploaded.push(key);
       if (kind === "file") {
         fileKey = key;
