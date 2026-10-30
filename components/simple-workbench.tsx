@@ -319,7 +319,18 @@ export function SimpleWorkbench({ index }: { index: UnitsIndex }) {
       </section>
 
       {imported && (
-        <ImportPanel imported={imported} locale={locale} onApply={applyImported} onClose={() => setImported(null)} />
+        <ImportPanel
+          imported={imported}
+          locale={locale}
+          unitName={(id) => {
+            const entry = byId.get(id);
+            return entry
+              ? localizedUnitName(entry, locale === "zh" ? "zh" : locale === "en" ? "en" : "fr")
+              : id;
+          }}
+          onApply={applyImported}
+          onClose={() => setImported(null)}
+        />
       )}
     </main>
   );
@@ -830,11 +841,13 @@ function StepExport({
 function ImportPanel({
   imported,
   locale,
+  unitName,
   onApply,
   onClose,
 }: {
   imported: ImportedProject;
   locale: string;
+  unitName: (id: string) => string;
   onApply: () => void;
   onClose: () => void;
 }) {
@@ -885,7 +898,7 @@ function ImportPanel({
                 {imported.stale.map((s) => (
                   <tr key={s.unit + ":" + s.fieldKey}>
                     <td>
-                      {s.unitName} · {label(s)}
+                      {unitName(s.unit)} · {label(s)}
                     </td>
                     <td>{formatNumber(s.wasValue)}</td>
                     <td>
