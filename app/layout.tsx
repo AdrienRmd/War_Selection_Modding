@@ -8,6 +8,7 @@ import "./command.css";
 import "./community.css";
 import "./collection.css";
 import "./units.css";
+import "./researches.css";
 import "./workbench.css";
 
 export const metadata: Metadata = {

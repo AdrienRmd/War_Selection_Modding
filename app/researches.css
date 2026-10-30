@@ -1,0 +1,37 @@
+/* Page /researches — archive des recherches du dataset wus-data.
+   Réutilise les classes .units-* de app/units.css ; seuls les éléments
+   spécifiques (description, puces de liens vers /units) sont définis ici. */
+.researches-section {
+  margin-top: 28px;
+  min-width: 0;
+}
+.research-description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.research-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  min-width: 0;
+}
+.research-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--primary);
+  font-size: 13px;
+  padding: 5px 11px;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.research-chip:hover {
+  border-color: var(--primary);
+}

@@ -74,6 +74,18 @@ export function UnitsBrowser({ index }: { index: UnitsIndex }) {
     };
   }, []);
 
+  // Lien profond /units?unit=<id dataset> (utilisé depuis /researches) : ouvre la fiche.
+  // L'URL est un système externe : lecture dans l'effet, ouverture différée via
+  // timer (jamais de setState synchrone dans le corps de l'effet).
+  useEffect(() => {
+    const target = new URLSearchParams(window.location.search).get("unit");
+    if (!target) return;
+    const unit = index.units.find((u) => u.id === target);
+    if (!unit) return;
+    const timer = window.setTimeout(() => setSelected(unit), 0);
+    return () => window.clearTimeout(timer);
+  }, [index.units]);
+
   // Fiche à la demande (une seule unité) : cache + annulation, état dérivé.
   useEffect(() => {
     if (!selected || ficheCache[selected.id] || ficheErrorId === selected.id) return;

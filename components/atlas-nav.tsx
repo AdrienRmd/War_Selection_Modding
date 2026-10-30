@@ -12,6 +12,7 @@ export function AtlasNav({ admin }: { admin: boolean }) {
       {[
         { href: "/maps", name: "地图档案", active: path === "/" || path.startsWith("/maps") },
         { href: "/units", name: "单位档案", active: path.startsWith("/units") },
+        { href: "/researches", name: "科技档案", active: path.startsWith("/researches") },
         { href: "/mods", name: "Mod 资料库", active: path.startsWith("/mods") },
         {
           href: "/workbench",
