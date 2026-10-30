@@ -35,3 +35,54 @@
 .research-chip:hover {
   border-color: var(--primary);
 }
+/* Badges distincts : avancées d'âge (transition d'époque) et merveilles. */
+.research-card-flags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 100%;
+  min-width: 0;
+}
+.units-detail-title .research-card-flags {
+  margin: 2px 0 4px;
+}
+.research-flag {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 2px 8px;
+  white-space: nowrap;
+  overflow-wrap: anywhere;
+}
+.research-flag-age {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.research-flag-wonder {
+  color: var(--muted-foreground);
+  background: var(--card);
+}
+/* Voies de production : une ligne par bâtiment (coût + durée, prérequis). */
+.research-ways {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.research-ways li {
+  margin: 0 0 10px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.research-ways li:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.research-ways .research-links {
+  margin-top: 6px;
+}

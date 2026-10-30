@@ -4,8 +4,12 @@ import { describe, expect, it } from "vitest";
 import { translate } from "@/lib/i18n";
 import { unitsIndex } from "@/lib/units";
 import {
+  countAgeAdvances,
   countByType,
   countResearches,
+  countWonders,
+  isAgeAdvance,
+  isWonder,
   localizedResearchDescription,
   localizedResearchName,
   researchesIndex,
@@ -224,6 +228,105 @@ describe("logique de comptage, filtres et recherche (échantillon mocké)", () =
   });
 });
 
+describe("coûts réels des recherches via les bâtiments producteurs (révision SB4)", () => {
+  it("livre la voie du Temple pour la recherche 3 : 450 Matériaux, 90 s, ≥ 20 Ouvriers", () => {
+    const research = researchesIndex.researches.find((r) => r.gameId === 3);
+    expect(research?.producers).toEqual([
+      { by: "1/temple", cost: [[1, 450]], t: 90, reqU: [["1/worker", 20]] },
+    ]);
+  });
+
+  it("ne référence que des unités publiées et recoupe chaque voie avec les travaux de l'index /units", () => {
+    const published = new Set(unitsIndex.units.map((u) => u.id));
+    // Ré-derivation depuis lib/units-index.json : l'index inverse doit
+    // refléter EXACTEMENT les works des unités (coût, durée, prérequis).
+    const expected = new Map();
+    for (const unit of unitsIndex.units) {
+      for (const work of unit.s?.works ?? []) {
+        if (work.entity?.kind !== "research") continue;
+        const way = { by: unit.id, cost: work.cost ?? [], ...(work.t !== undefined ? { t: work.t } : {}), ...(work.reqU ? { reqU: work.reqU } : {}), ...(work.reqR ? { reqR: work.reqR } : {}) };
+        const list = expected.get(work.entity.gameId) ?? [];
+        list.push(way);
+        expected.set(work.entity.gameId, list);
+      }
+    }
+    const offenders: string[] = [];
+    let ways = 0;
+    for (const research of researchesIndex.researches) {
+      const producers = research.producers ?? [];
+      ways += producers.length;
+      for (const way of producers) {
+        if (!published.has(way.by)) offenders.push(`${research.gameId}→${way.by}`);
+      }
+      const wanted = (expected.get(research.gameId) ?? []).sort((a, b) => a.by.localeCompare(b.by));
+      expect(producers, `voies de la recherche ${research.gameId}`).toEqual(wanted);
+    }
+    expect(offenders, `Bâtiments inconnus : ${offenders.slice(0, 5).join(", ")}`).toEqual([]);
+    expect(ways).toBeGreaterThan(100); // 338 voies au 30/10/2026 — jamais 0
+    expect(researchesIndex.researches.filter((r) => r.producers).length).toBeGreaterThan(100);
+  });
+
+  it("cite la ressource et la durée localisées de la voie Temple (3 langues)", () => {
+    const way = researchesIndex.researches.find((r) => r.gameId === 3)!.producers![0];
+    const [[resourceId, value]] = way.cost;
+    expect(value).toBe(450);
+    expect(unitsIndex.resources?.[String(resourceId)]?.fr).toBe("Matériaux");
+    expect(unitsIndex.resources?.[String(resourceId)]?.en).toBe("Materials");
+    expect(unitsIndex.resources?.[String(resourceId)]?.cn).toBe("材料");
+    expect(way.t).toBe(90);
+  });
+});
+
+describe("catégorie « avancées d'âge » et badge « merveille » (dérivés des données)", () => {
+  it("reconnaît une avancée d'âge par préfixe de description (Mène à / Leads to / 发展至 / 通向)", () => {
+    const advance = (descriptions: ResearchEntry["descriptions"]): ResearchEntry =>
+      ({ gameId: 900, type: "researchTypeAgeTransition", image: "", descriptions }) as ResearchEntry;
+    expect(isAgeAdvance(advance({ fr: "Mène à l’Age de Fer de l’Europe" }))).toBe(true);
+    expect(isAgeAdvance(advance({ fr: "Mène au Moyen-Age de l’Europe" }))).toBe(true);
+    expect(isAgeAdvance(advance({ en: "Leads to the Iron Age" }))).toBe(true);
+    expect(isAgeAdvance(advance({ en: "Make the transition to the Iron Age" }))).toBe(true);
+    expect(isAgeAdvance(advance({ cn: "发展至欧洲铁器时代" }))).toBe(true);
+    expect(isAgeAdvance(advance({ cn: "通向铁器时代" }))).toBe(true);
+    expect(isAgeAdvance(advance({ tw: "邁向歐洲鐵器時代" }))).toBe(false); // 邁向 ≠ 通向 : préfixe tw non retenu
+    expect(isAgeAdvance(advance({ en: "Increases worker speed" }))).toBe(false);
+    expect(isAgeAdvance(advance({}))).toBe(false);
+    // Données réelles : la 3 (Age de Bronze) est une avancée, la 25 non.
+    const r3 = researchesIndex.researches.find((r) => r.gameId === 3)!;
+    const r25 = researchesIndex.researches.find((r) => r.gameId === 25)!;
+    expect(isAgeAdvance(r3)).toBe(true);
+    expect(isAgeAdvance(r25)).toBe(false);
+  });
+
+  it("compte les avancées d'âge depuis les données (jamais codé en dur)", () => {
+    const derived = researchesIndex.researches.filter((r) =>
+      Object.values(r.descriptions ?? {}).some((text) =>
+        ["Mène à", "Mène au", "Make the transition to", "Leads to", "发展至", "通向"].some((p) =>
+          text.startsWith(p),
+        ),
+      ),
+    ).length;
+    expect(countAgeAdvances(researchesIndex.researches)).toBe(derived);
+    expect(derived).toBeGreaterThan(5); // au moins une par grande transition d'âge
+    expect(derived).toBeLessThan(researchesIndex.researches.length);
+  });
+
+  it("badge « merveille » sur les noms contenant Merveille / Wonder / 奇观 / 奇迹", () => {
+    const wonder = (names: ResearchEntry["names"]): ResearchEntry =>
+      ({ gameId: 901, type: "researchTypeWonderTransition", image: "", names }) as ResearchEntry;
+    expect(isWonder(wonder({ fr: "Merveille de Monde de l’Age de pierre" }))).toBe(true);
+    expect(isWonder(wonder({ en: "Stone Age World Wonder" }))).toBe(true);
+    expect(isWonder(wonder({ cn: "石器时代奇迹" }))).toBe(true); // cn emploie 奇迹
+    expect(isWonder(wonder({ tw: "石器時代世界奇觀" }))).toBe(true);
+    expect(isWonder(wonder({ en: "Bronze Age of Europe" }))).toBe(false);
+    const r25 = researchesIndex.researches.find((r) => r.gameId === 25)!;
+    expect(isWonder(r25)).toBe(true);
+    expect(countWonders(researchesIndex.researches)).toBe(
+      researchesIndex.researches.filter(isWonder).length,
+    );
+    expect(countWonders(researchesIndex.researches)).toBeGreaterThan(0);
+  });
+});
+
 describe("ne code aucun compte en dur dans la page /researches", () => {
   it("n'écrit pas 156 dans les fichiers de la page", () => {
     const offenders: string[] = [];
@@ -257,7 +360,15 @@ describe("couverture i18n des libellés /researches", () => {
     "游戏编号",
     "解锁单位",
     "受影响单位",
-    "研究名称与描述来自游戏官方本地化；解锁与受影响单位来自游戏导出的单位需求数据。数据集不含研究费用与时长。",
+    "研究途径",
+    "研究费用与时长",
+    "每行对应一个产出建筑。",
+    "前置条件",
+    "前置研究",
+    "时长",
+    "时代进阶",
+    "奇观",
+    "研究名称与描述来自游戏官方本地化；解锁与受影响单位来自游戏导出的单位需求数据；费用、时长与前置单位来自产出该研究的建筑（abilities 导出）。",
     "时代过渡",
     "经济",
     "领土",

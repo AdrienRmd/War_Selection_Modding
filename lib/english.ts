@@ -1979,8 +1979,14 @@ export const english: Record<string, string> = {
   游戏编号: "Game ID",
   解锁单位: "Unlocks units",
   受影响单位: "Affected units",
-  "研究名称与描述来自游戏官方本地化；解锁与受影响单位来自游戏导出的单位需求数据。数据集不含研究费用与时长。":
-    "Research names and descriptions come from the official game localization; unlocked and affected units come from the exported unit requirements. The dataset does not include research costs or durations.",
+  "研究名称与描述来自游戏官方本地化；解锁与受影响单位来自游戏导出的单位需求数据；费用、时长与前置单位来自产出该研究的建筑（abilities 导出）。":
+    "Research names and descriptions come from the official game localization; unlocked and affected units come from the exported unit requirements; costs, durations and unit prerequisites come from the producing buildings (exported abilities).",
+  时代进阶: "Age advances",
+  奇观: "Wonder",
+  研究途径: "Researched via",
+  "研究费用与时长": "Cost & duration",
+  "每行对应一个产出建筑。": "Each row is one producing building.",
+  前置条件: "Prerequisites",
   时代过渡: "Age transition",
   经济: "Economy",
   领土: "Territory",

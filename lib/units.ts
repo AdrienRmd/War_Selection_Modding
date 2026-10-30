@@ -285,6 +285,19 @@ export const upgradeImageUrl = (gameId: number): string =>
 /** Lien profond vers une fiche d'unité (/units?unit=<id dataset>). */
 export const unitDeepLink = (unitId: string): string =>
   `/units?unit=${encodeURIComponent(unitId)}`;
+
+/**
+ * Normalise l'id d'un lien profond /units : accepte le format court du site
+ * (« 1/temple ») ET le format long du dataset (« WarSelection/1/temple »),
+ * en renvoyant toujours le format court utilisé par l'index. Retourne
+ * undefined pour une entrée vide/inutilisable — l'UI ignore alors le lien.
+ */
+export function normalizeUnitDeepLink(raw: string | undefined): string | undefined {
+  if (typeof raw !== "string") return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+  return trimmed.startsWith("WarSelection/") ? trimmed.slice("WarSelection/".length) : trimmed;
+}
 /** Lien profond vers une recherche (/researches?research=<gameId>). */
 export const researchDeepLink = (gameId: number): string => `/researches?research=${gameId}`;
 

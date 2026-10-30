@@ -2013,8 +2013,14 @@ export const french: Record<string, string> = {
   游戏编号: "ID de jeu",
   解锁单位: "Unités débloquées",
   受影响单位: "Unités affectées",
-  "研究名称与描述来自游戏官方本地化；解锁与受影响单位来自游戏导出的单位需求数据。数据集不含研究费用与时长。":
-    "Les noms et descriptions des recherches proviennent de la localisation officielle du jeu ; les unités débloquées et affectées proviennent des exigences d’unités exportées. Le jeu de données ne contient ni coûts ni durées de recherche.",
+  "研究名称与描述来自游戏官方本地化；解锁与受影响单位来自游戏导出的单位需求数据；费用、时长与前置单位来自产出该研究的建筑（abilities 导出）。":
+    "Noms et descriptions des recherches issus de la localisation officielle du jeu ; unités débloquées et affectées issues des exigences d’unités exportées ; coûts, durées et prérequis d’unités issus des bâtiments producteurs (abilities exportées).",
+  时代进阶: "Avancées d’âge",
+  奇观: "Merveille",
+  研究途径: "Recherchée via",
+  "研究费用与时长": "Coût et durée",
+  "每行对应一个产出建筑。": "Chaque ligne correspond à un bâtiment producteur.",
+  前置条件: "Prérequis",
   时代过渡: "Transition d’âge",
   经济: "Économie",
   领土: "Territoire",

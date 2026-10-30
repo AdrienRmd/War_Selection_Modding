@@ -18,6 +18,7 @@ import {
   localizedTagLabel,
   localizedUnitDescription,
   localizedUnitName,
+  normalizeUnitDeepLink,
   researchDeepLink,
   resourceImageUrl,
   searchUnits,
@@ -251,6 +252,24 @@ describe("fiche enrichie embarquée — entrepôt (1/depot)", () => {
   it("pointe le bâtisseur worker avec un lien profond cliquable", () => {
     expect(depot?.s?.sources?.[0].by).toBe("1/worker");
     expect(unitDeepLink("1/worker")).toBe("/units?unit=1%2Fworker");
+  });
+
+  it("normalise les liens profonds : format long WarSelection/… → format court", () => {
+    // Format court du site : inchangé.
+    expect(normalizeUnitDeepLink("1/temple")).toBe("1/temple");
+    expect(normalizeUnitDeepLink("3/ae/dragoon")).toBe("3/ae/dragoon");
+    // Format long du dataset : préfixe retiré.
+    expect(normalizeUnitDeepLink("WarSelection/1/temple")).toBe("1/temple");
+    expect(normalizeUnitDeepLink("WarSelection/3/ae/dragoon")).toBe("3/ae/dragoon");
+    // Espaces autour : tolérés puis retirés ; vide/absent → undefined.
+    expect(normalizeUnitDeepLink("  WarSelection/1/temple ")).toBe("1/temple");
+    expect(normalizeUnitDeepLink("   ")).toBeUndefined();
+    expect(normalizeUnitDeepLink(undefined)).toBeUndefined();
+    // Chaque id normalisé existe bien dans l'index (échantillon réel).
+    const ids = new Set(unitsIndex.units.map((u) => u.id));
+    for (const raw of ["WarSelection/1/temple", "1/depot", "WarSelection/4/workshop"]) {
+      expect(ids.has(normalizeUnitDeepLink(raw)!), raw).toBe(true);
+    }
   });
 
   it("porte la nation officielle Age de Pierre (nationId 1)", () => {

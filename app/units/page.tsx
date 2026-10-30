@@ -1,6 +1,6 @@
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { UnitsBrowser } from "@/components/units-browser";
-import { unitsIndex } from "@/lib/units";
+import { normalizeUnitDeepLink, unitsIndex } from "@/lib/units";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "单位档案 | WS ATLAS" };
 export default async function Units({
@@ -11,8 +11,10 @@ export default async function Units({
   // Lien profond /units?unit=<id> : la fiche enrichie (données embarquées,
   // libellés officiels localisés via le cookie de langue) est rendue côté
   // serveur — le HTML initial contient déjà coûts, travaux et nation/âge.
+  // Formats acceptés : id court (« 1/depot », celui des liens du site) et id
+  // long du dataset (« WarSelection/1/depot »), normalisé vers le court.
   const params = await searchParams;
-  const initialUnitId = typeof params.unit === "string" ? params.unit : undefined;
+  const initialUnitId = normalizeUnitDeepLink(params.unit);
   return (
     <>
       <AtlasHeader />

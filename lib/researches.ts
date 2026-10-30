@@ -1,4 +1,5 @@
 import rawIndex from "./researches-index.json";
+import type { CostPair, UnitRequirement } from "./units";
 import type { Locale } from "./i18n";
 
 // Logique pure de la page /researches : compteurs, filtres par type, recherche,
@@ -24,6 +25,20 @@ export interface ResearchEntry {
   affects?: string[];
   /** Unités dont la production exige cette recherche (requirements unitType). */
   unlocks?: string[];
+  /** Bâtiments qui produisent cette recherche (abilities/work des unités) : */
+  /** coût, durée et prérequis par voie — recopiés tels quels du dataset. */
+  producers?: ResearchProducer[];
+}
+
+/** Voie de production d'une recherche par une unité-bâtiment (work/ability). */
+export interface ResearchProducer {
+  /** Unité qui exécute le travail (id dataset court, ex. « 1/temple »). */
+  by: string;
+  cost: CostPair[];
+  /** Durée de fabrication en secondes. */
+  t?: number;
+  reqU?: UnitRequirement[];
+  reqR?: number[];
 }
 
 export interface ResearchType {
@@ -61,6 +76,50 @@ export const localizedResearchDescription = (
 
 export const countResearches = (researches: readonly ResearchEntry[]): number => researches.length;
 
+// --- Avancées d'âge / Merveilles (dérivés des textes officiels localisés) -----
+// Avancée d'âge : la description officielle (<*upgradeN#1>) commence par un
+// marqueur de transition (« Mène à … » / « Make the transition to … » /
+// « 发展至/迈向/通向 … ») dans au moins une langue publiée.
+const AGE_ADVANCE_PREFIXES = [
+  "Mène à",
+  "Mène au",
+  "Mène aux",
+  "Make the transition to",
+  "Leads to",
+  "发展至",
+  "迈向",
+  "通向",
+];
+
+/** Avancée d'âge : description officielle commençant par un marqueur de transition. */
+export const isAgeAdvance = (research: ResearchEntry): boolean => {
+  const descriptions = Object.values(research.descriptions ?? {});
+  return descriptions.some((text) =>
+    AGE_ADVANCE_PREFIXES.some((prefix) => text.startsWith(prefix)),
+  );
+};
+
+// Merveille : le nom officiel contient le mot « merveille » dans une des
+// langues publiées (Merveille / Wonder / 奇观-奇迹 cn / 奇觀-奇蹟 tw — le
+// traditionnel emploie 觀/蹟, graphies distinctes du simplifié).
+const WONDER_NEEDLES = ["merveille", "wonder", "奇观", "奇觀", "奇迹", "奇蹟"];
+
+/** Merveille : nom officiel contenant Merveille / Wonder / 奇观 / 奇迹. */
+export const isWonder = (research: ResearchEntry): boolean => {
+  const names = Object.values(research.names ?? {});
+  return names.some((name) =>
+    WONDER_NEEDLES.some((needle) => name.toLowerCase().includes(needle)),
+  );
+};
+
+/** Compte des avancées d'âge — dérivé des données, jamais codé en dur. */
+export const countAgeAdvances = (researches: readonly ResearchEntry[]): number =>
+  researches.filter(isAgeAdvance).length;
+
+/** Compte des merveilles — dérivé des données, jamais codé en dur. */
+export const countWonders = (researches: readonly ResearchEntry[]): number =>
+  researches.filter(isWonder).length;
+
 /** Répartition par type (clés = noms de types présents dans les données). */
 export function countByType(researches: readonly ResearchEntry[]): Record<string, number> {
   const counts: Record<string, number> = {};
@@ -97,6 +156,7 @@ const searchable = (research: ResearchEntry): string[] => {
     ...Object.values(names),
     ...Object.values(descriptions),
     research.type,
+    ...(research.producers ?? []).map((producer) => producer.by),
   ].filter((value): value is string => typeof value === "string" && value.length > 0);
 };
 

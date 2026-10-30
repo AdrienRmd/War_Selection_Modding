@@ -12,9 +12,11 @@
 //  - content/docs/tree/gameplay.root.unitType.<N>.json : `address` (chemin
 //    d'unité) + requirements.researchAll/researchAny = recherche(s) exigée(s)
 //    pour produire l'unité → index inverse « la recherche débloque l'unité ».
-// Le dataset ne publie NI coûts, NI durées, NI prérequis recherche→recherche
-// (constat documenté dans ~/War-Selection/docs/SPEC-refonte-ws-atlas.md,
-//  amendement SB4) : rien n'est inventé ici.
+// Coûts/durées/prérequis des recherches (révision SB4, 30/10/2026 soir) : ils
+// existent via les abilities (abilityContainerWork) des unités-bâtiments —
+// cross-référence entityInfo.entityId (gameId de recherche) + work.cost/
+// makeTime + ability.requirements. On les extrait de lib/units-index.json
+// (généré AVANT ce script) : index inverse « producteurs de la recherche ».
 import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
@@ -156,6 +158,36 @@ if (existsSync(join(servedDir, "content/docs/tree"))) {
   }
 }
 
+// --- Producteurs des recherches (abilities des unités-bâtiments) -------------
+// lib/units-index.json résume déjà les works des unités avec leur entité
+// produite ({ kind: "research", gameId }) : index inverse gameId → voies
+// { bâtiment, coût, durée, prérequis }. Les valeurs sont recopiées telles
+// quelles — aucune fusion ni moyenne entre voies distinctes.
+const unitsIndexPath = new URL("../lib/units-index.json", import.meta.url);
+if (!existsSync(unitsIndexPath)) {
+  console.error(
+    "[gen-researches-index] lib/units-index.json introuvable — lance d'abord scripts/gen-units-index.mjs.",
+  );
+  process.exit(1);
+}
+const unitsIndex = JSON.parse(readFileSync(unitsIndexPath, "utf8"));
+const producersByResearch = {};
+for (const unit of unitsIndex.units ?? []) {
+  for (const work of unit.s?.works ?? []) {
+    if (work.entity?.kind !== "research") continue;
+    const gameId = Number(work.entity.gameId);
+    if (!Number.isInteger(gameId)) continue;
+    const way = { by: unit.id, cost: work.cost ?? [] };
+    if (typeof work.t === "number") way.t = work.t;
+    if (Array.isArray(work.reqU) && work.reqU.length > 0) way.reqU = work.reqU;
+    if (Array.isArray(work.reqR) && work.reqR.length > 0) way.reqR = work.reqR;
+    (producersByResearch[gameId] ??= []).push(way);
+  }
+}
+for (const gameId of Object.keys(producersByResearch)) {
+  producersByResearch[Number(gameId)].sort((a, b) => a.by.localeCompare(b.by));
+}
+
 // --- Assemblage -------------------------------------------------------------
 const researches = (context.researches ?? []).map((research) => {
   const names = {};
@@ -177,6 +209,8 @@ const researches = (context.researches ?? []).map((research) => {
   if (affects) entry.affects = affects;
   const unlocks = unlocksByResearch[research.gameId];
   if (unlocks) entry.unlocks = [...unlocks].sort();
+  const producers = producersByResearch[research.gameId];
+  if (producers) entry.producers = producers;
   return entry;
 });
 
@@ -190,8 +224,11 @@ const index = {
 writeFileSync(outPath, JSON.stringify(index) + "\n");
 const withAffects = researches.filter((r) => r.affects).length;
 const withUnlocks = researches.filter((r) => r.unlocks).length;
+const withProducers = researches.filter((r) => r.producers).length;
+const producerWays = researches.reduce((sum, r) => sum + (r.producers?.length ?? 0), 0);
 console.log(
   `[gen-researches-index] ${researches.length} recherches, ${types.length} types, ` +
-    `${withAffects} avec unités affectées, ${withUnlocks} avec unités débloquées ` +
+    `${withAffects} avec unités affectées, ${withUnlocks} avec unités débloquées, ` +
+    `${withProducers} avec bâtiment producteur (${producerWays} voies) ` +
     `(${meta.datasetId ?? "?"}) -> lib/researches-index.json`,
 );
