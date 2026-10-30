@@ -202,7 +202,14 @@ if ! ssh -o BatchMode=yes "$VPS_HOST" 'cd ~/war_selecion && git pull --ff-only &
 fi
 
 # --- 7. Health check public ----------------------------------------------------
-CODE="$(curl -fsS -o /dev/null -w '%{http_code}' "$PUBLIC_URL/" || echo 000)"
+# NB : cette machine EST le VPS ; le NAT hairpin refuse la connexion vers
+# l'IP publique 51.254.129.80:443 depuis elle-même (constat 30/10, contournement
+# standard : résoudre ws.aremond.ovh vers 127.0.0.1 — cf. standard orchestrateur).
+code_of() { curl -sk --resolve ws.aremond.ovh:443:127.0.0.1 -o /dev/null -w '%{http_code}' "$PUBLIC_URL/" 2>/dev/null || echo 000; }
+CODE="$(curl -fsS -o /dev/null -w '%{http_code}' "$PUBLIC_URL/" 2>/dev/null || echo 000)"
+if [ "$CODE" != "200" ]; then
+  CODE="$(code_of)" # repli hairpin : Apache local (SNI/Host ws.aremond.ovh)
+fi
 [ "$CODE" = "200" ] || fail "health check $PUBLIC_URL -> HTTP $CODE (le commit est déjà poussé et déployé — vérifier le service ws-atlas sur le VPS)."
 
 log "OK — index $DATASET_ID committés, poussés et déployés ; $PUBLIC_URL répond 200."
