@@ -10,6 +10,7 @@ import {
   json,
   type MapRecord,
 } from "@/lib/atlas-server";
+import { ownMaps } from "@/lib/account-server";
 export const dynamic = "force-dynamic";
 const uuid = z.string().uuid();
 const fields = z.object({
@@ -111,16 +112,14 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
     if (action === "submissions" && req.method === "GET") {
       const mode = new URL(req.url).searchParams.get("scope");
       if (mode === "admin" && !admin) throw new HttpError(403, "此账号没有审核权限。");
+      // Scope owner : même source que le hub /account (lib/account-server.ts),
+      // les compteurs affichés et cette liste ne peuvent pas diverger.
       const r =
         mode === "admin"
           ? await DB.prepare(
               "SELECT * FROM maps WHERE status != 'withdrawn' ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, created_at DESC LIMIT 100",
             ).all<MapRecord>()
-          : await DB.prepare(
-              "SELECT * FROM maps WHERE owner_id = ? ORDER BY created_at DESC LIMIT 100",
-            )
-              .bind(user.userId)
-              .all<MapRecord>();
+          : { results: await ownMaps(user.userId) };
       return json({
         items: r.results.map((m) => ({
           ...publicMap(m),

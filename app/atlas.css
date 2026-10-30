@@ -1569,3 +1569,57 @@ code {
     align-items: flex-start;
   }
 }
+
+/* --------------------------------------------------------------- Hub /account (SB3) */
+.hub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 18px 0;
+}
+.hub-type {
+  min-width: 0;
+  border: 1px solid var(--border);
+  padding: 14px;
+  overflow-wrap: break-word;
+}
+.hub-type h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.hub-total {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 26px;
+  color: var(--primary);
+}
+.hub-counts {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  gap: 6px;
+}
+.hub-counts li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14px;
+}
+.hub-counts strong {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 20px;
+  color: var(--muted-foreground);
+}
+.creation-hub .review-buttons {
+  margin-top: 16px;
+}
+@media (max-width: 480px) {
+  .hub-grid {
+    grid-template-columns: 1fr;
+  }
+}

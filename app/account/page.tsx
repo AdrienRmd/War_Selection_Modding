@@ -7,6 +7,8 @@ import { T } from "@/components/i18n";
 import Link from "@/components/site-link";
 import { SignOutAllButton } from "@/components/auth/signout-all-button";
 import { ChangePasswordForm } from "@/components/account/change-password-form";
+import { CreationHub } from "@/components/account/creation-hub";
+import { creationCounts } from "@/lib/account-server";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,6 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AccountPage() {
   const user = await requireChatGPTUser("/account");
   const admin = isAdmin(user);
+  const counts = await creationCounts(user.userId, admin);
   return (
     <>
       <AtlasHeader />
@@ -23,7 +26,7 @@ export default async function AccountPage() {
         <PageTitle
           eyebrow="ACCOUNT"
           title="我的账号"
-          text="查看账号资料、修改密码并管理登录会话。"
+          text="查看账号资料、追踪创作状态、修改密码并管理登录会话。"
         />
         <div className="auth-layout">
           <section className="panel">
@@ -44,6 +47,7 @@ export default async function AccountPage() {
               </p>
             )}
           </section>
+          <CreationHub counts={counts} />
           <ChangePasswordForm />
           {admin && (
             <section className="panel">

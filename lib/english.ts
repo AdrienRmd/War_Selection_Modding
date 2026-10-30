@@ -1390,6 +1390,12 @@ export const english: Record<string, string> = {
   ACCOUNT: "ACCOUNT",
   "查看账号资料、修改密码并管理登录会话。":
     "Review your account details, change your password, and manage your sign-in sessions.",
+  "查看账号资料、追踪创作状态、修改密码并管理登录会话。":
+    "Review your account details, follow your creations, change your password, and manage your sign-in sessions.",
+  "你的地图与 Mod 的当前审核状态一览。": "An overview of the current review status of your maps and mods.",
+  "还没有创作记录，点击“提交地图”开始第一次投稿。":
+    "No creations yet — click “Submit a map” to send your first one.",
+  查看我的创作: "View my creations",
   账号资料: "Account profile",
   管理员: "Administrator",
   修改密码: "Change password",

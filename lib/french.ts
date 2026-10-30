@@ -1418,6 +1418,13 @@ export const french: Record<string, string> = {
   ACCOUNT: "COMPTE",
   "查看账号资料、修改密码并管理登录会话。":
     "Consultez les informations du compte, modifiez le mot de passe et gérez vos sessions de connexion.",
+  "查看账号资料、追踪创作状态、修改密码并管理登录会话。":
+    "Consultez votre profil, suivez l'état de vos créations, modifiez le mot de passe et gérez vos sessions.",
+  "你的地图与 Mod 的当前审核状态一览。":
+    "Vue d'ensemble de l'état de modération de vos cartes et mods.",
+  "还没有创作记录，点击“提交地图”开始第一次投稿。":
+    "Aucune création pour l'instant — cliquez sur « Soumettre une carte » pour envoyer la première.",
+  查看我的创作: "Voir mes créations",
   账号资料: "Profil du compte",
   管理员: "Administrateur",
   修改密码: "Changer le mot de passe",
