@@ -7,6 +7,7 @@ import "./atlas.css";
 import "./command.css";
 import "./community.css";
 import "./collection.css";
+import "./units.css";
 import "./workbench.css";
 
 export const metadata: Metadata = {

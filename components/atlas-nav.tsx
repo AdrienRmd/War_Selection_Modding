@@ -11,6 +11,7 @@ export function AtlasNav({ admin }: { admin: boolean }) {
     <nav aria-label={t("主导航")}>
       {[
         { href: "/maps", name: "地图档案", active: path === "/" || path.startsWith("/maps") },
+        { href: "/units", name: "单位档案", active: path.startsWith("/units") },
         { href: "/mods", name: "Mod 资料库", active: path.startsWith("/mods") },
         {
           href: "/workbench",
