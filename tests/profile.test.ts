@@ -4,6 +4,7 @@ import {
   displayNameIssue,
   initialsOf,
   inspectAvatar,
+  inspectCover,
   normalizeAccountLocale,
   PROFILE_PATCH_BUDGET,
   profileAttemptKey,
@@ -197,6 +198,47 @@ describe("inspectAvatar", () => {
     const result = inspectAvatar(broken);
     if (!("error" in result)) throw new Error("unreachable");
     expect(result.error).toContain("无效");
+  });
+});
+
+describe("inspectCover — couvertures de cartes (MINEUR #3, même norme avatars)", () => {
+  it("PNG avec eXIf/tEXt → octets purgés, type image/png", () => {
+    const result = inspectCover(pngWithMeta());
+    if ("error" in result) throw new Error("unreachable");
+    expect(result.type).toBe("image/png");
+    const text = new TextDecoder().decode(result.bytes);
+    expect(text).not.toContain("eXIf");
+    expect(text).not.toContain("Auteur");
+    expect(text).toContain("IHDR");
+  });
+
+  it("JPEG avec EXIF/COM → purgé, type image/jpeg", () => {
+    const result = inspectCover(jpegWithExif());
+    if ("error" in result) throw new Error("unreachable");
+    expect(result.type).toBe("image/jpeg");
+    const text = new TextDecoder().decode(result.bytes);
+    expect(text).not.toContain("Exif");
+    expect(text).toContain("JFIF");
+  });
+
+  it("messages d'erreur spécifiques couverture (vides/invalide/non image)", () => {
+    const cases: [Uint8Array, string][] = [
+      [new Uint8Array(0), "封面文件无效，请重新选择。"],
+      [new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 9, 9]), "封面文件无效，请重新选择。"],
+      [new Uint8Array([71, 73, 70, 56, 57, 97]), "封面仅支持 PNG 或 JPEG 图片。"],
+    ];
+    for (const [bytes, expected] of cases) {
+      const result = inspectCover(bytes);
+      if (!("error" in result)) throw new Error("unreachable");
+      expect(result.error, JSON.stringify(Array.from(bytes))).toBe(expected);
+    }
+  });
+
+  it("inspectAvatar et inspectCover partagent le cœur inspectImage (mêmes octets purgés)", () => {
+    const avatar = inspectAvatar(pngWithMeta());
+    const cover = inspectCover(pngWithMeta());
+    if ("error" in avatar || "error" in cover) throw new Error("unreachable");
+    expect(Array.from(cover.bytes)).toEqual(Array.from(avatar.bytes));
   });
 });
 

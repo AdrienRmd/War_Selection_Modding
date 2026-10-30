@@ -17,6 +17,9 @@ export const DISPLAY_NAME_MIN = 2;
 export const DISPLAY_NAME_MAX = 40;
 export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 
+/** Clé i18n (zh) : pseudo déjà porté par un AUTRE compte (unicité 0009). */
+export const NICKNAME_TAKEN_CN = "昵称已被使用，请换一个。";
+
 // Pseudo : trim, 2–40 caractères, commence et finit par une lettre ou un
 // chiffre ; à l'intérieur : lettres/chiffres Unicode, espaces simples, _ . -
 // (pas de contrôle, pas d'emoji, pas d'espace double, pas de tabulation).
@@ -160,6 +163,40 @@ export type AvatarInspection =
   | { type: "image/png" | "image/jpeg"; bytes: Uint8Array }
   | { error: string };
 
+/** Code d'erreur neutre produit par inspectImage (avant traduction métier). */
+export type ImageIssue = "empty" | "too_large" | "invalid" | "unsupported";
+
+export type ImageInspection =
+  | { type: "image/png" | "image/jpeg"; bytes: Uint8Array }
+  | { error: ImageIssue };
+
+/**
+ * Cœur partagé de l'inspection d'image serveur : PNG ou JPEG, magic bytes,
+ * structure parcourable, métadonnées (EXIF/texte) retirées des octets
+ * retournés AVANT tout stockage. Utilisé par les avatars ET les couvertures
+ * de cartes (même norme anti-fuite EXIF — audit V2-P4 mineur #3).
+ */
+export function inspectImage(bytes: Uint8Array, maxBytes = AVATAR_MAX_BYTES): ImageInspection {
+  if (bytes.length === 0) return { error: "empty" };
+  if (bytes.length > maxBytes) return { error: "too_large" };
+  if (isPng(bytes)) {
+    const clean = stripPngMetadata(bytes);
+    return clean ? { type: "image/png", bytes: clean } : { error: "invalid" };
+  }
+  if (isJpeg(bytes)) {
+    const clean = stripJpegMetadata(bytes);
+    return clean ? { type: "image/jpeg", bytes: clean } : { error: "invalid" };
+  }
+  return { error: "unsupported" };
+}
+
+const AVATAR_ISSUE_CN: Record<ImageIssue, string> = {
+  empty: "头像文件无效，请重新选择。",
+  too_large: "头像不能超过 2 MB。",
+  invalid: "头像文件无效，请重新选择。",
+  unsupported: "头像只接受 PNG 或 JPEG 图片。",
+};
+
 /**
  * Valide un avatar candidat : PNG ou JPEG ≤ 2 Mo, magic bytes, structure
  * parcourable. Les métadonnées (EXIF/texte) sont retirées des octets
@@ -167,17 +204,30 @@ export type AvatarInspection =
  * serveur, indépendamment de ce que le client a pu envoyer.
  */
 export function inspectAvatar(bytes: Uint8Array): AvatarInspection {
-  if (bytes.length === 0) return { error: "头像文件无效，请重新选择。" };
-  if (bytes.length > AVATAR_MAX_BYTES) return { error: "头像不能超过 2 MB。" };
-  if (isPng(bytes)) {
-    const clean = stripPngMetadata(bytes);
-    return clean ? { type: "image/png", bytes: clean } : { error: "头像文件无效，请重新选择。" };
-  }
-  if (isJpeg(bytes)) {
-    const clean = stripJpegMetadata(bytes);
-    return clean ? { type: "image/jpeg", bytes: clean } : { error: "头像文件无效，请重新选择。" };
-  }
-  return { error: "头像只接受 PNG 或 JPEG 图片。" };
+  const result = inspectImage(bytes);
+  return "error" in result ? { error: AVATAR_ISSUE_CN[result.error] } : result;
+}
+
+export const COVER_MAX_BYTES = 2 * 1024 * 1024;
+
+const COVER_ISSUE_CN: Record<ImageIssue, string> = {
+  empty: "封面文件无效，请重新选择。",
+  too_large: "封面不能超过 2 MB。",
+  invalid: "封面文件无效，请重新选择。",
+  unsupported: "封面仅支持 PNG 或 JPEG 图片。",
+};
+
+export type CoverInspection = AvatarInspection;
+
+/**
+ * Valide une couverture de carte candidate : même norme que les avatars
+ * (magic bytes + structure parcourable), métadonnées EXIF/texte purgées des
+ * octets retournés AVANT tout stockage R2 — une couverture publiée ne peut
+ * plus fuiter de métadonnées (audit V2-P4 mineur #3).
+ */
+export function inspectCover(bytes: Uint8Array): CoverInspection {
+  const result = inspectImage(bytes, COVER_MAX_BYTES);
+  return "error" in result ? { error: COVER_ISSUE_CN[result.error] } : result;
 }
 
 /** Clé R2 d'un avatar : dérivée de l'userId, jamais du nom de fichier. */

@@ -143,7 +143,15 @@ export const users = sqliteTable(
     locale: text("locale"),
     createdAt: integer("created_at").notNull(),
   },
-  (t) => [uniqueIndex("idx_users_email_nocase").on(sql`${t.email} COLLATE NOCASE`)],
+  (t) => [
+    uniqueIndex("idx_users_email_nocase").on(sql`${t.email} COLLATE NOCASE`),
+    // V2-P4 (audit dev-secu MAJEUR #1, migration 0009 additive) : unicité du
+    // pseudo COLLATE NOCASE — le badge « créateur vérifié » (match exact
+    // auteur ↔ displayName du compte) n'est plus forgeable en copiant le
+    // pseudo d'un auteur connu. Un compte ne peut reprendre le pseudo d'un
+    // autre, même en changeant la casse ASCII.
+    uniqueIndex("idx_users_display_name_nocase").on(sql`${t.displayName} COLLATE NOCASE`),
+  ],
 );
 export const sessions = sqliteTable(
   "sessions",

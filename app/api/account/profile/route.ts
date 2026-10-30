@@ -9,6 +9,7 @@ import {
   avatarKeyFor,
   displayNameIssue,
   inspectAvatar,
+  NICKNAME_TAKEN_CN,
   normalizeAccountLocale,
   PROFILE_PATCH_BUDGET,
   profileAttemptKey,
@@ -93,8 +94,19 @@ export async function PATCH(req: Request) {
     if (displayName !== null) {
       const issue = displayNameIssue(displayName);
       if (issue) throw new HttpError(400, issue);
+      const trimmed = displayName.trim();
+      // MAJEUR #1 (audit V2-P4) : unicité du pseudo (index 0009 COLLATE
+      // NOCASE) — refus si le pseudo est déjà porté par un AUTRE compte.
+      // Re-déclarer son pseudo actuel (casse comprise) reste autorisé.
+      if (trimmed.toLowerCase() !== user.displayName.toLowerCase()) {
+        const clash = await bindings()
+          .DB.prepare("SELECT id FROM users WHERE display_name = ? COLLATE NOCASE AND id != ?")
+          .bind(trimmed, user.userId)
+          .first<{ id: string }>();
+        if (clash) throw new HttpError(400, NICKNAME_TAKEN_CN);
+      }
       sets.push("display_name = ?");
-      args.push(displayName.trim());
+      args.push(trimmed);
     }
     if (locale !== null) {
       // SB2 : préférence de langue du compte (zh/en/fr, additive colonne 0007).
@@ -125,9 +137,18 @@ export async function PATCH(req: Request) {
 
     if (sets.length === 0) throw new HttpError(400, "没有需要更新的内容。");
     args.push(user.userId);
-    const changed = await DB.prepare(`UPDATE users SET ${sets.join(", ")} WHERE id = ?`)
-      .bind(...args)
-      .run();
+    let changed: { meta: { changes: number } };
+    try {
+      changed = await DB.prepare(`UPDATE users SET ${sets.join(", ")} WHERE id = ?`)
+        .bind(...args)
+        .run();
+    } catch (e) {
+      // Course entre la vérification et l'UPDATE : l'index unique 0009 fait
+      // autorité — un pseudo pris entre-temps par un autre compte est refusé.
+      if (e instanceof Error && e.message.includes("UNIQUE"))
+        throw new HttpError(400, NICKNAME_TAKEN_CN);
+      throw e;
+    }
     if (changed.meta.changes !== 1) throw new HttpError(503, "修改未完成，请稍后重试。");
     committed = true;
 

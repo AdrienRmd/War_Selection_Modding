@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `idx_users_display_name_nocase` ON `users` ("display_name" COLLATE NOCASE);

@@ -21,6 +21,7 @@ import {
   sessionUserByToken,
   verifyPassword,
 } from "@/lib/auth-server";
+import { displayNameIssue, NICKNAME_TAKEN_CN } from "@/lib/profile";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,7 @@ const TOO_MANY_ATTEMPTS_CN = "尝试次数过多，请 15 分钟后再试。";
 // i18n keys (lib/english.ts / lib/french.ts both translate them).
 const COMMON_PASSWORD_CN = "密码过于常见，请选择更安全的密码。";
 const CURRENT_PASSWORD_CN = "当前密码不正确。";
+const EMAIL_TAKEN_CN = "该邮箱已注册，请直接登录。";
 
 class RateLimitError extends HttpError {
   constructor(public retryAfterSec: number) {
@@ -116,6 +118,12 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
 
     if (action === "signup" && req.method === "POST") {
       const input = signupInput.parse(await readJson(req));
+      // MAJEUR #2 (audit V2-P4) : mêmes règles de pseudo strictes que le PATCH
+      // profil — pattern Unicode, pseudos réservés (admin/official/官方…),
+      // contrôles/emoji/doubles espaces refusés dès l'inscription.
+      const issue = displayNameIssue(input.displayName);
+      if (issue) throw new HttpError(400, issue);
+      const displayName = input.displayName.trim();
       const ipKey = ipAttemptKey(clientIp(req));
       await enforceRateLimit(ipKey, SIGNUP_IP_BUDGET);
       if (isCommonPassword(input.password)) throw new HttpError(400, COMMON_PASSWORD_CN);
@@ -123,18 +131,34 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       const exists = await DB.prepare("SELECT id FROM users WHERE email = ?")
         .bind(input.email)
         .first<{ id: string }>();
-      if (exists) throw new HttpError(409, "该邮箱已注册，请直接登录。");
+      if (exists) throw new HttpError(409, EMAIL_TAKEN_CN);
+      // MAJEUR #1 (audit V2-P4) : unicité du pseudo (index 0009 COLLATE
+      // NOCASE) vérifiée à l'inscription — le badge « créateur vérifié »
+      // (match exact auteur ↔ displayName) devient non forgeable.
+      const nameTaken = await DB.prepare(
+        "SELECT id FROM users WHERE display_name = ? COLLATE NOCASE",
+      )
+        .bind(displayName)
+        .first<{ id: string }>();
+      if (nameTaken) throw new HttpError(400, NICKNAME_TAKEN_CN);
       const id = crypto.randomUUID();
       const passwordHash = await hashPassword(input.password);
       try {
         await DB.prepare(
           "INSERT INTO users (id, email, display_name, password_hash, created_at) VALUES (?, ?, ?, ?, ?)",
         )
-          .bind(id, input.email, input.displayName, passwordHash, Date.now())
+          .bind(id, input.email, displayName, passwordHash, Date.now())
           .run();
       } catch (e) {
-        if (e instanceof Error && e.message.includes("UNIQUE"))
-          throw new HttpError(409, "该邮箱已注册，请直接登录。");
+        if (e instanceof Error && e.message.includes("UNIQUE")) {
+          // Course entre deux inscriptions : départage email vs pseudo (les
+          // deux portes ont un index unique).
+          const emailRow = await DB.prepare("SELECT id FROM users WHERE email = ?")
+            .bind(input.email)
+            .first<{ id: string }>();
+          if (emailRow) throw new HttpError(409, EMAIL_TAKEN_CN);
+          throw new HttpError(400, NICKNAME_TAKEN_CN);
+        }
         throw e;
       }
       // No recordSuccess() on the IP key on purpose: the 20 signups/hour/IP
@@ -144,7 +168,7 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       const token = await createSession(id);
       return jsonWithCookie(
         {
-          user: { userId: id, displayName: input.displayName, email: input.email, fullName: null },
+          user: { userId: id, displayName, email: input.email, fullName: null },
         },
         sessionCookie(token, secure),
         201,

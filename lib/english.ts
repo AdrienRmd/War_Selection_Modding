@@ -849,6 +849,7 @@ export const english: Record<string, string> = {
   "文件不是有效的 ZIP 格式。请重新打包。":
     "The file is not a valid ZIP archive. Please package it again.",
   "封面仅支持 PNG 或 JPEG 图片。": "Covers must be PNG or JPEG images.",
+  "封面文件无效，请重新选择。": "The cover file is invalid. Choose another one.",
   "已达到投稿限额，请稍后再试。": "The submission limit has been reached. Try again later.",
   "稿件不存在或已撤回。": "The submission does not exist or has been withdrawn.",
   "发布前必须完成全部四项人工检查。":
@@ -1445,6 +1446,7 @@ export const english: Record<string, string> = {
   "昵称只能使用文字、数字、空格和 _ . - 符号。":
     "Nicknames may only use letters, digits, spaces and _ . - signs.",
   "该昵称不可使用。": "This nickname is not available.",
+  "昵称已被使用，请换一个。": "This nickname is already taken. Please choose another one.",
   "头像只接受 PNG 或 JPEG 图片。": "Avatars must be PNG or JPEG images.",
   "头像文件无效，请重新选择。": "The avatar file is invalid. Choose another one.",
   "不能同时上传新头像和移除头像。": "You cannot upload a new avatar and remove it at the same time.",

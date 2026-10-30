@@ -874,6 +874,7 @@ export const french: Record<string, string> = {
   "文件不是有效的 ZIP 格式。请重新打包。":
     "Le fichier n'est pas une archive ZIP valide. Recompressez-le.",
   "封面仅支持 PNG 或 JPEG 图片。": "Les couvertures acceptent uniquement les images PNG ou JPEG.",
+  "封面文件无效，请重新选择。": "Le fichier de couverture est invalide. Choisissez-en un autre.",
   "已达到投稿限额，请稍后再试。": "La limite de soumissions est atteinte. Réessayez plus tard.",
   "稿件不存在或已撤回。": "La soumission n'existe pas ou a été retirée.",
   "发布前必须完成全部四项人工检查。":
@@ -1475,6 +1476,7 @@ export const french: Record<string, string> = {
   "昵称只能使用文字、数字、空格和 _ . - 符号。":
     "Le pseudonyme n'accepte que lettres, chiffres, espaces et signes _ . -.",
   "该昵称不可使用。": "Ce pseudonyme n'est pas disponible.",
+  "昵称已被使用，请换一个。": "Ce pseudonyme est déjà utilisé. Veuillez en choisir un autre.",
   "头像只接受 PNG 或 JPEG 图片。": "L'avatar doit être une image PNG ou JPEG.",
   "头像文件无效，请重新选择。": "Fichier avatar invalide. Choisissez-en un autre.",
   "不能同时上传新头像和移除头像。": "Impossible de téléverser un avatar et de le supprimer en même temps.",
