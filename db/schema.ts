@@ -31,6 +31,25 @@ export const maps = sqliteTable(
     feedback: text("feedback").notNull().default(""),
     revision: integer("revision").notNull().default(0),
     reviewToken: text("review_token"),
+    // V2-P2 (migration 0008, additive) : SB5 rend le ZIP optionnel — une
+    // carte peut vivre avec un code de partage seul. Les colonnes fichiers
+    // historiques restent NOT NULL (SQLite ne peut pas relâcher la contrainte
+    // sans reconstruction de table, interdite par la politique « additif
+    // uniquement ») : une soumission sans ZIP écrit les défautes ""/0 et le
+    // code vérifie `file_key != ""` partout. Rollback : revert du code,
+    // colonnes ignorées par les requêtes existantes à colonnes explicites.
+    // SB6 : statut de test déclaré par l'auteur après publication — mêmes
+    // valeurs que lib/collection.ts collectionTestStates ; test_updated_at /
+    // test_set_by forment l'historique simple (date + dernier rédacteur), la
+    // révision D1 s'incrémente à chaque changement.
+    testStatus: text("test_status").notNull().default("untested"),
+    testUpdatedAt: text("test_updated_at"),
+    testSetBy: text("test_set_by"),
+    testNotes: text("test_notes").notNull().default(""),
+    // SB7 : badge « créateur vérifié » — instantané pris à l'écriture de la
+    // ligne (auteur affiché = displayName du compte propriétaire, match
+    // exact). JAMAIS réécrit rétroactivement : les lignes existantes gardent 0.
+    authorVerified: integer("author_verified").notNull().default(0),
   },
   (t) => [
     index("idx_maps_status_created").on(t.status, t.createdAt),
