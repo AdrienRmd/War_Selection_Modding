@@ -110,6 +110,12 @@ export const users = sqliteTable(
     email: text("email").notNull(),
     displayName: text("display_name").notNull(),
     passwordHash: text("password_hash").notNull(),
+    // SB1 (migration 0006, additive) : avatar optionnel du compte. Clé R2
+    // dérivée de l'userId (avatars/<id>/avatar) ; NULL = repli initiales.
+    // Rollback : revert du code — colonnes nullable, toutes les requêtes
+    // existantes listent leurs colonnes explicitement.
+    avatarKey: text("avatar_key"),
+    avatarType: text("avatar_type"),
     createdAt: integer("created_at").notNull(),
   },
   (t) => [uniqueIndex("idx_users_email_nocase").on(sql`${t.email} COLLATE NOCASE`)],

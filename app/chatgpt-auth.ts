@@ -8,6 +8,12 @@ export type ChatGPTUser = {
   displayName: string;
   email: string;
   fullName: string | null;
+  // SB1 : avatar optionnel du compte (clé R2 avatarKeyFor(userId)). Absent
+  // des identités produites ailleurs que par la session → repli initiales.
+  avatarKey?: string | null;
+  avatarType?: string | null;
+  // SB2 : préférence de langue mémorisée sur le compte (zh/en/fr ou null).
+  locale?: string | null;
 };
 
 const SIGN_IN_PATH = "/signin";

@@ -129,12 +129,19 @@ export async function sessionUserByToken(token: string | null): Promise<ChatGPTU
     await db()
   )
     .prepare(
-      "SELECT u.id AS user_id, u.display_name, u.email FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?",
+      "SELECT u.id AS user_id, u.display_name, u.email, u.avatar_key, u.avatar_type FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?",
     )
     .bind(tokenHash, Date.now())
-    .first<{ user_id: string; display_name: string; email: string }>();
+    .first<{ user_id: string; display_name: string; email: string; avatar_key: string | null; avatar_type: string | null }>();
   if (!row) return null;
-  return { userId: row.user_id, displayName: row.display_name, email: row.email, fullName: null };
+  return {
+    userId: row.user_id,
+    displayName: row.display_name,
+    email: row.email,
+    fullName: null,
+    avatarKey: row.avatar_key ?? null,
+    avatarType: row.avatar_type ?? null,
+  };
 }
 
 // Request-context variant (server components / route handlers alike).

@@ -4,6 +4,7 @@ import { LanguageSwitcher, T } from "@/components/i18n";
 import { AtlasNav } from "@/components/atlas-nav";
 import { SiteFooter } from "@/components/site-footer";
 import { identity } from "@/lib/atlas-server";
+import { initialsOf } from "@/lib/profile";
 import { chatGPTSignInPath, chatGPTSignOutPath } from "@/app/chatgpt-auth";
 import { SignOutAllButton } from "@/components/auth/signout-all-button";
 export async function AtlasHeader() {
@@ -23,6 +24,19 @@ export async function AtlasHeader() {
         <div className="header-actions">
           {user ? (
             <>
+              {user.avatarKey ? (
+                <img
+                  className="header-avatar"
+                  src="/api/account/avatar"
+                  alt=""
+                  width={28}
+                  height={28}
+                />
+              ) : (
+                <span className="header-avatar header-initials" aria-hidden="true">
+                  {initialsOf(user.displayName)}
+                </span>
+              )}
               <span className="account-name">{user.displayName}</span>
               <Link className="account-link" href="/account">
                 <T text="我的账号" />

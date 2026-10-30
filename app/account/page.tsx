@@ -8,6 +8,7 @@ import Link from "@/components/site-link";
 import { SignOutAllButton } from "@/components/auth/signout-all-button";
 import { ChangePasswordForm } from "@/components/account/change-password-form";
 import { CreationHub } from "@/components/account/creation-hub";
+import { ProfileForm } from "@/components/account/profile-form";
 import { creationCounts } from "@/lib/account-server";
 
 export const dynamic = "force-dynamic";
@@ -29,13 +30,13 @@ export default async function AccountPage() {
           text="查看账号资料、追踪创作状态、修改密码并管理登录会话。"
         />
         <div className="auth-layout">
+          <ProfileForm
+            initial={{ displayName: user.displayName, hasAvatar: !!user.avatarKey }}
+          />
           <section className="panel">
             <h2>
-              <T text="账号资料" />
+              <T text="账号信息" />
             </h2>
-            <p className="meta">
-              <T text="显示名称" />：<strong>{user.displayName}</strong>
-            </p>
             <p className="meta">
               <T text="邮箱" />：<strong>{user.email}</strong>
             </p>

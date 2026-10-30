@@ -1396,6 +1396,26 @@ export const english: Record<string, string> = {
   "还没有创作记录，点击“提交地图”开始第一次投稿。":
     "No creations yet — click “Submit a map” to send your first one.",
   查看我的创作: "View my creations",
+  个人资料: "Profile",
+  账号信息: "Account information",
+  上传头像: "Upload an avatar",
+  移除头像: "Remove the avatar",
+  "PNG 或 JPEG，不超过 2 MB；重新上传会替换当前头像。":
+    "PNG or JPEG, up to 2 MB; uploading again replaces the current avatar.",
+  "2 到 40 个字符：文字、数字、空格和 _ . - 符号。":
+    "2 to 40 characters: letters, digits, spaces and _ . - signs.",
+  "昵称长度需在 2 到 40 个字符之间。": "The nickname must be 2 to 40 characters long.",
+  "昵称中不能包含连续空格或不可见字符。": "The nickname must not contain double spaces or invisible characters.",
+  "昵称只能使用文字、数字、空格和 _ . - 符号。":
+    "Nicknames may only use letters, digits, spaces and _ . - signs.",
+  "该昵称不可使用。": "This nickname is not available.",
+  "头像只接受 PNG 或 JPEG 图片。": "Avatars must be PNG or JPEG images.",
+  "头像文件无效，请重新选择。": "The avatar file is invalid. Choose another one.",
+  "不能同时上传新头像和移除头像。": "You cannot upload a new avatar and remove it at the same time.",
+  "修改过于频繁，请 1 分钟后再试。": "Changes are too frequent. Try again in a minute.",
+  "资料已更新。": "Profile updated.",
+  保存修改: "Save changes",
+  "没有需要更新的内容。": "There is nothing to update.",
   账号资料: "Account profile",
   管理员: "Administrator",
   修改密码: "Change password",

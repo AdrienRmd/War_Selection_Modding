@@ -1425,6 +1425,27 @@ export const french: Record<string, string> = {
   "还没有创作记录，点击“提交地图”开始第一次投稿。":
     "Aucune création pour l'instant — cliquez sur « Soumettre une carte » pour envoyer la première.",
   查看我的创作: "Voir mes créations",
+  个人资料: "Profil",
+  账号信息: "Informations du compte",
+  上传头像: "Téléverser un avatar",
+  移除头像: "Retirer l'avatar",
+  "PNG 或 JPEG，不超过 2 MB；重新上传会替换当前头像。":
+    "PNG ou JPEG, 2 Mo maximum ; un nouveau téléversement remplace l'avatar actuel.",
+  "2 到 40 个字符：文字、数字、空格和 _ . - 符号。":
+    "2 à 40 caractères : lettres, chiffres, espaces et signes _ . -.",
+  "昵称长度需在 2 到 40 个字符之间。": "Le pseudonyme doit contenir entre 2 et 40 caractères.",
+  "昵称中不能包含连续空格或不可见字符。":
+    "Le pseudonyme ne doit pas contenir d'espaces doubles ni de caractères invisibles.",
+  "昵称只能使用文字、数字、空格和 _ . - 符号。":
+    "Le pseudonyme n'accepte que lettres, chiffres, espaces et signes _ . -.",
+  "该昵称不可使用。": "Ce pseudonyme n'est pas disponible.",
+  "头像只接受 PNG 或 JPEG 图片。": "L'avatar doit être une image PNG ou JPEG.",
+  "头像文件无效，请重新选择。": "Fichier avatar invalide. Choisissez-en un autre.",
+  "不能同时上传新头像和移除头像。": "Impossible de téléverser un avatar et de le supprimer en même temps.",
+  "修改过于频繁，请 1 分钟后再试。": "Modifications trop fréquentes. Réessayez dans une minute.",
+  "资料已更新。": "Profil mis à jour.",
+  保存修改: "Enregistrer les modifications",
+  "没有需要更新的内容。": "Rien à mettre à jour.",
   账号资料: "Profil du compte",
   管理员: "Administrateur",
   修改密码: "Changer le mot de passe",
