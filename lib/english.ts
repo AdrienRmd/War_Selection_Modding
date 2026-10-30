@@ -563,8 +563,8 @@ export const english: Record<string, string> = {
   "04 / 数据与隐私": "04 / Data and privacy",
   "ChatGPT 登录用于识别投稿者。站内记录账号标识用于归属与权限校验，不公开登录邮箱或账号标识。通过审核的地图名称、公开作者名、说明、版本、Mod 列表、封面、地图分享码、ZIP 包和校验值会展示给有权访问本站的玩家。":
     "ChatGPT sign-in identifies contributors. The site records account identifiers to establish ownership and check permissions; sign-in email addresses and account identifiers are not public. Approved map names, public author names, descriptions, versions, mod lists, covers, map share codes, ZIP packages, and checksums are available to players authorized to access this site.",
-  "管理员能查看待审核内容、反馈和审核记录。作者撤回后会停止站内公开展示与下载；文件及记录仍保留，便于审核追溯。需要永久删除，请联系网站作者处理。请勿在 ZIP 或说明中放入密码、账号凭证、个人联系方式或他人隐私。":
-    "Administrators can view pending submissions, feedback, and review records. Withdrawal stops public display and downloads on this site, but files and records are retained for review traceability. Contact the site author to request permanent deletion. Do not include passwords, account credentials, personal contact details, or other people's private information in ZIP files or descriptions.",
+  "管理员能查看待审核内容、反馈和审核记录。作者撤回后会停止站内公开展示与下载；文件及记录仍保留，便于审核追溯。需要永久删除时，作者可在“我的创作”中自行彻底删除地图或 Mod，也可在账号页删除整个账号。请勿在 ZIP 或说明中放入密码、账号凭证、个人联系方式或他人隐私。":
+    "Administrators can view pending submissions, feedback, and review records. Withdrawal stops public display and downloads on this site, but files and records are retained for review traceability. For permanent deletion, authors can delete a map or mod themselves from “My creations”, or delete the whole account from the account page. Do not include passwords, account credentials, personal contact details, or other people's private information in ZIP files or descriptions.",
   "05 / 投稿限制与说明": "05 / Submission limits and notices",
   "每位玩家最多同时保留 3 份待审核稿件，24 小时内最多投稿 5 次，以减少重复提交与滥用。发生网络问题时优先使用当前表单重试，不要反复新开页面。":
     "Each player may have up to 3 pending submissions at once and submit up to 5 times in 24 hours to reduce duplicate submissions and abuse. If a network problem occurs, retry using the current form instead of repeatedly opening new pages.",
@@ -736,6 +736,30 @@ export const english: Record<string, string> = {
   "稿件将停止公开展示和下载，保留原文件与审核记录。若要恢复，编辑保存后重新提交审核。":
     "The submission will no longer be displayed or downloadable publicly. The original files and review records will be retained. To restore it, edit and save it, then resubmit for review.",
   确认撤回: "Confirm withdrawal",
+  永久删除: "Delete permanently",
+  "永久删除「": "Permanently delete “",
+  确认删除: "Confirm deletion",
+  "该操作不可撤销：地图档案、ZIP 包、封面与审核记录将被彻底删除，发布页面立即消失。":
+    "This cannot be undone: the map record, ZIP file, cover image and review history are permanently removed, and the public page disappears immediately.",
+  "该操作不可撤销：Mod 资料、上传文件与审核记录将被彻底删除，公开页面立即消失。":
+    "This cannot be undone: the mod record, uploaded file and review history are permanently removed, and the public page disappears immediately.",
+  永久删除此地图: "Delete this map permanently",
+  "永久删除此 Mod": "Delete this mod permanently",
+  "删除后无法恢复：档案、文件、封面与审核记录一并清除。":
+    "Deletion cannot be undone: the record, its files, cover image and review history are all removed.",
+  "删除后无法恢复：档案、文件与审核记录一并清除。":
+    "Deletion cannot be undone: the mod record, its file and review history are removed.",
+  "稿件不存在或已删除。": "The submission does not exist or has already been deleted.",
+  "只有地图作者或管理员可以删除此稿件。": "Only the map's author or an administrator can delete it.",
+  "操作过于频繁，请稍后再试。": "Too many attempts, please try again later.",
+  "永久删除所有待审核与未发布的地图、Mod 及其文件（含 ZIP、封面）。":
+    "Permanently delete every pending or unpublished map and mod, including their files (ZIP, cover).",
+  "已发布的作品继续公开展示，作者名保持不变，但不再带“已验证创作者”标记。":
+    "Keep published works publicly visible with their author name unchanged, but without the “verified creator” badge.",
+  "清除全部登录会话，所有设备立即退出登录。":
+    "Clear every sign-in session and sign out all devices immediately.",
+  "删除头像与账号记录（邮箱不再保留）。":
+    "Delete your avatar and the account record (the email address is not retained).",
   "网络错误，请重试。": "Network error, please try again.",
   社区战场: "Community battlefields",
   搜索已加载的玩家地图: "Search loaded player maps",

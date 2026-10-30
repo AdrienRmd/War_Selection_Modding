@@ -12,6 +12,14 @@ import {
 } from "@/lib/atlas-server";
 import { ownMaps } from "@/lib/account-server";
 import { mapCodeLooksPlausible, mapTestStates } from "@/lib/map-code";
+import {
+  creationDeleteAttemptKey,
+  deletionRateLimited,
+  deletionRetryAfterSec,
+  CREATION_DELETE_BUDGET,
+  mapObjectKeys,
+  purgeObjects,
+} from "@/lib/deletion";
 export const dynamic = "force-dynamic";
 const uuid = z.string().uuid();
 const fields = z.object({
@@ -401,6 +409,46 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       if (r.meta.changes !== 1) throw new HttpError(404, "稿件不存在或已撤回。");
       return json({ status: "withdrawn" });
     }
+    if (action === "submissions" && path[1] && req.method === "DELETE") {
+      // SB4 — suppression définitive d'une de SES cartes (D4 ADOPTÉE : purge
+      // de la ligne + reviews associées + objets R2). La propriété est
+      // vérifiée côté serveur depuis la session : anonyme → 401 (garde
+      // commune), tiers → 403 (IDOR impossible), admin autorisé (modération,
+      // même capacité que la file /admin). La révision attendue protège des
+      // suppressions concurrentes (409, jamais d'écrasement aveugle).
+      const retry = await deletionRetryAfterSec(
+        creationDeleteAttemptKey(user.userId),
+        CREATION_DELETE_BUDGET,
+      );
+      if (retry)
+        return deletionRateLimited(retry, "操作过于频繁，请稍后再试。");
+      const body = z
+        .object({ revision: z.number().int().min(0) })
+        .parse(JSON.parse(new TextDecoder().decode(await limitedBody(req, 2048))));
+      const m = await DB.prepare("SELECT * FROM maps WHERE id = ?")
+        .bind(path[1])
+        .first<MapRecord>();
+      if (!m) throw new HttpError(404, "稿件不存在或已删除。");
+      if (m.owner_id !== user.userId && !admin)
+        throw new HttpError(403, "只有地图作者或管理员可以删除此稿件。");
+      const keys = mapObjectKeys(m);
+      // Ordre FK : reviews avant la ligne carte. Garde-fou transactionnel :
+      // la purge des reviews n’a lieu QUE si la révision courante correspond —
+      // un lot D1 commite les changes=0 (pas d’erreur), donc sans ce garde une
+      // révision périmée purgerait l’historique en conservant la carte. Ici,
+      // révision différente → ZÉRO écriture dans tout le lot.
+      const r = await DB.batch([
+        DB.prepare(
+          "DELETE FROM reviews WHERE map_id = ? AND (SELECT revision FROM maps WHERE id = ?) = ?",
+        ).bind(m.id, m.id, body.revision),
+        DB.prepare("DELETE FROM maps WHERE id = ? AND revision = ?").bind(m.id, body.revision),
+      ]);
+      if (r[1].meta.changes !== 1)
+        throw new HttpError(409, "稿件已被其他操作更新，请刷新后重试。");
+      // Purge R2 post-commit : uniquement les clés plus référencées nulle part.
+      const purged = await purgeObjects(keys);
+      return json({ id: m.id, deleted: true, purged_objects: purged.length });
+    }
     throw new HttpError(404, "接口不存在。");
   } catch (e) {
     if (e instanceof HttpError) return json({ error: e.message }, e.status);
@@ -433,4 +481,4 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
     await discardUnusedBody(req);
   }
 }
-export { route as GET, route as POST, route as PATCH };
+export { route as GET, route as POST, route as PATCH, route as DELETE };

@@ -5,6 +5,7 @@ import { Bilingual, useBilingual, useI18n } from "@/components/i18n";
 import type { ModEntry } from "@/lib/mod-types";
 import { publicationLabels } from "@/lib/mod-types";
 import { UsageBadge } from "@/components/mod-library";
+import { DeleteCreation } from "@/components/delete-creation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
@@ -288,6 +289,22 @@ function ModReview({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+        </div>
+      )}
+      {/*
+        SB4 — suppression définitive, tout statut confondu (l'auteur peut
+        nettoyer ses brouillons retirés comme ses soumissions en cours).
+        Entrées éditoriales exclues : contenu du site, jamais supprimables ici.
+      */}
+      {m.origin === "community" && (
+        <div className="mod-manage-actions">
+          <DeleteCreation
+            kind="mod"
+            id={m.id}
+            title={m.title}
+            revision={m.revision}
+            onDone={refresh}
+          />
         </div>
       )}
       {busy && <p role="status">{l("保存中…", "Saving…")}</p>}

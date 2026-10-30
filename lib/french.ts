@@ -580,8 +580,8 @@ export const french: Record<string, string> = {
   "04 / 数据与隐私": "04 / Données et confidentialité",
   "ChatGPT 登录用于识别投稿者。站内记录账号标识用于归属与权限校验，不公开登录邮箱或账号标识。通过审核的地图名称、公开作者名、说明、版本、Mod 列表、封面、地图分享码、ZIP 包和校验值会展示给有权访问本站的玩家。":
     "La connexion ChatGPT identifie les contributeurs. Le site enregistre les identifiants de compte pour établir la propriété et vérifier les permissions ; e-mails de connexion et identifiants de compte ne sont pas publics. Les noms des cartes approuvées, les noms d'auteurs publics, les descriptions, les versions, les listes de mods, les couvertures, les codes de partage des cartes, les paquets ZIP et les sommes de contrôle sont accessibles aux joueurs autorisés à accéder à ce site.",
-  "管理员能查看待审核内容、反馈和审核记录。作者撤回后会停止站内公开展示与下载；文件及记录仍保留，便于审核追溯。需要永久删除，请联系网站作者处理。请勿在 ZIP 或说明中放入密码、账号凭证、个人联系方式或他人隐私。":
-    "Les administrateurs peuvent consulter les soumissions en attente, les retours et les relevés de modération. Le retrait arrête l'affichage public et les téléchargements sur ce site, mais fichiers et relevés sont conservés pour la traçabilité de la modération. Contactez l'auteur du site pour demander une suppression définitive. N'insérez pas de mots de passe, d'identifiants de compte, de coordonnées personnelles ni de données privées d'autrui dans les ZIP ou les descriptions.",
+  "管理员能查看待审核内容、反馈和审核记录。作者撤回后会停止站内公开展示与下载；文件及记录仍保留，便于审核追溯。需要永久删除时，作者可在“我的创作”中自行彻底删除地图或 Mod，也可在账号页删除整个账号。请勿在 ZIP 或说明中放入密码、账号凭证、个人联系方式或他人隐私。":
+    "Les administrateurs peuvent consulter les soumissions en attente, les retours et les relevés de modération. Le retrait arrête l'affichage public et les téléchargements sur ce site, mais fichiers et relevés sont conservés pour la traçabilité de la modération. Pour une suppression définitive, l'auteur peut supprimer lui-même une carte ou un mod depuis « Mes créations », ou supprimer l'ensemble du compte depuis la page du compte. N'insérez pas de mots de passe, d'identifiants de compte, de coordonnées personnelles ni de données privées d'autrui dans les ZIP ou les descriptions.",
   "05 / 投稿限制与说明": "05 / Limites de soumission et précisions",
   "每位玩家最多同时保留 3 份待审核稿件，24 小时内最多投稿 5 次，以减少重复提交与滥用。发生网络问题时优先使用当前表单重试，不要反复新开页面。":
     "Chaque joueur peut garder au maximum 3 soumissions en attente simultanément et soumettre jusqu'à 5 fois en 24 heures, afin de limiter les doublons et les abus. En cas de problème réseau, réessayez avec le formulaire en cours plutôt que d'ouvrir de nouvelles pages.",
@@ -759,6 +759,30 @@ export const french: Record<string, string> = {
   "稿件将停止公开展示和下载，保留原文件与审核记录。若要恢复，编辑保存后重新提交审核。":
     "La soumission ne sera plus affichée ni téléchargeable publiquement. Les fichiers d'origine et les relevés de modération sont conservés. Pour la rétablir, modifiez-la, enregistrez-la, puis soumettez-la à nouveau à la modération.",
   确认撤回: "Confirmer le retrait",
+  永久删除: "Supprimer définitivement",
+  "永久删除「": "Supprimer définitivement « ",
+  确认删除: "Confirmer la suppression",
+  "该操作不可撤销：地图档案、ZIP 包、封面与审核记录将被彻底删除，发布页面立即消失。":
+    "Action irréversible : la fiche de la carte, le fichier ZIP, la couverture et l'historique de modération sont définitivement supprimés, et la page publique disparaît immédiatement.",
+  "该操作不可撤销：Mod 资料、上传文件与审核记录将被彻底删除，公开页面立即消失。":
+    "Action irréversible : la fiche du mod, le fichier téléversé et l'historique de modération sont définitivement supprimés, et la page publique disparaît immédiatement.",
+  永久删除此地图: "Supprimer définitivement cette carte",
+  "永久删除此 Mod": "Supprimer définitivement ce mod",
+  "删除后无法恢复：档案、文件、封面与审核记录一并清除。":
+    "La suppression est irréversible : la fiche, ses fichiers, la couverture et l'historique de modération sont effacés.",
+  "删除后无法恢复：档案、文件与审核记录一并清除。":
+    "La suppression est irréversible : la fiche, ses fichiers et l'historique de modération sont effacés.",
+  "稿件不存在或已删除。": "La soumission n'existe pas ou a déjà été supprimée.",
+  "只有地图作者或管理员可以删除此稿件。": "Seul l'auteur de la carte ou un administrateur peut la supprimer.",
+  "操作过于频繁，请稍后再试。": "Trop de tentatives, réessayez plus tard.",
+  "永久删除所有待审核与未发布的地图、Mod 及其文件（含 ZIP、封面）。":
+    "Supprimera définitivement toutes les cartes et mods en attente ou non publiés, fichiers compris (ZIP, couverture).",
+  "已发布的作品继续公开展示，作者名保持不变，但不再带“已验证创作者”标记。":
+    "Conservera les œuvres publiées, visibles avec leur nom d'auteur inchangé, mais sans le badge « créateur vérifié ».",
+  "清除全部登录会话，所有设备立即退出登录。":
+    "Effacera toutes les sessions de connexion et déconnectera tous les appareils immédiatement.",
+  "删除头像与账号记录（邮箱不再保留）。":
+    "Supprimera l'avatar et la ligne de compte (l'adresse e-mail n'est pas conservée).",
   "网络错误，请重试。": "Erreur réseau, réessaie.",
   社区战场: "Champs de bataille communautaires",
   搜索已加载的玩家地图: "Rechercher parmi les cartes de joueurs chargées",

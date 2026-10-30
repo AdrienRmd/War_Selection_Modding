@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { EditableMap } from "@/lib/map-content";
+import { DeleteCreation } from "@/components/delete-creation";
 export function MapEditor({ initial }: { initial: EditableMap }) {
   const { t } = useI18n();
   const [data, setData] = useState(initial),
@@ -74,7 +75,8 @@ export function MapEditor({ initial }: { initial: EditableMap }) {
     }
   }
   return (
-    <form className="map-editor" onSubmit={save}>
+    <>
+      <form className="map-editor" onSubmit={save}>
       <div className="editor-banner">
         <span>
           <Save size={18} />
@@ -359,6 +361,29 @@ export function MapEditor({ initial }: { initial: EditableMap }) {
           </section>
         </aside>
       </div>
-    </form>
+      </form>
+      {/* SB4 — zone danger : cartes communautaires uniquement (la sélection
+          éditoriale « stalingrad » est du contenu du site, jamais supprimable
+          par ce biais ; le serveur refuserait de toute façon un autre id). */}
+      {!featured && (
+        <section className="panel deletion-zone">
+          <h3>
+            <T text="永久删除此地图" />
+          </h3>
+          <p className="meta muted">
+            <T text="删除后无法恢复：档案、文件、封面与审核记录一并清除。" />
+          </p>
+          <div className="review-buttons">
+            <DeleteCreation
+              kind="map"
+              id={data.id}
+              title={data.title}
+              revision={data.revision}
+              onDone={() => window.location.assign("/submissions")}
+            />
+          </div>
+        </section>
+      )}
+    </>
   );
 }

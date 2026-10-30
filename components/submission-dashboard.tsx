@@ -26,6 +26,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { Status } from "@/components/dossier";
+import { DeleteCreation } from "@/components/delete-creation";
 import type { PublicMap } from "@/components/community-maps";
 const checklist = [
   ["ownership", "已核对分享授权与署名"],
@@ -406,6 +407,20 @@ function SubmissionCard({
           </AlertDialog>
         </div>
       )}
+      {/*
+        SB4 — suppression définitive : visible pour l'auteur ET pour l'admin
+        (même capacité de modération que la file /admin). Le serveur revérifie
+        la propriété de toute façon (tiers → 403).
+      */}
+      <div className="review-buttons">
+        <DeleteCreation
+          kind="map"
+          id={m.id}
+          title={m.title}
+          revision={m.revision ?? 0}
+          onDone={refresh}
+        />
+      </div>
       {busy && (
         <p role="status">
           <T text={"正在保存…"} />

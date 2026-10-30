@@ -23,6 +23,7 @@ import {
   type ModBody,
   type ModEntry,
 } from "@/lib/mod-types";
+import { DeleteCreation } from "@/components/delete-creation";
 
 export function ModEditor({ initial, admin = false }: { initial?: ModEntry; admin?: boolean }) {
   const l = useBilingual();
@@ -131,7 +132,8 @@ export function ModEditor({ initial, admin = false }: { initial?: ModEntry; admi
   }
 
   return (
-    <form className="map-editor" onSubmit={save}>
+    <>
+      <form className="map-editor" onSubmit={save}>
       <div className="editor-banner">
         <span>
           <Save size={18} />
@@ -571,6 +573,30 @@ export function ModEditor({ initial, admin = false }: { initial?: ModEntry; admi
           </section>
         </aside>
       </div>
-    </form>
+      </form>
+      {/* SB4 — zone danger : soumissions communautaires uniquement. Les
+          entrées éditoriales (origin != "community") sont du contenu du
+          site — le serveur les refuse de toute façon. */}
+      {initial && initial.origin === "community" && (
+        <section className="panel deletion-zone">
+          <h3>{l("永久删除此 Mod", "Delete this mod permanently")}</h3>
+          <p className="meta muted">
+            {l(
+              "删除后无法恢复：档案、文件与审核记录一并清除。",
+              "Deletion cannot be undone: the record, its file and review history are removed.",
+            )}
+          </p>
+          <div className="review-buttons">
+            <DeleteCreation
+              kind="mod"
+              id={initial.id}
+              title={data.title}
+              revision={initial.revision}
+              onDone={() => window.location.assign("/submissions")}
+            />
+          </div>
+        </section>
+      )}
+    </>
   );
 }

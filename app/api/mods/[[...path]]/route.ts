@@ -2,6 +2,14 @@ import { z } from "zod";
 import { bindings, identity, HttpError, sameOrigin, limitedBody, json } from "@/lib/atlas-server";
 import { rawMod, listMods, publicMod, seedRecord } from "@/lib/mod-server";
 import { usageStates, kindLabels, type ModRecord } from "@/lib/mod-types";
+import {
+  creationDeleteAttemptKey,
+  deletionRateLimited,
+  deletionRetryAfterSec,
+  CREATION_DELETE_BUDGET,
+  modObjectKeys,
+  purgeObjects,
+} from "@/lib/deletion";
 export const dynamic = "force-dynamic";
 const fields = z.object({
   title: z.string().trim().min(3).max(100),
@@ -151,6 +159,59 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       if (r.meta.changes !== 1)
         throw new HttpError(409, "Updated elsewhere; reload. / 记录已更新，请刷新。");
       return json({ status: "withdrawn" });
+    }
+    if (action === "submissions" && path[1] && req.method === "DELETE") {
+      // SB4 — suppression définitive d'un de SES mods communautaires (D4 :
+      // purge ligne + mod_reviews + objet R2). Propriété vérifiée serveur
+      // depuis la session : tiers → 403 (IDOR impossible), admin autorisé
+      // (modération). Les entrées éditoriales (origin != "community", y
+      // compris les seeds hors base) sont du contenu du site : jamais
+      // supprimables ici — retrait/status via l'édition, comme ailleurs.
+      const retry = await deletionRetryAfterSec(
+        creationDeleteAttemptKey(user.userId),
+        CREATION_DELETE_BUDGET,
+      );
+      if (retry)
+        return deletionRateLimited(retry, "Too many deletions; retry later. / 操作过于频繁，请稍后再试。");
+      const b = z
+        .object({ revision: z.number().int().min(0) })
+        .parse(JSON.parse(new TextDecoder().decode(await limitedBody(req, 2048))));
+      const row = await DB.prepare("SELECT * FROM community_mods WHERE id = ?")
+        .bind(path[1])
+        .first<ModRecord>();
+      if (!row && seedRecord(path[1]))
+        throw new HttpError(
+          400,
+          "Curated entries are site content; withdraw or pause them instead. / 收录资料为站内内容，请使用撤回或状态标记。",
+        );
+      if (!row) throw new HttpError(404, "Submission unavailable. / 稿件不存在或已删除。");
+      if (row.origin !== "community")
+        throw new HttpError(
+          400,
+          "Curated entries are site content; withdraw or pause them instead. / 收录资料为站内内容，请使用撤回或状态标记。",
+        );
+      if (row.owner_id !== user.userId && !admin)
+        throw new HttpError(
+          403,
+          "Only the author or an administrator can delete this entry. / 只有作者或管理员可以删除此稿件。",
+        );
+      const keys = modObjectKeys(row);
+      // Ordre FK : mod_reviews avant la ligne mod. Même garde-fou
+      // transactionnel que les cartes (cf. /api/atlas DELETE) : révision
+      // périmée → zéro écriture dans tout le lot, jamais d'historique purgé
+      // pour une ligne conservée.
+      const r = await DB.batch([
+        DB.prepare(
+          "DELETE FROM mod_reviews WHERE mod_id = ? AND (SELECT revision FROM community_mods WHERE id = ?) = ?",
+        ).bind(row.id, row.id, b.revision),
+        DB.prepare(
+          "DELETE FROM community_mods WHERE id = ? AND revision = ? AND origin = 'community'",
+        ).bind(row.id, b.revision),
+      ]);
+      if (r[1].meta.changes !== 1)
+        throw new HttpError(409, "Updated elsewhere; reload. / 记录已更新，请刷新。");
+      await purgeObjects(keys);
+      return json({ id: row.id, deleted: true });
     }
     const creating = !action && req.method === "POST";
     if (!creating && !(action && path.length === 1 && req.method === "PATCH"))
@@ -378,4 +439,4 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
     await discardUnusedBody(req);
   }
 }
-export { route as GET, route as POST, route as PATCH };
+export { route as GET, route as POST, route as PATCH, route as DELETE };

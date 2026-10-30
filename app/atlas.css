@@ -297,6 +297,17 @@ button.account-link:disabled {
 .panel .caption {
   font-size: 14px;
 }
+/* SB4 — zone de suppression définitive : même panel, accent discret sur le
+   titre pour signaler l'irréversible sans crier (mobile : wrap forcé). */
+.panel.deletion-zone {
+  border-color: color-mix(in srgb, var(--destructive) 45%, var(--border));
+}
+.panel.deletion-zone h3 {
+  color: var(--destructive);
+}
+.panel.deletion-zone .review-buttons {
+  overflow-wrap: break-word;
+}
 .tactical-map {
   width: 100%;
   height: auto;
