@@ -8,9 +8,9 @@ import {
   countUnits,
   factionLabel,
   formatPublishedDate,
+  localizedUnitName,
   searchUnits,
   shortTag,
-  unitDisplayName,
   unitFicheUrl,
   unitImageUrl,
   type DatasetMeta,
@@ -49,6 +49,7 @@ const numberText = (value: number | undefined): string =>
 export function UnitsBrowser({ index }: { index: UnitsIndex }) {
   const { locale, t } = useI18n();
   const l = useBilingual();
+  const unitName = (unit: UnitIndexEntry) => localizedUnitName(unit, locale);
   const [query, setQuery] = useState("");
   const [faction, setFaction] = useState("all");
   const [selected, setSelected] = useState<UnitIndexEntry | null>(null);
@@ -167,8 +168,8 @@ export function UnitsBrowser({ index }: { index: UnitsIndex }) {
 
       <p className="caption units-note">
         {l(
-          "名称为游戏导出的原始键，尚未本地化；图片与数值来自公开数据集。",
-          "Names are raw game export keys, not yet localized; images and stats come from the public dataset.",
+          "名称来自游戏官方本地化（中文 / English / Français），个别缺失时回退为原始键；图片与数值来自公开数据集。",
+          "Names come from the official game localization (Chinese / English / French) with a fallback to raw export keys; images and stats come from the public dataset.",
         )}
       </p>
 
@@ -178,19 +179,19 @@ export function UnitsBrowser({ index }: { index: UnitsIndex }) {
         <ul className="units-grid">
           {filtered.map((unit) => (
             <li key={unit.id} className="units-card">
-              <button type="button" onClick={() => setSelected(unit)} aria-label={unitDisplayName(unit)}>
+              <button type="button" onClick={() => setSelected(unit)} aria-label={unitName(unit)}>
                 <span className="units-thumb">
                   {unit.image ? (
                     <img
                       src={unitImageUrl(unit.image)}
-                      alt={unitDisplayName(unit)}
+                      alt={unitName(unit)}
                       loading="lazy"
                       width={96}
                       height={96}
                     />
                   ) : null}
                 </span>
-                <span className="units-card-name">{unitDisplayName(unit)}</span>
+                <span className="units-card-name">{unitName(unit)}</span>
                 <code className="units-card-id">{unit.id}</code>
               </button>
             </li>
@@ -204,7 +205,7 @@ export function UnitsBrowser({ index }: { index: UnitsIndex }) {
             className="units-detail"
             role="dialog"
             aria-modal="true"
-            aria-label={unitDisplayName(selected)}
+            aria-label={unitName(selected)}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="units-detail-head">
@@ -212,13 +213,13 @@ export function UnitsBrowser({ index }: { index: UnitsIndex }) {
                 <img
                   className="units-detail-image"
                   src={unitImageUrl(selected.image)}
-                  alt={unitDisplayName(selected)}
+                  alt={unitName(selected)}
                   width={96}
                   height={96}
                 />
               ) : null}
               <div className="units-detail-title">
-                <h3>{unitDisplayName(selected)}</h3>
+                <h3>{unitName(selected)}</h3>
                 <code>{selected.id}</code>
               </div>
               <button type="button" className="units-close" onClick={() => setSelected(null)}>

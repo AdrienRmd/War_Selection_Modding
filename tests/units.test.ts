@@ -7,6 +7,7 @@ import {
   countUnits,
   factionLabels,
   formatPublishedDate,
+  localizedUnitName,
   searchUnits,
   shortTag,
   unitDisplayName,
@@ -111,7 +112,6 @@ describe("logique de comptage et de recherche (échantillon mocké)", () => {
     expect(shortTag("<*unitTag#4>")).toBe("unitTag 4");
     expect(shortTag("genericUnitTag")).toBe("genericUnitTag");
   });
-
   it("localise la date de publication du badge pour zh / en / fr", () => {
     const iso = "2026-10-30T12:00:00.927Z";
     const zh = formatPublishedDate(iso, "zh");
@@ -122,6 +122,91 @@ describe("logique de comptage et de recherche (échantillon mocké)", () => {
     expect(fr).toMatch(/octobre/);
     expect(new Set([zh, en, fr]).size).toBe(3);
     expect(formatPublishedDate("not-a-date", "fr")).toBe("not-a-date");
+  });
+});
+
+describe("noms localisés des unités (localization/<lang>.json)", () => {
+  const dragoon: UnitIndexEntry = {
+    id: "3/ae/dragoon",
+    faction: "3",
+    group: "ae",
+    slug: "dragoon",
+    name: "<*unitNameWarSelection/3/ae/dragoon>",
+    image: "",
+    names: { en: "Dragoon", fr: "Dragon", cn: "龙骑兵", tw: "龍騎兵" },
+  };
+  const onlyTw: UnitIndexEntry = {
+    id: "5/x/legacy",
+    faction: "5",
+    group: "x",
+    slug: "legacy",
+    name: "",
+    image: "",
+    names: { tw: "繁體名" },
+  };
+  const onlyEn: UnitIndexEntry = {
+    id: "5/x/mixed",
+    faction: "5",
+    group: "x",
+    slug: "mixed",
+    name: "",
+    image: "",
+    names: { en: "EN name" },
+  };
+  const noNames: UnitIndexEntry = {
+    id: "horde/orcs/grunt",
+    faction: "horde",
+    group: "orcs",
+    slug: "grunt",
+    name: "",
+    image: "",
+  };
+
+  it("résout fr→fr, en→en, zh→cn puis tw, repli en puis nom dérivé", () => {
+    expect(localizedUnitName(dragoon, "fr")).toBe("Dragon");
+    expect(localizedUnitName(dragoon, "en")).toBe("Dragoon");
+    expect(localizedUnitName(dragoon, "zh")).toBe("龙骑兵");
+    // Repli chinois traditionnel quand le simplifié manque.
+    expect(localizedUnitName(onlyTw, "zh")).toBe("繁體名");
+    // Locale sans traduction → repli en, sinon nom dérivé du chemin.
+    expect(localizedUnitName(onlyEn, "fr")).toBe("EN name");
+    expect(localizedUnitName(onlyTw, "fr")).toBe("legacy · x");
+    expect(localizedUnitName(noNames, "fr")).toBe("grunt · orcs");
+  });
+
+  it("recherche sur les noms localisés des trois langues", () => {
+    expect(searchUnits([dragoon], "dragon").map((u) => u.id)).toEqual(["3/ae/dragoon"]);
+    expect(searchUnits([dragoon], "龙骑兵").map((u) => u.id)).toEqual(["3/ae/dragoon"]);
+    expect(searchUnits([dragoon], "龍騎兵").map((u) => u.id)).toEqual(["3/ae/dragoon"]);
+    expect(searchUnits([dragoon], "dragoon").map((u) => u.id)).toEqual(["3/ae/dragoon"]);
+    expect(searchUnits([dragoon], "baliste")).toEqual([]);
+  });
+
+  it("embarque au moins un nom localisé pour chaque unité de l'index", () => {
+    const unnamed = unitsIndex.units.filter(
+      (u) => !u.names || Object.values(u.names).every((v) => !v),
+    );
+    expect(unnamed, `Unités sans nom localisé : ${unnamed.slice(0, 5).map((u) => u.id).join(", ")}`)
+      .toEqual([]);
+  });
+
+  it("égal le localization/<lang>.json du dataset servi sur un échantillon ≥ 20", () => {
+    const locDir = join(SERVED_DIR, "content/localization");
+    if (!existsSync(join(locDir, "fr.json"))) return; // hors VPS : garde-fous ci-dessus
+    const read = (lang: string) => JSON.parse(readFileSync(join(locDir, `${lang}.json`), "utf8"));
+    const en = read("en");
+    const fr = read("fr");
+    const cn = read("cn");
+    const sample = unitsIndex.units.filter((_, i) => i % 19 === 0); // 453/19 ≈ 24 unités
+    expect(sample.length).toBeGreaterThanOrEqual(20);
+    const mismatches: string[] = [];
+    for (const unit of sample) {
+      const key = `<*unitNameWarSelection/${unit.id}>`;
+      if (unit.names?.fr !== fr[key]) mismatches.push(`${unit.id}:fr`);
+      if (unit.names?.en !== en[key]) mismatches.push(`${unit.id}:en`);
+      if (unit.names?.cn !== cn[key]) mismatches.push(`${unit.id}:cn`);
+    }
+    expect(mismatches, `Noms divergents du dataset : ${mismatches.join(", ")}`).toEqual([]);
   });
 });
 
@@ -140,6 +225,7 @@ describe("couverture i18n des libellés /units", () => {
     "辅助单位",
     "部落单位",
     "名称为游戏导出的原始键，尚未本地化；图片与数值来自公开数据集。",
+    "名称来自游戏官方本地化（中文 / English / Français），个别缺失时回退为原始键；图片与数值来自公开数据集。",
     "血量",
     "体型",
     "恢复速度",

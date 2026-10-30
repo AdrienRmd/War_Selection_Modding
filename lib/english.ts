@@ -1932,6 +1932,8 @@ export const english: Record<string, string> = {
   部落单位: "Horde units",
   "名称为游戏导出的原始键，尚未本地化；图片与数值来自公开数据集。":
     "Names are raw game export keys, not yet localized; images and stats come from the public dataset.",
+  "名称来自游戏官方本地化（中文 / English / Français），个别缺失时回退为原始键；图片与数值来自公开数据集。":
+    "Names come from the official game localization (Chinese / English / French) with a fallback to raw export keys; images and stats come from the public dataset.",
   体型: "Size",
   恢复速度: "Regeneration",
   威胁: "Threat",

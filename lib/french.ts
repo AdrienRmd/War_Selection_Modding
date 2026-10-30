@@ -1966,6 +1966,8 @@ export const french: Record<string, string> = {
   部落单位: "Unités de la horde",
   "名称为游戏导出的原始键，尚未本地化；图片与数值来自公开数据集。":
     "Les noms sont des clés brutes d’export du jeu, pas encore localisées ; images et valeurs viennent du jeu de données public.",
+  "名称来自游戏官方本地化（中文 / English / Français），个别缺失时回退为原始键；图片与数值来自公开数据集。":
+    "Les noms proviennent de la localisation officielle du jeu (chinois / anglais / français) avec repli sur les clés brutes en cas d’absence ; images et valeurs issues du jeu de données public.",
   体型: "Taille",
   恢复速度: "Régénération",
   威胁: "Menace",
