@@ -372,3 +372,15 @@
     align-items: flex-start;
   }
 }
+
+/* Lien vers le mode simple (entrée dédiée /workbench/simple). */
+.workbench-simple-entry {
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+.workbench-simple-entry a {
+  text-decoration: underline dotted;
+}

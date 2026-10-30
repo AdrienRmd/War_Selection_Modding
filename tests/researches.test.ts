@@ -240,7 +240,7 @@ describe("coûts réels des recherches via les bâtiments producteurs (révision
     const published = new Set(unitsIndex.units.map((u) => u.id));
     // Ré-derivation depuis lib/units-index.json : l'index inverse doit
     // refléter EXACTEMENT les works des unités (coût, durée, prérequis).
-    const expected = new Map();
+    const expected = new Map<number, { by: string; [k: string]: unknown }[]>();
     for (const unit of unitsIndex.units) {
       for (const work of unit.s?.works ?? []) {
         if (work.entity?.kind !== "research") continue;

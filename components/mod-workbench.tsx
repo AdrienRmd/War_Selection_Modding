@@ -16,6 +16,7 @@ import {
   Settings2,
 } from "lucide-react";
 import { T, useBilingual, useI18n } from "@/components/i18n";
+import Link from "@/components/site-link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -92,6 +93,7 @@ async function fetchCatalog(signal: AbortSignal): Promise<Catalog> {
 }
 export function ModWorkbench() {
   const { t } = useI18n();
+  const b = useBilingual();
   const [catalog, setCatalog] = useState<Catalog | null>(null),
     [error, setError] = useState(false),
     [retry, setRetry] = useState(0);
@@ -109,6 +111,10 @@ export function ModWorkbench() {
   }, [retry]);
   return (
     <main className="workbench-shell">
+      <div className="workbench-simple-entry">
+        <T text="第一次做 Mod？" />{" "}
+        <Link href="/workbench/simple">{b("使用简易工作台（三步导出）", "Use the simple workbench (3-step export)")}</Link>
+      </div>
       {catalog ? (
         <Workspace catalog={catalog} />
       ) : (

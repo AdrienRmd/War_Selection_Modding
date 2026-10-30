@@ -11,6 +11,7 @@ import "./units.css";
 import "./researches.css";
 import "./modding.css";
 import "./workbench.css";
+import "./simple.css";
 
 export const metadata: Metadata = {
   title: "WS ATLAS · 战场档案",

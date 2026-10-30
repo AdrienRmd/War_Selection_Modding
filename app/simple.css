@@ -1,0 +1,483 @@
+/* Mode simple de l'atelier mods (/workbench/simple) — responsive dès 375 px. */
+
+.simple-shell {
+  display: grid;
+  gap: 1.25rem;
+  padding-bottom: 3rem;
+}
+
+.simple-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.simple-head h1 {
+  margin: 0.2rem 0 0.4rem;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+}
+.simple-lede {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--ink-soft, #b9c2d0);
+}
+.simple-head-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+.simple-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft, #b9c2d0);
+  text-decoration: underline dotted;
+}
+.simple-switch:hover {
+  color: currentColor;
+}
+
+/* Fil des 3 étapes */
+.simple-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.simple-steps li {
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+}
+.simple-steps li.active {
+  border-color: currentColor;
+  box-shadow: inset 0 -2px 0 currentColor;
+}
+.simple-steps li.done {
+  opacity: 0.75;
+}
+.simple-steps button {
+  font: inherit;
+  font-weight: 700;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.simple-steps li:not(.active):not(:has(button:enabled)) button {
+  cursor: default;
+}
+.simple-steps p {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
+  color: var(--ink-soft, #b9c2d0);
+}
+@media (max-width: 640px) {
+  .simple-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Étape 1 — cartes */
+.simple-cards {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 0.6rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+.simple-card {
+  display: grid;
+  gap: 0.25rem;
+  justify-items: center;
+  width: 100%;
+  padding: 0.6rem 0.4rem;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  position: relative;
+}
+.simple-card:hover:not(:disabled) {
+  border-color: currentColor;
+  transform: translateY(-1px);
+}
+.simple-card:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.simple-card img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.simple-card-noimg {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  opacity: 0.5;
+}
+.simple-card-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.simple-card-nation {
+  font-size: 0.72rem;
+  color: var(--ink-soft, #b9c2d0);
+}
+.simple-card-lock {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 0.68rem;
+  padding: 0.05rem 0.3rem;
+  border-radius: 99px;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  color: var(--ink-soft, #b9c2d0);
+}
+
+/* Étape 2 — en-tête unité + champs */
+.simple-unit-head {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.simple-unit-head img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.simple-unit-head h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.simple-unit-head .caption {
+  margin: 0.15rem 0 0;
+}
+.simple-unit-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+.simple-edited-units {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+.simple-edited-units button {
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 99px;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.simple-edited-units button.on {
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.simple-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.9rem 0 0.6rem;
+}
+.simple-groups button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.simple-groups button.on {
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  font-weight: 700;
+}
+.simple-advanced {
+  margin-left: auto;
+  font-size: 0.85rem;
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  color: var(--ink-soft, #b9c2d0);
+}
+
+.simple-fields {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.simple-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 0.4rem 0.9rem;
+  align-items: center;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 10px;
+}
+.simple-field.changed {
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 7%, transparent);
+}
+.simple-field.adv .simple-field-label {
+  opacity: 0.85;
+}
+.simple-field-label strong {
+  font-size: 0.92rem;
+}
+.simple-adv-tag {
+  font-style: normal;
+  font-size: 0.68rem;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 99px;
+  border: 1px dashed color-mix(in srgb, currentColor 35%, transparent);
+  color: var(--ink-soft, #b9c2d0);
+}
+.simple-field-label small {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--ink-soft, #b9c2d0);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+.simple-field-values {
+  display: grid;
+  grid-template-columns: minmax(52px, auto) auto minmax(0, 110px) auto;
+  gap: 0.45rem;
+  align-items: center;
+  justify-items: end;
+}
+.simple-before {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft, #b9c2d0);
+}
+.simple-field-values input {
+  width: 100%;
+  font: inherit;
+  text-align: right;
+  padding: 0.3rem 0.45rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  background: transparent;
+  color: inherit;
+}
+.simple-field-values input.invalid {
+  border-color: #e5484d;
+  box-shadow: 0 0 0 1px #e5484d;
+}
+.simple-reset {
+  display: inline-grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.simple-reset:hover {
+  opacity: 1;
+}
+@media (max-width: 640px) {
+  .simple-field {
+    grid-template-columns: 1fr;
+  }
+  .simple-field-values {
+    justify-items: stretch;
+    grid-template-columns: minmax(52px, auto) auto minmax(0, 1fr) auto;
+  }
+  .simple-unit-actions {
+    margin-left: 0;
+  }
+  .simple-advanced {
+    margin-left: 0;
+  }
+}
+
+/* Étape 3 — résumé + export */
+.simple-name {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.8rem;
+}
+.simple-name input {
+  font: inherit;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  background: transparent;
+  color: inherit;
+  min-width: min(280px, 70vw);
+}
+.simple-summary-wrap {
+  overflow-x: auto;
+}
+.simple-summary {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.simple-summary th,
+.simple-summary td {
+  text-align: left;
+  padding: 0.4rem 0.55rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  vertical-align: top;
+}
+.simple-summary th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft, #b9c2d0);
+}
+.simple-summary td:nth-child(3),
+.simple-summary td:nth-child(4),
+.simple-summary th:nth-child(3),
+.simple-summary th:nth-child(4) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.simple-summary-unit {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+.simple-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.6rem 0;
+}
+.simple-lua {
+  width: 100%;
+  min-height: 220px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  padding: 0.7rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  color: inherit;
+  resize: vertical;
+  white-space: pre;
+}
+.simple-usage {
+  display: flex;
+  gap: 0.45rem;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  color: var(--ink-soft, #b9c2d0);
+  max-width: 70ch;
+}
+.simple-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+/* Import + obsolescence */
+.simple-import {
+  border-top: 1px dashed color-mix(in srgb, currentColor 22%, transparent);
+  padding-top: 1rem;
+  margin-top: 1.5rem;
+}
+.simple-import h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.3rem;
+}
+.simple-import p {
+  margin: 0 0 0.6rem;
+  max-width: 70ch;
+  color: var(--ink-soft, #b9c2d0);
+  font-size: 0.88rem;
+}
+.simple-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.simple-error {
+  color: #e5484d;
+  margin: 0.4rem 0 0;
+}
+.simple-empty {
+  color: var(--ink-soft, #b9c2d0);
+  padding: 0.8rem 0;
+}
+.simple-alert {
+  display: grid;
+  gap: 0.6rem;
+  justify-items: start;
+}
+
+.simple-import-panel {
+  margin-top: 1.2rem;
+  border: 1px solid #d9a13b;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  background: color-mix(in srgb, #d9a13b 8%, transparent);
+}
+.simple-import-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.simple-import-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  flex: 1;
+}
+.simple-close {
+  background: none;
+  border: 0;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.simple-warn {
+  font-size: 0.88rem;
+  margin: 0.6rem 0;
+  max-width: 72ch;
+}
