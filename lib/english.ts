@@ -752,6 +752,9 @@ export const english: Record<string, string> = {
   "稿件不存在或已删除。": "The submission does not exist or has already been deleted.",
   "只有地图作者或管理员可以删除此稿件。": "Only the map's author or an administrator can delete it.",
   "操作过于频繁，请稍后再试。": "Too many attempts, please try again later.",
+  删除账号: "Delete account",
+  "永久删除账号？": "Delete your account permanently?",
+  "此操作不可撤销。删除账号后：": "This action cannot be undone. Deleting your account will:",
   "永久删除所有待审核与未发布的地图、Mod 及其文件（含 ZIP、封面）。":
     "Permanently delete every pending or unpublished map and mod, including their files (ZIP, cover).",
   "已发布的作品继续公开展示，作者名保持不变，但不再带“已验证创作者”标记。":
@@ -760,6 +763,11 @@ export const english: Record<string, string> = {
     "Clear every sign-in session and sign out all devices immediately.",
   "删除头像与账号记录（邮箱不再保留）。":
     "Delete your avatar and the account record (the email address is not retained).",
+  "输入昵称「${name}」以确认：": "Type your nickname “${name}” to confirm:",
+  当前昵称: "Your current nickname",
+  确认永久删除账号: "Permanently delete my account",
+  "确认输入与账号昵称不一致。": "The confirmation text does not match your account nickname.",
+  "删除未完成，请稍后重试。": "Deletion did not complete. Please try again later.",
   "网络错误，请重试。": "Network error, please try again.",
   社区战场: "Community battlefields",
   搜索已加载的玩家地图: "Search loaded player maps",

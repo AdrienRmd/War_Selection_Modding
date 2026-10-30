@@ -9,6 +9,7 @@ import { SignOutAllButton } from "@/components/auth/signout-all-button";
 import { ChangePasswordForm } from "@/components/account/change-password-form";
 import { CreationHub } from "@/components/account/creation-hub";
 import { ProfileForm } from "@/components/account/profile-form";
+import { DeleteAccountForm } from "@/components/account/delete-account-form";
 import { creationCounts } from "@/lib/account-server";
 
 export const dynamic = "force-dynamic";
@@ -78,6 +79,9 @@ export default async function AccountPage() {
               <SignOutAllButton />
             </div>
           </section>
+          {/* SB4 — suppression de compte : en bas de page, zone danger
+              distincte, confirmation par saisie du pseudo. */}
+          <DeleteAccountForm displayName={user.displayName} />
         </div>
       </main>
       <AtlasFooter />

@@ -775,6 +775,9 @@ export const french: Record<string, string> = {
   "稿件不存在或已删除。": "La soumission n'existe pas ou a déjà été supprimée.",
   "只有地图作者或管理员可以删除此稿件。": "Seul l'auteur de la carte ou un administrateur peut la supprimer.",
   "操作过于频繁，请稍后再试。": "Trop de tentatives, réessayez plus tard.",
+  删除账号: "Supprimer le compte",
+  "永久删除账号？": "Supprimer définitivement votre compte ?",
+  "此操作不可撤销。删除账号后：": "Cette action est irréversible. Supprimer votre compte :",
   "永久删除所有待审核与未发布的地图、Mod 及其文件（含 ZIP、封面）。":
     "Supprimera définitivement toutes les cartes et mods en attente ou non publiés, fichiers compris (ZIP, couverture).",
   "已发布的作品继续公开展示，作者名保持不变，但不再带“已验证创作者”标记。":
@@ -783,6 +786,11 @@ export const french: Record<string, string> = {
     "Effacera toutes les sessions de connexion et déconnectera tous les appareils immédiatement.",
   "删除头像与账号记录（邮箱不再保留）。":
     "Supprimera l'avatar et la ligne de compte (l'adresse e-mail n'est pas conservée).",
+  "输入昵称「${name}」以确认：": "Saisissez votre pseudo « ${name} » pour confirmer :",
+  当前昵称: "Votre pseudo actuel",
+  确认永久删除账号: "Supprimer définitivement mon compte",
+  "确认输入与账号昵称不一致。": "Le texte de confirmation ne correspond pas au pseudo du compte.",
+  "删除未完成，请稍后重试。": "La suppression n'a pas abouti. Réessayez plus tard.",
   "网络错误，请重试。": "Erreur réseau, réessaie.",
   社区战场: "Champs de bataille communautaires",
   搜索已加载的玩家地图: "Rechercher parmi les cartes de joueurs chargées",
