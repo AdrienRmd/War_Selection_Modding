@@ -9,6 +9,7 @@ import "./community.css";
 import "./collection.css";
 import "./units.css";
 import "./researches.css";
+import "./modding.css";
 import "./workbench.css";
 
 export const metadata: Metadata = {

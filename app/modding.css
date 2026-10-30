@@ -1,0 +1,257 @@
+/* Page /modding — arbre des paramètres du jeu (dataset wus-data, lecture seule).
+   Réutilise les classes .units-* de app/units.css (section-head, units-toolbar,
+   search-input, units-badge, notice, caption) ; seuls l'arbre, le fil d'Ariane,
+   la recherche de chemins et les états de chargement sont définis ici. */
+.modding-section {
+  margin-top: 28px;
+  min-width: 0;
+}
+.modding-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin: 18px 0 8px;
+  font-size: 13px;
+  min-width: 0;
+}
+.modding-breadcrumb a {
+  color: var(--primary);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.modding-breadcrumb a:hover {
+  text-decoration: underline;
+}
+.modding-crumb-sep {
+  color: var(--muted-foreground);
+}
+.modding-crumb-current {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.modding-tree {
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: var(--radius);
+  margin-top: 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.modding-nodes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.modding-node {
+  min-width: 0;
+}
+.modding-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+  padding: 2px 8px 2px 0;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.modding-node:last-child .modding-row {
+  border-bottom: 0;
+}
+.modding-row-main {
+  display: flex;
+  flex: 1 1 240px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 13px;
+  text-align: left;
+  padding-block: 7px;
+  padding-inline: var(--modding-indent, 8px) 4px;
+  cursor: pointer;
+}
+.modding-row-main:disabled {
+  cursor: default;
+}
+.modding-row-main:not(:disabled):hover {
+  background: var(--muted);
+}
+.modding-row[data-current] .modding-row-main {
+  box-shadow: inset 3px 0 0 var(--primary);
+  background: var(--muted);
+}
+.modding-toggle {
+  flex: none;
+  color: var(--muted-foreground);
+  transition: transform 0.15s;
+}
+.modding-row[data-open] .modding-toggle {
+  transform: rotate(90deg);
+}
+.modding-leaf-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted-foreground);
+  opacity: 0.5;
+  margin-inline: 4px;
+}
+.modding-key {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.modding-type {
+  flex: none;
+  font-size: 11px;
+  line-height: 1.5;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 7px;
+  color: var(--muted-foreground);
+}
+.modding-value {
+  flex: 1 1 120px;
+  min-width: 0;
+  max-width: 46%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.modding-child-count {
+  flex: none;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.modding-lazy-icon {
+  flex: none;
+  color: var(--primary);
+  opacity: 0.75;
+}
+.modding-large-icon {
+  flex: none;
+  color: #b45309; /* ambre : avertissement gros nœud, lisible sur les deux thèmes */
+}
+.modding-copy {
+  flex: none;
+  display: inline-flex;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  padding: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.modding-copy:hover {
+  color: var(--primary);
+}
+.modding-loading,
+.modding-error,
+.modding-empty {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  padding: 8px 12px 8px calc(var(--modding-indent, 8px) + 22px);
+  font-size: 13px;
+  color: var(--muted-foreground);
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.modding-error {
+  color: var(--destructive, #b91c1c);
+}
+.modding-spin {
+  animation: modding-spin 0.9s linear infinite;
+}
+@keyframes modding-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.modding-inline-action {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--primary);
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.modding-inline-action:hover {
+  border-color: var(--primary);
+}
+.modding-more {
+  padding: 6px 12px;
+}
+.modding-more button {
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--primary);
+  font-size: 12px;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.modding-more button:hover {
+  border-color: var(--primary);
+}
+.modding-search-block {
+  margin-top: 10px;
+  min-width: 0;
+}
+.modding-search-meta {
+  margin: 0 0 6px;
+}
+.modding-search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 340px;
+  overflow-y: auto;
+  min-width: 0;
+}
+.modding-search-results a {
+  display: block;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--primary);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.modding-search-results a:hover {
+  border-color: var(--primary);
+}
+.modding-missing code {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 640px) {
+  /* Mobile : la valeur repasse en flux (pas d'ellipse tronquée à 46%). */
+  .modding-value {
+    flex-basis: 100%;
+    max-width: 100%;
+    white-space: normal;
+    word-break: break-all;
+  }
+  .modding-loading,
+  .modding-error,
+  .modding-empty {
+    padding-left: 24px;
+  }
+}
