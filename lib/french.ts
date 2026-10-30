@@ -1425,6 +1425,10 @@ export const french: Record<string, string> = {
   "还没有创作记录，点击“提交地图”开始第一次投稿。":
     "Aucune création pour l'instant — cliquez sur « Soumettre une carte » pour envoyer la première.",
   查看我的创作: "Voir mes créations",
+  "界面语言只能是中文、英文或法语。": "La langue de l'interface doit être le chinois, l'anglais ou le français.",
+  界面语言: "Langue de l'interface",
+  "语言偏好会保存到账号，在新设备上登录后自动应用；当前设备仍以本机选择为准。":
+    "La préférence de langue est enregistrée sur le compte et appliquée à la connexion sur un nouvel appareil ; l'appareil actuel continue de suivre son choix local.",
   个人资料: "Profil",
   账号信息: "Informations du compte",
   上传头像: "Téléverser un avatar",

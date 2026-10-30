@@ -16,9 +16,24 @@ const Context = createContext<{ locale: Locale; setLocale: (l: Locale) => void }
   locale: "zh",
   setLocale: () => {},
 });
+// SB2 : resauvegarde la préférence sur le compte (si session active) après
+// chaque choix explicite — « dernier choix gagne ». Fire-and-forget : un
+// visiteur anonyme reçoit un 401 silencieux, la locale device reste le
+// mécanisme premier. Le même endpoint sert le sélecteur de /account.
+export function saveLocalePreference(locale: Locale) {
+  void fetch("/api/account/profile", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ locale }),
+  }).catch(() => undefined);
+}
 export function LocaleProvider({ initial, children }: { initial: Locale; children: ReactNode }) {
-  const [locale, setLocale] = useState(initial);
+  const [locale, setLocaleState] = useState(initial);
   const pathname = usePathname();
+  const setLocale = useCallback((l: Locale) => {
+    setLocaleState(l);
+    saveLocalePreference(l);
+  }, []);
   useEffect(() => {
     document.documentElement.lang = htmlLang[locale];
     document.cookie = `atlas_locale=${locale}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;

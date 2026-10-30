@@ -116,6 +116,12 @@ export const users = sqliteTable(
     // existantes listent leurs colonnes explicitement.
     avatarKey: text("avatar_key"),
     avatarType: text("avatar_type"),
+    // SB2 (migration 0007, additive) : préférence de langue du compte
+    // (zh/en/fr, NULL = aucun choix). Le cookie device atlas_locale reste
+    // prioritaire sur l'appareil courant ; cette colonne s'applique sur un
+    // nouvel appareil sans cookie. Rollback : revert code (nullable, jamais
+    // lue par les requêtes existantes à colonnes explicites).
+    locale: text("locale"),
     createdAt: integer("created_at").notNull(),
   },
   (t) => [uniqueIndex("idx_users_email_nocase").on(sql`${t.email} COLLATE NOCASE`)],

@@ -31,7 +31,11 @@ export default async function AccountPage() {
         />
         <div className="auth-layout">
           <ProfileForm
-            initial={{ displayName: user.displayName, hasAvatar: !!user.avatarKey }}
+            initial={{
+              displayName: user.displayName,
+              hasAvatar: !!user.avatarKey,
+              locale: user.locale ?? null,
+            }}
           />
           <section className="panel">
             <h2>

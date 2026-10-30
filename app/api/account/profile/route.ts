@@ -9,6 +9,7 @@ import {
   avatarKeyFor,
   displayNameIssue,
   inspectAvatar,
+  normalizeAccountLocale,
   PROFILE_PATCH_BUDGET,
   profileAttemptKey,
 } from "@/lib/profile";
@@ -59,6 +60,7 @@ export async function PATCH(req: Request) {
 
     const contentType = req.headers.get("content-type") || "";
     let displayName: string | null = null;
+    let locale: string | null = null;
     let avatar: File | null = null;
     let removeAvatar = false;
     if (contentType.startsWith("multipart/form-data")) {
@@ -69,6 +71,8 @@ export async function PATCH(req: Request) {
       }).formData();
       const nameValue = form.get("displayName");
       if (typeof nameValue === "string" && nameValue !== "") displayName = nameValue;
+      const localeValue = form.get("locale");
+      if (typeof localeValue === "string" && localeValue !== "") locale = localeValue;
       const candidate = form.get("avatar");
       if (candidate instanceof File && candidate.size > 0) avatar = candidate;
       removeAvatar = form.get("removeAvatar") === REMOVE_AVATAR;
@@ -76,6 +80,7 @@ export async function PATCH(req: Request) {
       const body = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
       if (typeof body.displayName === "string" && body.displayName !== "")
         displayName = body.displayName;
+      if (typeof body.locale === "string" && body.locale !== "") locale = body.locale;
     } else {
       throw new HttpError(400, "请求格式有误。");
     }
@@ -90,6 +95,13 @@ export async function PATCH(req: Request) {
       if (issue) throw new HttpError(400, issue);
       sets.push("display_name = ?");
       args.push(displayName.trim());
+    }
+    if (locale !== null) {
+      // SB2 : préférence de langue du compte (zh/en/fr, additive colonne 0007).
+      const normalized = normalizeAccountLocale(locale);
+      if (!normalized) throw new HttpError(400, "界面语言只能是中文、英文或法语。");
+      sets.push("locale = ?");
+      args.push(normalized);
     }
 
     const { DB, BUCKET } = bindings();
@@ -130,16 +142,22 @@ export async function PATCH(req: Request) {
     }
 
     const row = await DB.prepare(
-      "SELECT display_name, avatar_key, avatar_type FROM users WHERE id = ?",
+      "SELECT display_name, avatar_key, avatar_type, locale FROM users WHERE id = ?",
     )
       .bind(user.userId)
-      .first<{ display_name: string; avatar_key: string | null; avatar_type: string | null }>();
+      .first<{
+        display_name: string;
+        avatar_key: string | null;
+        avatar_type: string | null;
+        locale: string | null;
+      }>();
     return json({
       ok: true,
       user: {
         displayName: row?.display_name ?? user.displayName,
         hasAvatar: !!row?.avatar_key,
         avatarType: row?.avatar_type ?? null,
+        locale: row?.locale ?? null,
       },
     });
   } catch (e) {

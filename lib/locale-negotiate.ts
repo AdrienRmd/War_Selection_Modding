@@ -54,3 +54,26 @@ export function negotiateLocale(header: string | null | undefined): Locale {
   }
   return DEFAULT_LOCALE;
 }
+
+/**
+ * Locale d'affichage d'une requête (SB2) — priorités :
+ *   1. cookie device atlas_locale (choix explicite de CET appareil, posé par
+ *      LocaleProvider dès le premier rendu) : il prime toujours, la
+ *      négociation P3-final n'est pas cassée ;
+ *   2. préférence du compte connecté (si session ET préférence définie) :
+ *      c'est le cas « nouvel appareil » — elle s'applique puis devient le
+ *      cookie de l'appareil au premier rendu client ;
+ *   3. Accept-Language (fr → fr, en → en, zh/cn → zh) ;
+ *   4. fr (défaut D2).
+ */
+export function resolveDisplayLocale(input: {
+  cookie?: string | null;
+  accountLocale?: string | null;
+  acceptLanguage?: string | null;
+}): Locale {
+  if (input.cookie === "en" || input.cookie === "fr" || input.cookie === "zh")
+    return input.cookie;
+  if (input.accountLocale === "en" || input.accountLocale === "fr" || input.accountLocale === "zh")
+    return input.accountLocale;
+  return negotiateLocale(input.acceptLanguage);
+}

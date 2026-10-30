@@ -1686,3 +1686,28 @@ code {
     flex-direction: column;
   }
 }
+
+/* ------------------------------------------- Langue du compte (SB2) */
+.locale-fields {
+  border: 0;
+  padding: 0;
+  margin: 0 0 18px;
+  min-width: 0;
+}
+.locale-fields legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.locale-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  font-size: 14px;
+}
+.locale-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}

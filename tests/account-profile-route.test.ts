@@ -259,3 +259,34 @@ describe("cohérence transactionnelle", () => {
     expect(bucket().deletes).toEqual([AVATAR_KEY]); // …nettoyé par le finally
   });
 });
+
+describe("SB2 — préférence de langue du compte", () => {
+  it("enregistre une locale valide (zh/en/fr)", async () => {
+    log.updatedRow = { display_name: "QA User", avatar_key: null, avatar_type: null, locale: "zh" };
+    const r = await PATCH(jsonReq({ locale: "zh" }));
+    expect(r.status).toBe(200);
+    const update = log.sql.find((s) => s.startsWith("UPDATE users"));
+    expect(update).toContain("locale = ?");
+    expect(log.bindings.some((a) => a[0] === "zh" && a[1] === USER_ID)).toBe(true);
+    const d = (await r.json()) as { user: { locale: string } };
+    expect(d.user.locale).toBe("zh");
+  });
+
+  it("rejette une locale hors zh/en/fr", async () => {
+    const r = await PATCH(jsonReq({ locale: "de" }));
+    expect(r.status).toBe(400);
+    expect(log.sql.filter((s) => s.startsWith("UPDATE users"))).toHaveLength(0);
+  });
+
+  it("accepte la locale en multipart avec le pseudo et l'avatar", async () => {
+    const png = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 0, 73, 69, 78, 68, 1, 2, 3, 4]);
+    const r = await PATCH(
+      multipart({ displayName: "Ada ZH", locale: "zh", avatar: new File([png], "p.png", { type: "image/png" }) }),
+    );
+    expect(r.status).toBe(200);
+    const update = log.sql.find((s) => s.startsWith("UPDATE users"))!;
+    expect(update).toContain("display_name = ?");
+    expect(update).toContain("locale = ?");
+    expect(update).toContain("avatar_key = ?");
+  });
+});

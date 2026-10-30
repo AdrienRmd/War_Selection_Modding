@@ -1396,6 +1396,10 @@ export const english: Record<string, string> = {
   "还没有创作记录，点击“提交地图”开始第一次投稿。":
     "No creations yet — click “Submit a map” to send your first one.",
   查看我的创作: "View my creations",
+  "界面语言只能是中文、英文或法语。": "The interface language must be Chinese, English or French.",
+  界面语言: "Interface language",
+  "语言偏好会保存到账号，在新设备上登录后自动应用；当前设备仍以本机选择为准。":
+    "The language preference is saved to your account and applied when you sign in on a new device; this device keeps following its local choice.",
   个人资料: "Profile",
   账号信息: "Account information",
   上传头像: "Upload an avatar",

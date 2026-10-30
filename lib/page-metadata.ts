@@ -1,20 +1,27 @@
 import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
-import { negotiateLocale } from "./locale-negotiate";
+import { resolveDisplayLocale } from "./locale-negotiate";
 import { localizePageMeta, pageRoutes } from "./page-titles";
 import type { Locale } from "./i18n";
 
 /**
- * Locale d'affichage de la requête (serveur) — priorité D2 :
- * cookie atlas_locale > en-tête Accept-Language (fr → fr, zh-CN/cn → zh,
- * en → en) > fr (langue par défaut du site). Le mécanisme zh-source des
- * clés internes n'est pas concerné : seule la locale d'affichage est
- * négociée.
+ * Locale d'affichage de la requête (serveur) — priorité SB2 :
+ * cookie atlas_locale > préférence du compte connecté (nouvel appareil) >
+ * Accept-Language > fr. Le mécanisme zh-source des clés internes n'est pas
+ * concerné : seule la locale d'affichage est négociée. La session n'est
+ * consultée QUE si le cookie est absent : sur l'appareil courant le cookie
+ * prime et aucune requête D1 supplémentaire n'est faite.
  */
 export async function requestLocale(): Promise<Locale> {
-  const stored = (await cookies()).get("atlas_locale")?.value;
+  const jar = await cookies();
+  const stored = jar.get("atlas_locale")?.value;
   if (stored === "en" || stored === "fr" || stored === "zh") return stored;
-  return negotiateLocale((await headers()).get("accept-language"));
+  if (jar.get("atlas_session")?.value) {
+    const { getSessionUser } = await import("./auth-server");
+    const user = await getSessionUser();
+    if (user?.locale) return resolveDisplayLocale({ accountLocale: user.locale });
+  }
+  return resolveDisplayLocale({ acceptLanguage: (await headers()).get("accept-language") });
 }
 
 /** Metadata Next localisée pour une page du registre lib/page-titles. */
