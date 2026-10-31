@@ -5,6 +5,27 @@ import { translate } from "@/lib/i18n";
 
 const placeholderCount = (text: string) => (text.match(/\$\{[^{}]+\}/g) ?? []).length;
 
+describe("dictionnaire anglais", () => {
+  it("ne laisse aucune valeur traduite en chinois (trous EN)", () => {
+    const holes = Object.entries(english)
+      .filter(([, value]) => /[\u4e00-\u9fff]/.test(value))
+      .map(([key]) => key);
+    expect(holes, `Valeurs EN encore chinoises pour : ${holes.join(" | ")}`).toEqual([]);
+  });
+
+  it("conserve les placeholders ${...} entre clé et valeur anglaise", () => {
+    const broken = Object.entries(english)
+      .filter(([key, value]) => placeholderCount(key) !== placeholderCount(value))
+      .map(([key]) => key);
+    expect(broken, `Placeholders altérés côté valeur EN pour : ${broken.join(" | ")}`).toEqual([]);
+  });
+
+  it("traduit le libellé du sélecteur de langue en EN et FR", () => {
+    expect(translate("Language / 语言", "en")).toBe("Language");
+    expect(translate("Language / 语言", "fr")).toBe("Langue");
+  });
+});
+
 describe("dictionnaire français", () => {
   it("couvre toutes les clés du dictionnaire anglais", () => {
     const missing = Object.keys(english).filter((key) => !(key in french));

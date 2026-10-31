@@ -7,7 +7,8 @@ import { kindLabels, publicationLabels, usageLabels } from "@/lib/mod-types";
 import allowlist from "./ui-strings.allowlist.json";
 
 // Scanner anti-régression : détecte le texte d'interface rendu à l'écran qui
-// reste en anglais sous la locale fr. Sources scannées dans chaque .tsx de
+// reste non traduit, sous la locale fr ET sous la locale en (extension du
+// 31/10/2026 — « trous EN »). Sources scannées dans chaque .tsx de
 // app/** et components/** :
 //  1. les nœuds JSXText (texte littéral entre balises) ;
 //  2. les props littérales chaîne [title, alt, placeholder, aria-label, label,
@@ -19,13 +20,20 @@ import allowlist from "./ui-strings.allowlist.json";
 //  4. les ternaires de locale `cond ? "English" : "中文"` : la branche sans
 //     caractères chinois est fautive si translate(chaîne, "fr") la renvoie
 //     inchangée.
+// Deux contrôles par chaîne :
+//  - locale fr (texte latin) : translate(chaine, "fr") doit la modifier ;
+//  - locale en (texte contenant du chinois — clés zh canoniques des <T>) :
+//    translate(chaine, "en") doit la modifier. Ce second contrôle était
+//    invisible du scanner fr : le repli fr→en masque les clés zh sans
+//    entrée anglaise (le fr affichait l'anglais, l'en affichait du chinois),
+//    et isNoise ignorait tout texte CJK pur.
 // Convention qui en découle : les options rendues depuis un tableau de tuples
 // (par exemple [["all", "全部来源", "All sources"]] + map) échappent à l'analyse
 // (arguments non littéraux pour le scanner) ; il faut donc appeler l(zh, en)
 // directement dans le tableau pour que la chaîne reste visible du scanner.
 // components/ui/** reste volontairement scanné : ses libellés (sr-only,
 // aria-label shadcn) sont visibles à l'écran et ont été branchés sur i18n.
-// Une chaîne est considérée traduite si translate(chaine, "fr") la modifie,
+// Une chaîne est considérée traduite si translate(chaine, locale) la modifie,
 // sauf passage par tests/ui-strings.allowlist.json (noms propres, termes
 // identiques en français et exceptions volontaires, documentées).
 // Complément : les libellés EN des tables de statuts de lib/mod-types.ts
@@ -78,6 +86,7 @@ interface Occurrence {
 }
 
 const offenders = new Map<string, Occurrence[]>();
+const enOffenders = new Map<string, Occurrence[]>();
 const files = roots.flatMap((root) => {
   const walk = (dir: string): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -99,7 +108,18 @@ for (const file of files) {
     source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
   const record = (raw: string, node: ts.Node) => {
     const text = normalize(decodeEntities(raw));
-    if (!text || isNoise(text) || allowed.has(text) || translate(text, "fr") !== text) return;
+    if (!text || allowed.has(text)) return;
+    if (/[\u4e00-\u9fff]/.test(text)) {
+      // Trou EN : une clé zh rendue telle quelle sous la locale en. Le scan fr
+      // ne peut pas l'attraper (le repli fr→en affiche l'anglais, et isNoise
+      // filtre le CJK pur) — d'où ce contrôle dédié.
+      if (translate(text, "en") !== text) return;
+      const bucket = enOffenders.get(text) ?? [];
+      bucket.push({ file: file.replace(/\\/g, "/"), line: position(node) });
+      enOffenders.set(text, bucket);
+      return;
+    }
+    if (isNoise(text) || translate(text, "fr") !== text) return;
     const bucket = offenders.get(text) ?? [];
     bucket.push({ file: file.replace(/\\/g, "/"), line: position(node) });
     offenders.set(text, bucket);
@@ -162,6 +182,19 @@ describe("scanner des chaînes d'interface", () => {
     expect(
       report,
       `${report.length} chaîne(s) d'interface rendue en anglais sous la locale fr (inventaire à corriger) :\n${report.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("branche tout le texte chinois sur le dictionnaire anglais (locale en — trous EN)", () => {
+    const report = [...enOffenders.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(
+        ([text, where]) =>
+          `  "${text}"\n    → ${[...new Set(where.map((w) => `${w.file}:${w.line}`))].join(", ")}`,
+      );
+    expect(
+      report,
+      `${report.length} chaîne(s) chinoise(s) rendue(s) telle(s) quelle(s) sous la locale en — entrée anglaise manquante (inventaire à corriger) :\n${report.join("\n")}`,
     ).toEqual([]);
   });
 
