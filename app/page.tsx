@@ -137,8 +137,11 @@ export default async function Home() {
           <section className="command-feature">
             <Link href="/maps/stalingrad" className="command-art" aria-label={`查看${m.title}`}>
               <LocalizedImage
-                src={m.has_cover ? "/api/featured?asset=cover" : "/stalingrad-art.png"}
+                src={m.has_cover ? "/api/featured?asset=cover" : "/stalingrad-art.webp"}
                 alt={m.has_cover ? `${m.title}的作者封面` : "斯大林格勒历史氛围插画"}
+                width={1774}
+                height={887}
+                loading="lazy"
               />
               <span className="tag">
                 <T text={"精选战场 / MAP 001"} />

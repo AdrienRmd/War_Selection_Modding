@@ -248,7 +248,8 @@ nav a:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 2px;
+  /* Zone tactile ≥ 44 px (mobile) sans casse visuelle du header. */
+  padding: 11px 2px;
   background: none;
   border: 0;
   border-radius: var(--radius-sm);
@@ -269,7 +270,7 @@ nav .nav-menu-trigger[aria-expanded="true"],
   font-size: 14px;
 }
 .nav-chevron {
-  transition: transform 0.15s ease;
+  transition: transform var(--dur-fast) var(--ease);
 }
 .nav-menu-trigger[aria-expanded="true"] .nav-chevron {
   transform: rotate(180deg);
@@ -306,7 +307,8 @@ nav .nav-menu-trigger[aria-expanded="true"],
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 9px 12px;
+  /* Zone tactile ≥ 44 px (mobile) sans casse visuelle du panel. */
+  padding: 13px 12px;
   font-size: 14px;
   line-height: 1.4;
   border: 0;
@@ -494,13 +496,13 @@ h1 em {
   position: absolute;
   inset: 0;
   z-index: -2;
-  background: radial-gradient(ellipse at 80% 30%, #74715d, #283a38 40%, #16201e 80%);
+  /* Visuel (illustration + voile) : défini une seule fois dans atlas.css,
+     gagnant du design V3 — plus de doublon mort ici. */
 }
 .feature::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #101816eb 0%, #131a18aa 48%, #141c180a 100%);
   z-index: -1;
 }
 .feature-content {
@@ -582,7 +584,7 @@ h1 em {
   padding: 24px 20px;
   border: 1px solid var(--border);
   background: var(--card);
-  transition: border-color 0.2s;
+  transition: border-color var(--dur) var(--ease);
 }
 .quick-card:hover {
   border-color: var(--primary);

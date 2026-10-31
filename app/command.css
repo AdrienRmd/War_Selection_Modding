@@ -1,27 +1,7 @@
-:root,
-.dark {
-  --background: #0d1117;
-  --foreground: #edf1f5;
-  --card: #151b24;
-  --card-foreground: #edf1f5;
-  --popover: #1b2531;
-  --popover-foreground: #edf1f5;
-  --primary: #f4ad60;
-  --primary-foreground: #11151b;
-  --secondary: #202b37;
-  --secondary-foreground: #edf1f5;
-  --muted: #1b2531;
-  --muted-foreground: #a6b4c4;
-  --accent: #263748;
-  --accent-foreground: #fff;
-  --border: #2b3745;
-  --input: #3a4a5b;
-  --ring: #f4ad60;
-  --radius: 0.3rem;
-}
-body {
-  background: radial-gradient(ellipse at 100% 0, #17313c55, transparent 44%), var(--background);
-}
+/* Jetons design (:root/.dark) et fond de page (body) supprimés (revue
+   qualité) : ils écrasaient le socle V0 « Field Command » de globals.css,
+   importé avant ce fichier dans app/layout.tsx. Toute valeur de design se
+définit dans globals.css — jamais ici sur :root ou body. */
 .header {
   min-height: 86px;
   padding: 17px 3.5%;

@@ -39,7 +39,7 @@ button.account-link:disabled {
   vertical-align: middle;
 }
 .feature-art {
-  background: url("/stalingrad-art.png") center 48% / cover no-repeat;
+  background: url("/stalingrad-art.webp") center 48% / cover no-repeat;
 }
 .feature-index small {
   display: block;

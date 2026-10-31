@@ -223,8 +223,11 @@ export function Dossier({ technicalOnly = false }: { technicalOnly?: boolean }) 
               </div>
               <img
                 className="tactical-map"
-                src="/stalingrad-map.png"
+                src="/stalingrad-map.webp"
                 alt={t("作者留存的斯大林格勒地图俯视图，城区位于河流西侧，东侧分布支流与林地")}
+                width={605}
+                height={340}
+                loading="lazy"
               />
               <p className="caption">
                 <T text={"作者留存地图缩略图 · 不是实时战况或最新版边界保证"} />

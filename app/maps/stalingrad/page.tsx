@@ -93,8 +93,11 @@ export default async function Stalingrad() {
             </p>
             <LocalizedImage
               className="tactical-map mt-6"
-              src="/stalingrad-map.png"
+              src="/stalingrad-map.webp"
               alt="作者提供的斯大林格勒地图俯视图"
+              width={605}
+              height={340}
+              loading="lazy"
             />
             <p className="caption">
               <T text={"历史地图缩略图 · 最新版本以作者地图包为准"} />
