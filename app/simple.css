@@ -20,7 +20,7 @@
 .simple-lede {
   max-width: 62ch;
   margin: 0;
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
 }
 .simple-head-side {
   display: flex;
@@ -33,7 +33,7 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.85rem;
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
   text-decoration: underline dotted;
 }
 .simple-switch:hover {
@@ -78,7 +78,7 @@
 .simple-steps p {
   margin: 0.3rem 0 0;
   font-size: 0.8rem;
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
 }
 @media (max-width: 640px) {
   .simple-steps {
@@ -139,7 +139,7 @@
 }
 .simple-card-nation {
   font-size: 0.72rem;
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
 }
 .simple-card-lock {
   position: absolute;
@@ -149,7 +149,7 @@
   padding: 0.05rem 0.3rem;
   border-radius: 99px;
   border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
 }
 
 /* Étape 2 — en-tête unité + champs */
@@ -227,7 +227,7 @@
   display: inline-flex;
   gap: 0.35rem;
   align-items: center;
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
 }
 
 .simple-fields {
@@ -263,12 +263,12 @@
   padding: 0.05rem 0.35rem;
   border-radius: 99px;
   border: 1px dashed color-mix(in srgb, currentColor 35%, transparent);
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
 }
 .simple-field-label small {
   display: block;
   margin-top: 0.15rem;
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
   font-size: 0.76rem;
   line-height: 1.35;
 }
@@ -281,14 +281,14 @@
 }
 .simple-before {
   font-variant-numeric: tabular-nums;
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
 }
 .simple-field-values input {
   width: 100%;
   font: inherit;
   text-align: right;
   padding: 0.3rem 0.45rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
   background: transparent;
   color: inherit;
@@ -336,7 +336,7 @@
 .simple-name input {
   font: inherit;
   padding: 0.35rem 0.55rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
   background: transparent;
   color: inherit;
@@ -361,7 +361,7 @@
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
 }
 .simple-summary td:nth-child(3),
 .simple-summary td:nth-child(4),
@@ -404,7 +404,7 @@
   gap: 0.45rem;
   align-items: flex-start;
   font-size: 0.85rem;
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
   max-width: 70ch;
 }
 .simple-nav {
@@ -427,7 +427,7 @@
 .simple-import p {
   margin: 0 0 0.6rem;
   max-width: 70ch;
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
   font-size: 0.88rem;
 }
 .simple-file {
@@ -442,7 +442,7 @@
   margin: 0.4rem 0 0;
 }
 .simple-empty {
-  color: var(--ink-soft, #b9c2d0);
+  color: var(--ink-soft, var(--muted-foreground));
   padding: 0.8rem 0;
 }
 .simple-alert {

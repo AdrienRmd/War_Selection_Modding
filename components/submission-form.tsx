@@ -16,6 +16,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { mapCodeLooksPlausible, normalizeMapCode } from "@/lib/map-code";
+import { resourceImageUrl } from "@/lib/units";
 export function SubmissionForm({ initialAuthor = "" }: { initialAuthor?: string }) {
   const { t } = useI18n();
   const [category, setCategory] = useState("历史战役"),
@@ -46,7 +47,9 @@ export function SubmissionForm({ initialAuthor = "" }: { initialAuthor?: string 
     }
     if (
       hasFile &&
-      (!(file instanceof File) || !file.name.toLowerCase().endsWith(".zip") || file.size > 10 * 1024 * 1024)
+      (!(file instanceof File) ||
+        !file.name.toLowerCase().endsWith(".zip") ||
+        file.size > 10 * 1024 * 1024)
     ) {
       setError("请选择 10 MB 以内的地图 ZIP 包。");
       return;
@@ -175,11 +178,7 @@ export function SubmissionForm({ initialAuthor = "" }: { initialAuthor?: string 
             />
             {mapCode.trim() && !mapCodeLooksPlausible(mapCode) && (
               <small className="field-warning" role="status">
-                <T
-                  text={
-                    "这个代码的格式不像游戏导出的 map-XXXXXXXX，请核对后继续（仍可提交）。"
-                  }
-                />
+                <T text={"这个代码的格式不像游戏导出的 map-XXXXXXXX，请核对后继续（仍可提交）。"} />
               </small>
             )}
           </label>
@@ -295,6 +294,11 @@ export function SubmissionForm({ initialAuthor = "" }: { initialAuthor?: string 
         </div>
       </form>
       <aside className="detail-aside">
+        <div className="art-panel submit-art" aria-hidden="true">
+          {[0, 1, 2].map((id) => (
+            <img key={id} src={resourceImageUrl(id)} alt="" width={44} height={44} loading="lazy" />
+          ))}
+        </div>
         <section className="panel review-process">
           <ShieldCheck size={32} />
           <p className="eyebrow">

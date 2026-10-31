@@ -451,12 +451,19 @@ h1 em {
 }
 .archive-tabs {
   width: 100%;
+  max-width: 100%;
   justify-content: flex-start;
   border-bottom: 1px solid var(--border);
   gap: 30px !important;
   border-radius: 0 !important;
   height: 50px !important;
   margin-bottom: 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.archive-tabs::-webkit-scrollbar {
+  display: none;
 }
 .archive-tabs [data-slot="tabs-trigger"] {
   flex: none;

@@ -3,17 +3,17 @@
   flex-wrap: wrap;
   gap: 10px;
   margin: -8px 0 24px;
-  color: #b7c9d8;
+  color: var(--muted-foreground);
   font-size: 14px;
 }
 .workbench-capabilities span {
   padding: 7px 12px;
-  background: #172631;
-  border: 1px solid #334858;
-  border-radius: 3px;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 .workbench-capabilities span:last-child {
-  color: #e9c48e;
+  color: var(--primary);
   margin-left: auto;
 }
 .workbench-grid {
@@ -42,7 +42,7 @@
   align-items: center;
   gap: 9px;
   font-size: 14px;
-  color: #bccbd6;
+  color: var(--muted-foreground);
 }
 .editor-tabs [data-slot="tabs-list"] {
   display: flex;
@@ -66,9 +66,9 @@
 }
 .numeric-field {
   padding: 15px;
-  background: #101b25;
-  border: 1px solid #293d4c;
-  border-radius: 4px;
+  background: var(--muted);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
   min-width: 0;
 }
 .numeric-field.changed {
@@ -92,7 +92,7 @@
   font-size: 12px;
   color: #e6bf8a;
   border: 1px solid #6a573c;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 1px 5px;
 }
 .numeric-field .number-control {
@@ -111,7 +111,7 @@
 .numeric-field .field-help {
   font-size: 14px;
   line-height: 1.75;
-  color: #b9c7d2;
+  color: var(--muted-foreground);
   margin: 10px 0 0;
 }
 .boolean-field {
@@ -128,16 +128,16 @@
   overflow-wrap: anywhere;
   word-break: break-all;
   margin-top: 10px;
-  color: #89bfd5;
+  color: var(--primary);
 }
 .field-count {
   font-size: 13px;
   font-weight: 400;
-  color: #9ab2c3;
+  color: var(--muted-foreground);
   margin-left: 10px;
 }
 .work-entry {
-  border-bottom: 1px solid #344650;
+  border-bottom: 1px solid var(--border);
   padding-bottom: 20px;
   margin-bottom: 24px;
 }
@@ -146,9 +146,9 @@
 }
 .requirement-editor,
 .source-training {
-  border: 1px solid #3b5162;
-  border-radius: 4px;
-  background: #14212c;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--muted);
   margin: 14px 0;
 }
 .requirement-editor summary,
@@ -200,7 +200,7 @@
 }
 .condition-actions > button:last-child {
   font-size: 14px;
-  color: #9fc8de;
+  color: var(--primary);
   text-align: left;
 }
 .condition-preview {
@@ -211,8 +211,8 @@
   flex-wrap: wrap;
   gap: 12px;
   padding: 12px 15px;
-  border-left: 3px solid #b99157;
-  background: #222c30;
+  border-left: 3px solid var(--primary);
+  background: var(--accent);
   font-size: 15px;
 }
 .armor-summary {
@@ -222,8 +222,8 @@
 }
 .armor-summary span {
   padding: 8px 12px;
-  background: #21313e;
-  border: 1px solid #3a5161;
+  background: var(--accent);
+  border: 1px solid var(--border);
   font-size: 14px;
 }
 .ability-reference {
@@ -231,7 +231,7 @@
   flex-direction: column;
   gap: 8px;
   font-size: 14px;
-  color: #b0c1ce;
+  color: var(--muted-foreground);
 }
 .conflict-label {
   display: block;

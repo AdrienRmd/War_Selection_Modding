@@ -27,5 +27,16 @@ export async function requestLocale(): Promise<Locale> {
 /** Metadata Next localisée pour une page du registre lib/page-titles. */
 export async function pageMetadata(key: keyof typeof pageRoutes): Promise<Metadata> {
   const locale = await requestLocale();
-  return localizePageMeta(pageRoutes[key].meta, locale);
+  const meta = localizePageMeta(pageRoutes[key].meta, locale);
+  // Image OG partagée (générée par scripts/optimize-public-images.mjs) : les
+  // pages enfants qui définissent leur propre metadata héritent quand même
+  // du openGraph du layout racine, on l'explicite ici pour toutes les routes.
+  return {
+    ...meta,
+    openGraph: {
+      title: meta.title,
+      description: meta.description,
+      images: [{ url: "/og-cover.jpg", width: 1200, height: 630, alt: "WS ATLAS" }],
+    },
+  };
 }

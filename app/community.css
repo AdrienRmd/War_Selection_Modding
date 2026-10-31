@@ -3,9 +3,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 3.5%;
-  border-bottom: 1px solid #2b3745;
-  background: #080e15;
-  color: #91aaba;
+  border-bottom: 1px solid var(--border-soft);
+  background: #0c110f;
+  color: var(--muted-foreground);
   font-size: 12px;
   letter-spacing: 1px;
 }
@@ -21,7 +21,7 @@
   padding: 3px 6px;
 }
 .language-control button[aria-pressed="true"] {
-  color: #ffd08a;
+  color: var(--primary);
 }
 .atlas-emblem {
   width: 48px;
@@ -37,27 +37,27 @@
 .creation-switch a {
   border: 1px solid var(--border);
   padding: 10px 20px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
 }
 .creation-switch a[aria-current="page"] {
   color: var(--primary);
-  background: #2f2b21;
-  border-color: #74603d;
+  background: rgb(240 178 100 / 0.12);
+  border-color: rgb(240 178 100 / 0.45);
 }
 .mod-codes {
   white-space: pre-wrap;
   font-family: Consolas, monospace;
   overflow-wrap: anywhere;
   padding: 18px;
-  background: #0b151e;
-  border: 1px solid #375369;
+  background: var(--muted);
+  border: 1px solid var(--border);
   font-size: 14px;
   line-height: 1.9;
 }
 .mod-source {
   font-size: 13px;
-  color: #8fafc3;
+  color: var(--muted-foreground);
 }
 .mod-editor-layout {
   display: grid;
@@ -116,8 +116,8 @@
   gap: 15px;
 }
 .submission-tabs > [role="tablist"] {
-  background: #172332;
-  border: 1px solid var(--border);
+  background: var(--secondary);
+  border: 1px solid var(--border-soft);
   height: 48px;
   margin-bottom: 26px;
 }
@@ -128,10 +128,10 @@
 .source-pill {
   font-size: 12px;
   text-transform: uppercase;
-  color: #99c9d7;
-  border: 1px solid #3b6072;
+  color: var(--primary);
+  border: 1px solid var(--border);
   padding: 3px 7px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 .mod-controls {
   display: flex;
@@ -141,7 +141,7 @@
 }
 .mod-code-hint {
   font-size: 13px;
-  color: #c2a97b;
+  color: var(--primary);
   white-space: pre-line;
 }
 .translated-value {
@@ -149,7 +149,7 @@
 }
 .bilingual-note {
   font-size: 13px;
-  color: #94adbe;
+  color: var(--muted-foreground);
 }
 .library-sidebar [role="combobox"] {
   width: 100%;
@@ -243,18 +243,18 @@ html[lang="en"] .page-title h1 {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 5px 12px;
   padding: 14px;
-  background: #0e1a24;
-  border: 1px solid #344959;
+  background: var(--muted);
+  border: 1px solid var(--border-soft);
 }
 .mod-code-line small {
   grid-column: 1/-1;
-  color: #91aabd;
+  color: var(--muted-foreground);
   font-size: 12px;
 }
 .mod-code-line code {
   align-self: center;
   font-size: 13px;
-  color: #f4c779;
+  color: var(--primary);
   overflow-wrap: anywhere;
 }
 .mod-code-line .button {
@@ -265,7 +265,7 @@ html[lang="en"] .page-title h1 {
   margin-bottom: 12px;
 }
 .mod-detail-copy p {
-  color: #b4c1ca;
+  color: var(--muted-foreground);
 }
 .mod-controls [data-slot="select-trigger"] {
   min-width: 190px;
@@ -280,10 +280,10 @@ html[lang="en"] .page-title h1 {
   margin-bottom: 25px;
 }
 .language-control button:hover {
-  color: #ffd08a;
+  color: var(--primary);
 }
 .language-control button:focus-visible {
-  outline: 2px solid #e6ae54;
+  outline: 2px solid var(--primary);
   outline-offset: 3px;
 }
 .mod-card-head {
@@ -340,20 +340,30 @@ html[lang="en"] .mod-title-row .mod-source {
 .submission-tabs > [role="tablist"] {
   display: flex;
   width: fit-content;
+  max-width: 100%;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.submission-tabs > [role="tablist"]::-webkit-scrollbar {
+  display: none;
 }
 .submission-tabs [role="tab"] {
   padding: 7px 18px;
   cursor: pointer;
-  border-radius: 3px;
-  color: #9db0bf;
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  transition:
+    color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
 }
 .submission-tabs [role="tab"][aria-selected="true"] {
-  color: #f5c077;
-  background: #293746;
+  color: var(--primary);
+  background: var(--accent);
 }
 .submission-tabs [role="tab"]:focus-visible {
-  outline: 2px solid #e6ae54;
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }

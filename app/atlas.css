@@ -303,8 +303,10 @@ button.account-link:disabled {
 }
 .panel {
   padding: 28px;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--gradient-card), var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
   min-width: 0;
 }
 .panel h3 {
@@ -457,8 +459,11 @@ button.account-link:disabled {
   background: #29302966;
 }
 .data-table {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   background: var(--card);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .data-table td:nth-child(2) {
   min-width: 165px;
@@ -609,7 +614,11 @@ button.account-link:disabled {
 }
 .hero-card {
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  min-width: 0;
+  box-shadow: var(--shadow-xs);
 }
 .hero-monogram {
   padding: 18px 22px;
@@ -633,6 +642,7 @@ button.account-link:disabled {
 }
 .hero-card-content {
   padding: 22px;
+  min-width: 0;
 }
 .hero-card-content > small {
   font-size: 12px;
@@ -641,19 +651,23 @@ button.account-link:disabled {
 .hero-card-content h3 {
   font-size: 25px;
   margin: 4px 0 16px;
+  overflow-wrap: anywhere;
 }
 .hero-card-content dl {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
+  min-width: 0;
 }
 .hero-card-content dt {
   font-size: 12px;
   color: var(--muted-foreground);
+  overflow-wrap: anywhere;
 }
 .hero-card-content dd {
   font-size: 17px;
   margin: 2px 0 0;
+  overflow-wrap: anywhere;
 }
 .hero-cost {
   border-top: 1px solid var(--border);
@@ -886,20 +900,31 @@ button.account-link:disabled {
 .atlas-form textarea,
 .review-controls textarea {
   margin-top: 9px;
-  border-color: #455044;
-  background: #121b16;
-  border-radius: 3px;
+  border-color: var(--input);
+  background: var(--muted);
+  border-radius: var(--radius-sm);
   min-height: 45px;
   padding: 12px;
   font-size: 16px;
   width: 100%;
+  transition:
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.atlas-form input:focus,
+.atlas-form textarea:focus,
+.review-controls textarea:focus {
+  outline: none;
+  border-color: rgb(240 178 100 / 0.55);
+  box-shadow: var(--ring-soft);
 }
 .atlas-form [data-slot="select-trigger"] {
   margin-top: 9px;
   width: 100%;
   height: 45px;
-  border-color: #455044;
-  background: #121b16;
+  border-color: var(--input);
+  background: var(--muted);
+  border-radius: var(--radius-sm);
   font-size: 16px;
 }
 .form-section-heading {
@@ -1544,8 +1569,9 @@ code {
   background: var(--border);
 }
 .site-footer {
-  border-top: 1px solid var(--border);
-  background: #151a19;
+  border-top: 1px solid var(--border-soft);
+  background:
+    radial-gradient(70% 120% at 12% 0%, rgb(240 178 100 / 0.045), transparent 55%), #141918;
   padding: 0 4.5%;
   font-size: 14px;
   color: #b9c2ba;
@@ -1556,13 +1582,22 @@ code {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1.2fr;
   gap: 24px 30px;
-  padding: 42px 0 30px;
+  padding: 46px 0 30px;
 }
 .site-footer-brandline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 21px;
   letter-spacing: 2px;
   color: var(--foreground);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+}
+.site-footer-brandline img {
+  border-radius: 9px;
+  box-shadow:
+    var(--shadow-xs),
+    0 0 0 1px rgb(240 178 100 / 0.15);
 }
 .site-footer-brandline b {
   font-weight: 500;
@@ -1931,7 +1966,7 @@ code {
   background: #171e1b;
   color: var(--foreground);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 16px;
   width: 100%;
 }
@@ -2218,4 +2253,11 @@ code {
   .hero-home-stats dd {
     font-size: 21px;
   }
+}
+
+/* Refonte — bandeau illustré « ressources du jeu » (aside /submit) : les trois
+   icônes officielles (viande / bois / fer) posées sur fond dégradé. */
+.submit-art {
+  margin-bottom: 18px;
+  padding: 20px;
 }

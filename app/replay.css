@@ -35,6 +35,23 @@
   margin: 34px auto 10px;
   padding: 0 16px;
 }
+/* Marque ATLAS : raccroche la page claire à la charte du site sans perdre
+   son caractère « wsva » (thème clair + vert conservés). */
+.rp-hero-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: #2f6b52;
+}
+.rp-hero-mark img {
+  border-radius: 8px;
+  box-shadow:
+    0 1px 3px rgb(38 41 43 / 0.18),
+    0 0 0 1px rgb(47 107 82 / 0.2);
+}
 .rp-hero h1 {
   font-size: clamp(26px, 5vw, 40px);
   line-height: 1.2;

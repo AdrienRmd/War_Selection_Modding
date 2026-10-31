@@ -11,6 +11,7 @@ export function SiteFooter() {
       <div className="site-footer-grid">
         <div className="site-footer-brand">
           <p className="site-footer-brandline">
+            <img src="/atlas-emblem-96.png" alt="" width={34} height={34} loading="lazy" />
             WS <b>ATLAS</b>
           </p>
           <p className="muted">

@@ -93,12 +93,20 @@ export function ReplayPortal({
           data?: { extraData?: Record<string, string> };
         };
         if (json.error === 2) {
-          setError(l("回放不存在（代码可能已过期）。", "Replay does not exist (the code may have expired)."));
+          setError(
+            l(
+              "回放不存在（代码可能已过期）。",
+              "Replay does not exist (the code may have expired).",
+            ),
+          );
           return;
         }
         if (json.error === 5) {
           setError(
-            l("回放代码不正确：需要 11 个字符，区分大小写。", "Incorrect replay code: 11 characters, case-sensitive."),
+            l(
+              "回放代码不正确：需要 11 个字符，区分大小写。",
+              "Incorrect replay code: 11 characters, case-sensitive.",
+            ),
           );
           return;
         }
@@ -231,6 +239,10 @@ export function ReplayPortal({
   return (
     <section className="replay-wsva" aria-label={t("回放分析")}>
       <header className="rp-hero">
+        <p className="rp-hero-mark" aria-hidden="true">
+          <img src="/atlas-emblem-96.png" alt="" width={30} height={30} loading="lazy" />
+          <span>WS ATLAS · REPLAY</span>
+        </p>
         <h1>{l("你这一局，打得究竟怎么样？", "How well did you really play?")}</h1>
         <p className="rp-hero-help">
           {l(
@@ -271,7 +283,8 @@ export function ReplayPortal({
 
       {loading ? (
         <p className="rp-status" role="status">
-          <Clock size={15} aria-hidden="true" /> {l("正在获取并解析回放…", "Fetching and parsing the replay…")}
+          <Clock size={15} aria-hidden="true" />{" "}
+          {l("正在获取并解析回放…", "Fetching and parsing the replay…")}
         </p>
       ) : null}
 
@@ -299,7 +312,10 @@ export function ReplayPortal({
             {signedIn ? (
               submitState === "ok" ? (
                 <p className="rp-share-done" role="status">
-                  {l("已提交，等待审核后会出现在最近列表中。", "Submitted — it will appear in the recent list after review.")}
+                  {l(
+                    "已提交，等待审核后会出现在最近列表中。",
+                    "Submitted — it will appear in the recent list after review.",
+                  )}
                 </p>
               ) : submitState === "exists" ? (
                 <p className="rp-share-done" role="status">
@@ -350,7 +366,9 @@ export function ReplayPortal({
                   rep-{item.code}
                 </button>
                 <span className="rp-recent-mode">
-                  {item.teamSize > 0 ? `${item.teamSize}v${item.teamSize}` : modeLabel(item.modeKey)}
+                  {item.teamSize > 0
+                    ? `${item.teamSize}v${item.teamSize}`
+                    : modeLabel(item.modeKey)}
                 </span>
                 <span className="rp-recent-author">· {item.mvpName ?? "—"}</span>
               </li>
