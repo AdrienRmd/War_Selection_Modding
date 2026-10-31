@@ -760,7 +760,7 @@ export const french: Record<string, string> = {
     "La soumission ne sera plus affichée ni téléchargeable publiquement. Les fichiers d'origine et les relevés de modération sont conservés. Pour la rétablir, modifiez-la, enregistrez-la, puis soumettez-la à nouveau à la modération.",
   确认撤回: "Confirmer le retrait",
   永久删除: "Supprimer définitivement",
-  "永久删除「": "Supprimer définitivement « ",
+  "永久删除「${title}」？": "Supprimer définitivement « ${title} » ?",
   确认删除: "Confirmer la suppression",
   "该操作不可撤销：地图档案、ZIP 包、封面与审核记录将被彻底删除，发布页面立即消失。":
     "Action irréversible : la fiche de la carte, le fichier ZIP, la couverture et l'historique de modération sont définitivement supprimés, et la page publique disparaît immédiatement.",

@@ -69,4 +69,16 @@ describe("dictionnaire français", () => {
     expect(translate("地图", "en")).toBe("Maps");
     expect(translate("Texto inconnu au bataillon", "fr")).toBe("Texto inconnu au bataillon");
   });
+
+  it("titre de suppression définitive : clé template unique avec ${title} (V3-P2 #6)", () => {
+    // delete-creation.tsx ne concatène plus 3 fragments traduits : la phrase
+    // complète passe par translate et le titre s'insère dans le template.
+    expect(translate("永久删除「斯大林格勒 1942」？", "en")).toBe(
+      "Permanently delete “斯大林格勒 1942”?",
+    );
+    expect(translate("永久删除「Ma carte test」？", "fr")).toBe(
+      "Supprimer définitivement « Ma carte test » ?",
+    );
+    expect(translate("永久删除「Ma carte」？", "zh")).toBe("永久删除「Ma carte」？");
+  });
 });

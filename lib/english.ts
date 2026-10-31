@@ -737,7 +737,7 @@ export const english: Record<string, string> = {
     "The submission will no longer be displayed or downloadable publicly. The original files and review records will be retained. To restore it, edit and save it, then resubmit for review.",
   确认撤回: "Confirm withdrawal",
   永久删除: "Delete permanently",
-  "永久删除「": "Permanently delete “",
+  "永久删除「${title}」？": "Permanently delete “${title}”?",
   确认删除: "Confirm deletion",
   "该操作不可撤销：地图档案、ZIP 包、封面与审核记录将被彻底删除，发布页面立即消失。":
     "This cannot be undone: the map record, ZIP file, cover image and review history are permanently removed, and the public page disappears immediately.",

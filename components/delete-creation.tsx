@@ -65,9 +65,9 @@ export function DeleteCreation({
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogTitle>
-            <T text="永久删除「" />
-            <T text={title} />
-            <T text="」？" />
+            {/* V3-P2 #6 : clé template unique (fragments séparés
+                « 永久删除「 + titre + 」？ » non composables en en/fr). */}
+            <T text={`永久删除「${title}」？`} />
           </AlertDialogTitle>
           <AlertDialogDescription>
             <T
