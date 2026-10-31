@@ -193,3 +193,28 @@ export const creators = sqliteTable(
   },
   (t) => [index("idx_creators_position").on(t.position, t.createdAt)],
 );
+// Chantier B (31/10/2026) — replays « récemment soumis » : un ligne par code
+// de replay soumis après analyse. Le code est nu (11 caractères, sans le
+// préfixe « rep- », cf. parseReplayCode) ; team_size/mvp_name/mode_key sont
+// fournis par le client depuis le résultat d'analyse (aucun appel serveur
+// vers games-api). Modération par le socle existant (pending → published /
+// rejected ; retrait possible par l'auteur → withdrawn). created_at en ISO
+// text comme maps (tri lexicographique = chronologique).
+export const replays = sqliteTable(
+  "replays",
+  {
+    code: text("code").primaryKey(),
+    teamSize: integer("team_size").notNull(),
+    mvpName: text("mvp_name"),
+    modeKey: text("mode_key").notNull(),
+    ownerId: text("owner_id").notNull(),
+    status: text("status").notNull().default("pending"),
+    createdAt: text("created_at").notNull(),
+    moderatedAt: text("moderated_at"),
+    note: text("note"),
+  },
+  (t) => [
+    index("idx_replays_status_created").on(t.status, t.createdAt),
+    index("idx_replays_owner_created").on(t.ownerId, t.createdAt),
+  ],
+);

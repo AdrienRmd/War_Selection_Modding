@@ -6,6 +6,7 @@ import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { SubmissionDashboard } from "@/components/submission-dashboard";
 import { CreatorFeatured } from "@/components/creator-featured";
 import { ModDashboard } from "@/components/mod-dashboard";
+import { ReplayModeration } from "@/components/replay/replay-moderation";
 import { CreationTabs } from "@/components/creation-tabs";
 import { Bilingual } from "@/components/i18n";
 export const dynamic = "force-dynamic";
@@ -32,6 +33,7 @@ export default async function Admin() {
               </>
             }
             mods={<ModDashboard admin />}
+            replays={<ReplayModeration admin />}
           />
         ) : (
           <div className="empty-surface">

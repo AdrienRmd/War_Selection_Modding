@@ -5,6 +5,7 @@ import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { SubmissionDashboard } from "@/components/submission-dashboard";
 import { CreatorFeatured } from "@/components/creator-featured";
 import { ModDashboard } from "@/components/mod-dashboard";
+import { ReplayModeration } from "@/components/replay/replay-moderation";
 import { CreationTabs } from "@/components/creation-tabs";
 import { isAdmin } from "@/lib/atlas-server";
 export const dynamic = "force-dynamic";
@@ -30,6 +31,7 @@ export default async function Submissions() {
             </>
           }
           mods={<ModDashboard />}
+          replays={<ReplayModeration />}
         />
       </main>
       <AtlasFooter />

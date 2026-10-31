@@ -73,10 +73,12 @@ async function mockRoutes(context) {
     const url = new URL(route.request().url());
     const code = url.searchParams.get("code") ?? "";
     assert.ok(!code.startsWith("rep-"), "code nu envoyé à l'API officielle");
+    // Code frais de soumission e2e : même fixture (le parser étiquette avec
+    // le code demandé), pour tester le bouton « Soumettre » bout-en-bout.
     return route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: code === "Jd894wx6so9" ? fixture : JSON.stringify({ error: 2 }),
+      body: code === "Jd894wx6so9" || code === "E2eSubmit1A" ? fixture : JSON.stringify({ error: 2 }),
     });
   });
   await context.route("**/api/replay/recent", (route) =>
@@ -173,6 +175,49 @@ try {
   check("verdict FR l'emporte par élimination", frVerdict.includes("l'emporte par élimination"));
   check("événements FR", ((await frPage.textContent(".rp-card")) ?? "").includes("Événements décisifs"));
   await frContext.close();
+
+  /* ---- Soumission bout-en-bout (cookie dev local, non-admin) -------- */
+  const subContext = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  await mockRoutes(subContext);
+  await subContext.addCookies([
+    { name: "atlas_locale", value: "en", url: origin },
+    { name: "__sites_local_auth", value: "1", url: origin },
+  ]);
+  const subPage = await subContext.newPage();
+  await subPage.goto(origin + "/replay");
+  await subPage.waitForSelector(".rp-hero h1");
+  // L'hydratation React peut suivre le rendu serveur de peu : on retente la
+  // soumission du formulaire jusqu'à ce que l'analyse démarre.
+  let submitted = false;
+  for (let attempt = 0; attempt < 5 && !submitted; attempt++) {
+    await subPage.fill(".rp-form input", "E2eSubmit1A");
+    await subPage.click(".rp-submit-main");
+    try {
+      await subPage.waitForSelector(".rp-verdict", { timeout: 6000 });
+      submitted = true;
+    } catch {
+      /* hydratation pas encore prête : nouvel essai */
+    }
+  }
+  check("analyse du code frais (retry hydratation)", submitted);
+  check("bouton de soumission visible (session active)", (await subPage.locator(".rp-share-button").count()) === 1);
+  await subPage.click(".rp-share-button");
+  await subPage.waitForSelector(".rp-share-done", { timeout: 15000 });
+  check(
+    "soumission bout-en-bout (201 → message de confirmation)",
+    ((await subPage.textContent(".rp-share-done")) ?? "").includes("Submitted"),
+  );
+  // Nettoyage : retrait de la ligne e2e (le propriétaire est la session dev).
+  const withdrawn = await subPage.evaluate(async () => {
+    const r = await fetch("/api/replay/E2eSubmit1A", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "withdrawn" }),
+    });
+    return r.status;
+  });
+  check("retrait de la soumission e2e (cleanup)", withdrawn === 200);
+  await subContext.close();
 
   /* ---- Mobile 375 px sans débordement --------------------------- */
   const mobile = await browser.newContext({

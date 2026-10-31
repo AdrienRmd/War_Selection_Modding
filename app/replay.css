@@ -644,3 +644,46 @@ tr.rp-row:hover {
     min-width: 680px;
   }
 }
+
+/* ---------------------------------------------------------------- */
+/* Modération replays (/admin, /submissions — thème ATLAS sombre).   */
+/* ---------------------------------------------------------------- */
+
+.replay-mod .mod-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.replay-mod h3 {
+  margin: 0;
+}
+.replay-mod-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.replay-mod-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 10px 14px;
+  font-size: 14px;
+}
+.replay-mod-item a {
+  color: var(--primary);
+}
+.replay-mod-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
