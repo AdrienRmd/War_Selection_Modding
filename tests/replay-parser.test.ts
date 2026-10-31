@@ -37,6 +37,19 @@ describe("normalisation du code de replay", () => {
     expect(parseReplayCode("rep-abcd")).toBeNull();
     expect(parseReplayCode(undefined)).toBeNull();
   });
+
+  it("exige 11 caractères alphanumériques (charset API officielle)", () => {
+    // 11 caractères MAIS charset exotique → refusés (durcissement revue).
+    expect(parseReplayCode("jxXISVZ9_rk")).toBeNull(); // soulignement
+    expect(parseReplayCode("bad_code!99")).toBeNull(); // ponctuation
+    expect(parseReplayCode("jxXISVZ9-rk")).toBeNull(); // tiret interne (11 car.)
+    expect(parseReplayCode("回放代码十一位码码码码")).toBeNull(); // unicode (11 caractères)
+    expect(parseReplayCode("@@@@@@@@@@@")).toBeNull(); // symboles (11 car.)
+    expect(parseReplayCode("jxXISVZ9 rk")).toBeNull(); // espace interne (11 car.)
+    // La casse et le mixte chiffres/lettres restent acceptés.
+    expect(parseReplayCode("Jd894wx6so9")).toBe("Jd894wx6so9");
+    expect(parseReplayCode("0123456789a")).toBe("0123456789a");
+  });
 });
 
 describe("parser de replay — match réel 7v7 (fixture API)", () => {

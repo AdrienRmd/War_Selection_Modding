@@ -144,8 +144,10 @@ export async function limitedBody(req: Request, limit: number) {
   }
   return result;
 }
-export const json = (data: unknown, status = 200) =>
+/** Réponse JSON bornée : no-store par défaut ; `headers` permet d’en
+ *  surcharger (ex. cache public court pour un listing public). */
+export const json = (data: unknown, status = 200, headers?: Record<string, string>) =>
   Response.json(data, {
     status,
-    headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" },
+    headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", ...headers },
   });

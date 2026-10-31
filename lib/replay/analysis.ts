@@ -12,7 +12,7 @@
  *  - Événements décisifs : éliminations (attribution aux 2 plus gros
  *    « tueurs d'unités » de la victime, par nombre d'unités), bascules de
  *    power (runs monotones lissés ≥ 3 points), chutes de travailleurs
- *    (baisse ≥ 8 % en ≤ 3 min), première merveille.
+ *    (baisse ≥ 10 % en ≤ 3 min), première merveille.
  *  - Impact joueur = score MVP existant (scoreCalculator) normalisé par
  *    équipe ; sa répartition temporelle dérive d'un taux d'activité
  *    (combats, production, économie, territoire), remis à l'échelle pour que
@@ -246,24 +246,28 @@ export function buildReplayAnalysis(result: ReplayParseSuccess): ReplayAnalysis 
   const playerTeams = result.teams.filter((t) => t.players.length > 0);
   const isDuel = playerTeams.length === 2;
   const winnerTeamId = result.match.winnerTeams[0];
-  const winnerSide: Side | null = isDuel
-    ? (playerTeams.findIndex((t) => t.id === winnerTeamId) as Side)
-    : null;
+  // Duel sans gagnant déclaré (abandon général : winners=0 → winnerTeams
+  // vide, findIndex −1) : pas de côté, verdict « undecided » — jamais
+  // playerTeams[2] (crash TypeError avant).
+  const winnerIdx = isDuel ? playerTeams.findIndex((t) => t.id === winnerTeamId) : -1;
+  const winnerSide: Side | null = winnerIdx >= 0 ? (winnerIdx as Side) : null;
 
   const teamSize = isDuel ? Math.max(...playerTeams.map((t) => t.players.length)) : 0;
-  const losersAllDead = isDuel
-    ? playerTeams[(1 - (winnerSide ?? 0)) as Side].players.every((pid) => {
-        const p = result.players[pid];
-        return p?.isDead === true;
-      })
-    : false;
-  const reason: VerdictInfo["reason"] = !result.match.isComplete
-    ? "undecided"
-    : result.match.isWonderWin
-      ? "wonder"
-      : losersAllDead
-        ? "elimination"
-        : "survivors";
+  const losersAllDead =
+    isDuel && winnerSide !== null
+      ? playerTeams[(1 - winnerSide) as Side].players.every((pid) => {
+          const p = result.players[pid];
+          return p?.isDead === true;
+        })
+      : false;
+  const reason: VerdictInfo["reason"] =
+    winnerSide === null || !result.match.isComplete
+      ? "undecided"
+      : result.match.isWonderWin
+        ? "wonder"
+        : losersAllDead
+          ? "elimination"
+          : "survivors";
 
   /* --- Équilibre de puissance + win chance ------------------------- */
   const n = periodsOf(result);

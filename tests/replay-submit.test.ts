@@ -119,11 +119,14 @@ function makeDb(state: State) {
             return { meta: { changes: 1 } };
           }
           if (s.startsWith("UPDATE replays SET team_size=?")) {
-            // Re-soumission : quotas relus (pending) puis mise à jour.
+            // Re-soumission : quotas relus (3 en attente, 5 par 24 h) puis MAJ.
             const ownerPending = state.replays.filter(
               (r) => r.owner_id === args[6] && r.status === "pending",
-            ).length; // args[6] = owner de la sous-requête quota
-            if (ownerPending >= 3) return { meta: { changes: 0 } };
+            ).length; // args[6] = owner de la sous-requête quota pending
+            const ownerDaily = state.replays.filter(
+              (r) => r.owner_id === args[8] && r.created_at > String(args[9]),
+            ).length; // args[8]/args[9] = owner/depuis de la sous-requête quota 24 h
+            if (ownerPending >= 3 || ownerDaily >= 5) return { meta: { changes: 0 } };
             const row = state.replays.find((r) => r.code === args[4] && r.owner_id === args[5]);
             if (!row) return { meta: { changes: 0 } };
             row.team_size = args[0] as number;
@@ -242,6 +245,28 @@ describe("POST /api/replay/submit", () => {
     expect(r.status).toBe(201);
     expect(state.replays[0].status).toBe("pending");
   });
+
+  it("re-soumission bornée par le quota 24 h : soumettre/retirer ×5 → 429", async () => {
+    for (let i = 0; i < 5; i++) {
+      const code = `res${i}AAAAAAA`.slice(0, 11);
+      expect((await post("/api/replay/submit", { ...body, code, mvpName: null })).status).toBe(201);
+      expect((await patch(`/api/replay/${code}`, { status: "withdrawn" })).status).toBe(200);
+    }
+    // 5 créations sur 24 h (même retirées) → la re-soumission est refusée.
+    const again = await post("/api/replay/submit", { ...body, code: "res0AAAAAAA".slice(0, 11) });
+    expect(again.status).toBe(429);
+  });
+
+  it("re-soumission autorisée sous le plafond 24 h (4 créations → 201)", async () => {
+    for (let i = 0; i < 4; i++) {
+      const code = `sub${i}AAAAAAA`.slice(0, 11);
+      await post("/api/replay/submit", { ...body, code, mvpName: null });
+      await patch(`/api/replay/${code}`, { status: "withdrawn" });
+    }
+    const r = await post("/api/replay/submit", { ...body, code: "sub0AAAAAAA".slice(0, 11) });
+    expect(r.status).toBe(201);
+    expect(state.replays[0].status).toBe("pending");
+  });
 });
 
 describe("GET /api/replay/recent", () => {
@@ -254,6 +279,8 @@ describe("GET /api/replay/recent", () => {
     state.replays.push(...rows);
     const r = await get("/api/replay/recent", null);
     expect(r.status).toBe(200);
+    // Listing public : cache court navigateur/CDN (60 s) — pas les branches auth.
+    expect(r.headers.get("cache-control")).toBe("public, max-age=60");
     const d = (await r.json()) as { items: Array<{ code: string }> };
     expect(d.items.map((i) => i.code)).toEqual(["AAAAAAAAAAA", "CCCCCCCCCCC"]);
   });
@@ -293,5 +320,17 @@ describe("modération et retrait", () => {
     expect(r.status).toBe(403);
     const ok = await get("/api/replay/submissions?scope=admin", ADMIN);
     expect(ok.status).toBe(200);
+    // Branche authentifiée : jamais de cache public.
+    expect(ok.headers.get("cache-control")).toBe("no-store");
+  });
+
+  it("PATCH : code non alphanumérique refusé (400), préfixe rep- accepté", async () => {
+    const bad = await patch("/api/replay/bad_code!99", { status: "published" }, ADMIN);
+    expect(bad.status).toBe(400);
+    const uni = await patch("/api/replay/回放代码十一位码码码码", { status: "withdrawn" }, ADMIN);
+    expect(uni.status).toBe(400);
+    const ok = await patch(`/api/replay/rep-${code}`, { status: "published" }, ADMIN);
+    expect(ok.status).toBe(200);
+    expect(state.replays[0].status).toBe("published");
   });
 });

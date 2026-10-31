@@ -1,4 +1,5 @@
 import { bindings, identity, json, sameOrigin, limitedBody, HttpError } from "@/lib/atlas-server";
+import { parseReplayCode } from "@/lib/replay";
 import {
   listReplaySubmissions,
   moderateReplay,
@@ -22,7 +23,11 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
     const url = new URL(req.url);
 
     if (req.method === "GET" && (action === "" || action === "recent"))
-      return json({ items: await recentReplays(url.searchParams.get("limit")) });
+      // Listing public de replays publiés : cache court (60 s) navigateur /
+      // CDN. Les autres branches (soumissions authentifiées) restent no-store.
+      return json({ items: await recentReplays(url.searchParams.get("limit")) }, 200, {
+        "Cache-Control": "public, max-age=60",
+      });
 
     if (req.method === "GET" && action === "submissions") {
       if (!user) throw new HttpError(401, "请先登录。 / Please sign in.");
@@ -54,7 +59,10 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       } catch {
         throw new HttpError(400, "提交内容不是有效 JSON。 / Body is not valid JSON.");
       }
-      const code = action.replace(/^rep-/, "");
+      // Code revalidé (préfixe rep- optionnel, 11 alphanumériques) : jamais
+      // de valeur arbitraire poussée jusqu'à la base.
+      const code = parseReplayCode(action);
+      if (!code) throw new HttpError(400, "回放代码无效。 / Invalid replay code.");
       if (body.status === "withdrawn") {
         if (admin) {
           // L'admin peut retirer n'importe quelle ligne via le même verbe.

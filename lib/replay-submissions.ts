@@ -90,14 +90,28 @@ export async function submitReplay(
 
   if (existing) {
     // Re-soumission après refus ou retrait : la ligne repasse en attente.
+    // Verrou atomique miroir de l'INSERT : quotas (3 en attente, 5 par 24 h)
+    // relus AU MOMENT de l'écriture.
     const changed = await db
       .prepare(
-        "UPDATE replays SET team_size=?, mvp_name=?, mode_key=?, status='pending', created_at=?, moderated_at=NULL, note=NULL WHERE code=? AND owner_id=? AND (SELECT COUNT(*) FROM replays WHERE owner_id=? AND status='pending') < ?",
+        "UPDATE replays SET team_size=?, mvp_name=?, mode_key=?, status='pending', created_at=?, moderated_at=NULL, note=NULL WHERE code=? AND owner_id=? AND (SELECT COUNT(*) FROM replays WHERE owner_id=? AND status='pending') < ? AND (SELECT COUNT(*) FROM replays WHERE owner_id=? AND created_at > ?) < ?",
       )
-      .bind(teamSize, mvpName, modeKey, now, code, ownerId, ownerId, REPLAY_SUBMIT_LIMIT)
+      .bind(
+        teamSize,
+        mvpName,
+        modeKey,
+        now,
+        code,
+        ownerId,
+        ownerId,
+        REPLAY_SUBMIT_LIMIT,
+        ownerId,
+        dayAgo,
+        REPLAY_SUBMIT_DAILY,
+      )
       .run();
     if (changed.meta.changes !== 1)
-      throw new HttpError(429, "待审核回放已达上限（3 个）。 / Too many pending submissions (3).");
+      throw new HttpError(429, "投稿频率已达上限（24 小时内 5 个，或已有 3 个待审核）。 / Submission limit reached (5 per 24h, or 3 pending).");
     return { item: { code, teamSize, mvpName, modeKey, status: "pending", createdAt: now, moderatedAt: null, note: null, mine: true } };
   }
 

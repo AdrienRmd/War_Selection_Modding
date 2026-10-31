@@ -210,3 +210,38 @@ describe("normalisation du code (rep- → nu) cohérente avec l'API", () => {
     expect(url).not.toContain("rep-");
   });
 });
+
+describe("régression : duel à 2 équipes SANS gagnant (winners=0)", () => {
+  it("parse OK, verdict undecided, aucune exception", () => {
+    if (!existsSync(CONTEXT_PATH)) return;
+    // Fixture 8v8 dérivée : bitset winners forcé à 0 (abandon général →
+    // winnerTeams vide). Avant le correctif : findIndex −1 → playerTeams[2]
+    // → TypeError rattrapé en amont par un message « API injoignable ».
+    const context = buildGameContext(JSON.parse(readFileSync(CONTEXT_PATH, "utf8")));
+    const raw = JSON.parse(readFileSync(join(REPLAYS_DIR, "wsva-Jd894wx6so9.json"), "utf8"));
+    const extra = raw.data.extraData as Record<string, string>;
+    const matchData = JSON.parse(extra["0"]) as { winners: number };
+    matchData.winners = 0;
+    extra["0"] = JSON.stringify(matchData);
+
+    const result = new ReplayInfoParser(context, "Jd894wx6so9").parse(raw);
+    expect(isReplaySuccess(result)).toBe(true);
+    if (!isReplaySuccess(result)) return;
+    expect(result.match.winnerTeams).toEqual([]);
+    expect(result.match.isComplete).toBe(false);
+
+    const run = () => buildReplayAnalysis(result);
+    expect(run).not.toThrow();
+    const analysis = run();
+    expect(analysis.verdict.winnerSide).toBeNull();
+    expect(analysis.verdict.reason).toBe("undecided");
+    expect(analysis.verdict.teamSize).toBe(8);
+    expect(analysis.power).not.toBeNull();
+    expect(analysis.winChanceBlue).not.toBeNull();
+    for (const team of analysis.teams) {
+      expect(team.isWinner).toBe(false);
+      const total = team.players.reduce((a, p) => a + p.share, 0);
+      expect(total).toBeCloseTo(1, 5);
+    }
+  });
+});

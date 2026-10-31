@@ -10,10 +10,12 @@ import type { ReplayParseResult } from "./structure";
 export const REPLAY_API_BASE = "https://games-api.warselect.io/getByReplay?code=";
 
 /** Normalise un code saisi : préfixe optionnel « rep- » puis exactement 11
- *  caractères (sensible à la casse, comme l'API). Renvoie null si invalide. */
+ *  caractères alphanumériques [A-Za-z0-9] (charset aligné sur l’API officielle —
+ *  les codes réels sont alphanumériques, sensibles à la casse). Renvoie null
+ *  si invalide. */
 export function parseReplayCode(input: string | undefined | null): string | null {
   if (!input) return null;
-  const match = /^(?:rep-)?(.{11})$/.exec(input.trim());
+  const match = /^(?:rep-)?([A-Za-z0-9]{11})$/.exec(input.trim());
   return match ? match[1] : null;
 }
 
