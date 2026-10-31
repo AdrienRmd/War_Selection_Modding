@@ -1,11 +1,19 @@
-import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
+import { identity } from "@/lib/atlas-server";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/page-metadata";
-import { ReplayBrowser } from "@/components/replay-browser";
+import { AtlasHeader, AtlasFooter } from "@/components/atlas-shell";
+import { ReplayPortal } from "@/components/replay/replay-portal";
+
 export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   return pageMetadata("replay");
 }
+
+/** Page /replay — portail « façon wsva » : accueil éditorial (titre, code,
+ *  aide, replays récemment soumis) puis page résultat complète. Le thème
+ *  clair est scopé à main.replay-page (replay.css), le reste du site ATLAS
+ *  reste inchangé. */
 export default async function Replay({
   searchParams,
 }: {
@@ -13,16 +21,12 @@ export default async function Replay({
 }) {
   const params = await searchParams;
   const initialCode = typeof params.code === "string" ? params.code.slice(0, 20) : "";
+  const { user } = await identity();
   return (
     <>
       <AtlasHeader />
-      <main className="shell">
-        <PageTitle
-          eyebrow="WAR SELECTION / REPLAY ANALYZER"
-          title="回放分析"
-          text="粘贴对局回放代码，查看比分、玩家、时间线与单位统计；数据来自游戏官方接口。"
-        />
-        <ReplayBrowser initialCode={initialCode} />
+      <main className="shell replay-page">
+        <ReplayPortal initialCode={initialCode} signedIn={!!user} />
       </main>
       <AtlasFooter />
     </>
