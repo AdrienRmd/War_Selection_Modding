@@ -33,6 +33,22 @@ export const pageRoutes: Record<string, PageRoute> = {
   units: { path: /^\/units$/, meta: { title: "单位档案 | WS ATLAS" } },
   researches: { path: /^\/researches$/, meta: { title: "科技档案 | WS ATLAS" } },
   replay: { path: /^\/replay$/, meta: { title: "回放分析 | WS ATLAS" } },
+  players: {
+    path: /^\/players$/,
+    meta: {
+      title: "玩家排行榜 | WS ATLAS",
+      description:
+        "每赛季的玩家积分榜：参赛、胜利、MVP 与击杀都折算成积分。数据来自已公开的回放。",
+    },
+  },
+  seasonStats: {
+    path: /^\/season-statistics$/,
+    meta: {
+      title: "赛期统计 | WS ATLAS",
+      description:
+        "已公开回放汇总：流行模式、平均时长、服务器地区与产量最高的单位。",
+    },
+  },
   modding: { path: /^\/modding$/, meta: { title: "参数档案 | WS ATLAS" } },
   maps: { path: /^\/maps$/, meta: { title: "地图档案 | WS ATLAS" } },
   mapsStalingrad: {

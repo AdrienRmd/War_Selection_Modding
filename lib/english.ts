@@ -2358,7 +2358,6 @@ export const english: Record<string, string> = {
   生存: "Survival",
   "排位 1v1": "Ranked 1v1",
   "排位 2v2": "Ranked 2v2",
-  沙盒: "Sandbox",
   对局信息: "Match information",
   // Refonte /replay « façon wsva » (31/10/2026) — accueil éditorial + résultat.
   "你这一局，打得究竟怎么样？": "How well did you really play?",
@@ -2459,4 +2458,49 @@ export const english: Record<string, string> = {
   黑帮: "Mafia",
   未知模式: "Unknown mode",
   环境: "Environment",
+  // Replay phase 2 — classement joueurs (/players) & stats saison
+  // (/season-statistics), 31/10/2026.
+  "玩家排行榜 | WS ATLAS": "Players Ladder | WS ATLAS",
+  玩家排行榜: "Players ladder",
+  "每赛季的玩家积分榜：参赛、胜利、MVP 与击杀都折算成积分。数据来自已公开的回放。":
+    "Seasonal player ladder: games, wins, MVPs and kills all convert to points. Data comes from published replays.",
+  赛季: "Season",
+  "积分 = 参赛×1 + 胜利×2 + MVP×2 + 击杀÷100（取整）。":
+    "Points = games×1 + wins×2 + MVPs×2 + kills÷100 (rounded down).",
+  本赛期统计: "Season statistics",
+  队列类型: "Queue type",
+  大部队: "Big team",
+  "单排 / 双排": "Solo / Duo",
+  "数据更新至 ${date}。": "Data updated through ${date}.",
+  "本赛期还没有已公开的回放。": "No published replays in this season yet.",
+  排行榜: "Ladder",
+  本赛期暂无排名: "No ranking for this season yet",
+  "回放经管理员公开后，排行榜会自动更新。":
+    "The ladder updates automatically once a replay is published by a moderator.",
+  提交第一个回放: "Submit the first replay",
+  "赛期统计 | WS ATLAS": "Season Statistics | WS ATLAS",
+  赛期统计: "Season statistics",
+  "已公开回放汇总：流行模式、平均时长、服务器地区与产量最高的单位。":
+    "Published replays at a glance: popular modes, average duration, server regions and most produced units.",
+  已公开回放: "Published replays",
+  上榜玩家: "Ranked players",
+  平均时长: "Average duration",
+  流行模式: "Popular modes",
+  服务器地区: "Server regions",
+  "暂无地区数据。": "No region data yet.",
+  自定义地图: "Custom maps",
+  产量最高的单位: "Most produced units",
+  搜索玩家: "Search players",
+  "搜索玩家…": "Search a player…",
+  "PLAYERS LADDER": "PLAYERS LADDER",
+  "SEASON STATISTICS": "SEASON STATISTICS",
+  玩家积分榜: "Players ladder",
+  排名: "Rank",
+  积分: "Points",
+  场次: "Games",
+  最近一局: "Last game",
+  "没有匹配的玩家。": "No player matches this search.",
+  "单排/双排与大部队分开计算：切换上方标签查看。":
+    "Solo/duo and big team are ranked separately — switch tabs above.",
+  沙盒: "Sandbox",
 };

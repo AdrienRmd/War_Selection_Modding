@@ -2267,3 +2267,337 @@ code {
   margin-bottom: 18px;
   padding: 20px;
 }
+
+/* ------------------------------------------------- Classement joueurs & stats saison (Replay phase 2, 31/10/2026).
+   Même DA « Field Command » : panneau latéral saisons, onglets catégorie,
+   tableau épuré top 3 badgés, cartes stats pour /season-statistics. */
+.ladder-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 26px;
+  align-items: start;
+}
+.ladder-side {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  padding: 20px;
+  position: sticky;
+  top: 20px;
+}
+.season-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.season-chip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  transition:
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.season-chip:hover {
+  border-color: var(--input);
+  color: var(--foreground);
+}
+.season-chip.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--card));
+}
+.ladder-formula {
+  line-height: 1.8;
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}
+.ladder-link {
+  color: var(--primary);
+}
+.ladder-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.ladder-main {
+  /* Empêche la largeur min du tableau (660 px) de gonfler la piste de grille
+     — le défilement horizontal reste interne à .ladder-scroll. */
+  min-width: 0;
+}
+.ladder-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+.cat-tabs {
+  display: flex;
+  gap: 8px;
+}
+.cat-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  color: var(--muted-foreground);
+  transition:
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
+}
+.cat-tab:hover {
+  border-color: var(--input);
+  color: var(--foreground);
+}
+.cat-tab.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--card));
+}
+.ladder-updated {
+  color: var(--muted-foreground);
+}
+.ladder-search {
+  max-width: 340px;
+  margin-bottom: 16px;
+}
+.ladder-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+.ladder-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 660px;
+}
+.ladder-table th,
+.ladder-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+.ladder-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--card-raised);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+.ladder-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.ladder-table tbody tr:hover {
+  background: color-mix(in srgb, var(--accent) 45%, var(--card));
+}
+.ladder-table td.num,
+.ladder-table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ladder-table td.player {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.ladder-table td.points {
+  color: var(--primary);
+  font-weight: 600;
+}
+.ladder-table td.last,
+.ladder-table td.rank {
+  color: var(--muted-foreground);
+}
+.rank-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 13px;
+}
+tr.top-1 .rank-badge {
+  background: var(--gradient-primary);
+  color: var(--primary-foreground);
+}
+tr.top-2 .rank-badge {
+  background: color-mix(in srgb, var(--foreground) 72%, var(--muted));
+  color: var(--background);
+}
+tr.top-3 .rank-badge {
+  background: color-mix(in srgb, var(--primary-strong) 45%, var(--muted));
+  color: var(--foreground);
+}
+.ladder-empty {
+  text-align: center;
+  color: var(--muted-foreground);
+  padding: 26px 14px !important;
+}
+.ladder-note {
+  margin-top: 12px;
+  color: var(--muted-foreground);
+}
+.sr-only-caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* — Cartes stats (/season-statistics) — */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 22px 24px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background:
+    var(--gradient-card),
+    var(--card);
+}
+.stat-value {
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 500;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.stat-label {
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--muted-foreground);
+}
+.stat-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.stat-panel {
+  padding: 22px 24px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+.stat-panel h2 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 14px;
+}
+.stat-panel h2 + .stat-panel h2 {
+  margin-top: 22px;
+}
+.stat-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  font-size: 14px;
+}
+.stat-bars li {
+  display: grid;
+  grid-template-columns: minmax(90px, 160px) 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.bar-label {
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+.bar-track {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+  overflow: hidden;
+}
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--gradient-primary);
+}
+.bar-value {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.unit-ranks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 26px;
+  font-size: 14px;
+}
+.unit-ranks li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.unit-rank {
+  min-width: 22px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.unit-name {
+  overflow-wrap: anywhere;
+}
+.unit-count {
+  margin-left: auto;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 980px) {
+  .ladder-layout {
+    grid-template-columns: 1fr;
+  }
+  .ladder-side {
+    position: static;
+  }
+  .stat-columns,
+  .unit-ranks {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 550px) {
+  .stat-cards {
+    grid-template-columns: 1fr;
+  }
+  .ladder-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

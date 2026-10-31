@@ -43,6 +43,14 @@ export function AtlasNav() {
           </Link>
         ))}
       </HeaderMenu>
+      {/* Replay phase 2 : entrée directe « Classement » — visible sans ouvrir
+          le menu Archives, entre Archives et Mods. */}
+      <Link
+        href="/players"
+        aria-current={isActive("/players") || isActive("/season-statistics") ? "page" : undefined}
+      >
+        {t("玩家排行榜")}
+      </Link>
       <HeaderMenu
         ariaLabel="Mod"
         trigger={<span className="nav-menu-label">{t("Mod")}</span>}

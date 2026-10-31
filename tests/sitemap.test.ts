@@ -18,6 +18,8 @@ describe("sitemap.xml — vitrine des sections de données (V3-P1)", () => {
       "https://ws.aremond.ovh/modding",
       "https://ws.aremond.ovh/workbench",
       "https://ws.aremond.ovh/workbench/simple",
+      "https://ws.aremond.ovh/players",
+      "https://ws.aremond.ovh/season-statistics",
     ]) {
       expect(locs, `${route} absente du sitemap`).toContain(route);
     }

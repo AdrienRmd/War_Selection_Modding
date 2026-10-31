@@ -19,6 +19,9 @@ describe("registre des titres lib/page-titles", () => {
       "/mods",
       "/workbench",
       "/workbench/simple",
+      "/replay",
+      "/players",
+      "/season-statistics",
       "/maps/stalingrad",
       "/maps/collection/manage",
       "/reference",
@@ -67,7 +70,13 @@ describe("registre des titres lib/page-titles", () => {
 
   it("traduit chaque meta description en EN et FR", () => {
     const described = Object.entries(pageRoutes).filter(([, r]) => r.meta.description);
-    expect(described.map(([k]) => k).sort()).toEqual(["home", "workbench", "workbenchSimple"]);
+    expect(described.map(([k]) => k).sort()).toEqual([
+      "home",
+      "players",
+      "seasonStats",
+      "workbench",
+      "workbenchSimple",
+    ]);
     for (const [key, route] of described) {
       expect(translate(route.meta.description!, "en"), `desc EN brute pour ${key}`).not.toBe(
         route.meta.description,

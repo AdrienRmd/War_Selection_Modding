@@ -2399,7 +2399,6 @@ export const french: Record<string, string> = {
   生存: "Survie",
   "排位 1v1": "Classé 1v1",
   "排位 2v2": "Classé 2v2",
-  沙盒: "Bac à sable",
   // Refonte /replay « façon wsva » (31/10/2026) — accueil éditorial + résultat.
   "你这一局，打得究竟怎么样？": "À quel point avez-vous vraiment bien joué ?",
   "在游戏的回放列表或结算画面中找到代码。代码区分大小写。":
@@ -2501,4 +2500,49 @@ export const french: Record<string, string> = {
   黑帮: "Mafia",
   未知模式: "Mode inconnu",
   环境: "Environnement",
+  // Replay phase 2 — classement joueurs (/players) & stats saison
+  // (/season-statistics), 31/10/2026.
+  "玩家排行榜 | WS ATLAS": "Classement joueurs | WS ATLAS",
+  玩家排行榜: "Classement joueurs",
+  "每赛季的玩家积分榜：参赛、胜利、MVP 与击杀都折算成积分。数据来自已公开的回放。":
+    "Classement saisonnier des joueurs : matchs, victoires, MVP et unités tuées se convertissent en points. Données issues des replays publiés.",
+  赛季: "Saison",
+  "积分 = 参赛×1 + 胜利×2 + MVP×2 + 击杀÷100（取整）。":
+    "Points = matchs×1 + victoires×2 + MVP×2 + tués÷100 (arrondi à l'unité inférieure).",
+  本赛期统计: "Statistiques de la saison",
+  队列类型: "Type de file",
+  大部队: "Grandes équipes",
+  "单排 / 双排": "Solo / Duo",
+  "数据更新至 ${date}。": "Données à jour jusqu'au ${date}.",
+  "本赛期还没有已公开的回放。": "Aucun replay publié pour cette saison.",
+  排行榜: "Classement",
+  本赛期暂无排名: "Aucun classement pour cette saison",
+  "回放经管理员公开后，排行榜会自动更新。":
+    "Le classement se met à jour automatiquement dès qu'un replay est publié par un modérateur.",
+  提交第一个回放: "Soumettre le premier replay",
+  "赛期统计 | WS ATLAS": "Statistiques de saison | WS ATLAS",
+  赛期统计: "Statistiques de saison",
+  "已公开回放汇总：流行模式、平均时长、服务器地区与产量最高的单位。":
+    "Les replays publiés en un coup d'œil : modes populaires, durée moyenne, régions serveur et unités les plus produites.",
+  已公开回放: "Replays publiés",
+  上榜玩家: "Joueurs classés",
+  平均时长: "Durée moyenne",
+  流行模式: "Modes populaires",
+  服务器地区: "Régions serveur",
+  "暂无地区数据。": "Pas encore de données de région.",
+  自定义地图: "Cartes personnalisées",
+  产量最高的单位: "Unités les plus produites",
+  搜索玩家: "Rechercher des joueurs",
+  "搜索玩家…": "Rechercher un joueur…",
+  "PLAYERS LADDER": "CLASSEMENT JOUEURS",
+  "SEASON STATISTICS": "STATISTIQUES DE SAISON",
+  玩家积分榜: "Classement joueurs",
+  排名: "Rang",
+  积分: "Points",
+  场次: "Matchs",
+  最近一局: "Dernière partie",
+  "没有匹配的玩家。": "Aucun joueur ne correspond à cette recherche.",
+  "单排/双排与大部队分开计算：切换上方标签查看。":
+    "Solo/duo et grandes équipes sont classés séparément — changez d'onglet ci-dessus.",
+  沙盒: "Bac à sable",
 };

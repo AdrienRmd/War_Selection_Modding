@@ -396,3 +396,74 @@ export async function playerStatsForSeason(
     .all<PlayerStatsRow>();
   return rows.results ?? [];
 }
+
+/* ------------------------------------------------------------------ */
+/* Stats saison (page /season-statistics)                              */
+/* ------------------------------------------------------------------ */
+
+export interface SeasonStats {
+  season: string;
+  replays: number;
+  players: number;
+  avgDurationS: number | null;
+  modes: Array<{ modeKey: string; count: number }>;
+  regions: Array<{ region: string; count: number }>;
+  maps: Array<{ mapCode: string; count: number }>;
+  topUnits: Array<{ unitId: string; count: number }>;
+  lastStarted: string | null;
+}
+
+/** Agrégation pure des stats d'une saison depuis les lignes replay_results
+ *  (digests publiés) — testée unitairement, requêtes D1 en amont. */
+export function aggregateSeasonStats(season: string, rows: ReplayResultRow[]): SeasonStats {
+  const modes = new Map<string, number>();
+  const regions = new Map<string, number>();
+  const maps = new Map<string, number>();
+  const units = new Map<string, number>();
+  const players = new Set<string>();
+  let durationTotal = 0;
+  let lastStarted: string | null = null;
+  for (const row of rows) {
+    modes.set(row.mode_key, (modes.get(row.mode_key) ?? 0) + 1);
+    if (row.region) regions.set(row.region, (regions.get(row.region) ?? 0) + 1);
+    if (row.map_code) maps.set(row.map_code, (maps.get(row.map_code) ?? 0) + 1);
+    durationTotal += row.duration_s;
+    if (row.started_at > (lastStarted ?? "")) lastStarted = row.started_at;
+    try {
+      const digest = JSON.parse(row.data) as { players?: Array<{ n: string }>; units?: Array<[string, number]> };
+      for (const p of digest.players ?? []) players.add(p.n);
+      for (const [id, count] of digest.units ?? []) units.set(id, (units.get(id) ?? 0) + count);
+    } catch {
+      // digest illisible : ignoré (jamais bloquant pour l'affichage)
+    }
+  }
+  const byCount = <T>(m: Map<T, number>): Array<{ key: T; count: number }> =>
+    [...m.entries()]
+      .map(([key, count]) => ({ key, count }))
+      .sort((a, b) => b.count - a.count || String(a.key).localeCompare(String(b.key)));
+  return {
+    season,
+    replays: rows.length,
+    players: players.size,
+    avgDurationS: rows.length ? Math.round(durationTotal / rows.length) : null,
+    modes: byCount(modes).map(({ key, count }) => ({ modeKey: key, count })),
+    regions: byCount(regions).map(({ key, count }) => ({ region: key, count })),
+    maps: byCount(maps).map(({ key, count }) => ({ mapCode: key, count })),
+    topUnits: byCount(units)
+      .slice(0, 8)
+      .map(({ key, count }) => ({ unitId: key, count })),
+    lastStarted,
+  };
+}
+
+/** Lignes replay_results publiées d'une saison (ordre chronologique). */
+export async function replayResultsForSeason(season: string): Promise<ReplayResultRow[]> {
+  const db = bindings().DB as unknown as D1Like;
+  const rows = await db
+    .prepare(
+      "SELECT r.* FROM replay_results r JOIN replays p ON p.code = r.code WHERE p.status = 'published' AND r.season = ? ORDER BY r.started_at",
+    )
+    .bind(season)
+    .all<ReplayResultRow>();
+  return rows.results ?? [];
+}

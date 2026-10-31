@@ -19,6 +19,7 @@ import {
   PATCH as replayPatch,
 } from "@/app/api/replay/[[...path]]/route";
 import {
+  aggregateSeasonStats,
   applyReplayStats,
   categoryOf,
   cleanDigest,
@@ -500,6 +501,72 @@ describe("agrégation à la publication (incrémentale, idempotente)", () => {
     await call("PATCH", "/api/replay/Abcdef12345", { status: "withdrawn" });
     await rebuildPlayerStats();
     expect(state.stats.find((s) => s.player_name === "Vzgo")!.games).toBe(1);
+  });
+});
+
+describe("agrégation stats saison (aggregateSeasonStats, pure)", () => {
+  const resultRow = (code: string, startedAt: string, mode: string, region: string | null, data: object) => ({
+    code,
+    season: "2026-10",
+    category: "big" as const,
+    started_at: startedAt,
+    duration_s: 3600,
+    mode_key: mode,
+    team_size: 8,
+    region,
+    map_code: null,
+    data: JSON.stringify(data),
+    updated_at: startedAt,
+    aggregated_at: startedAt,
+  });
+
+  it("compte replays/joueurs, moyenne de durée, modes/regions triés, top unités fusionnées", () => {
+    const stats = aggregateSeasonStats("2026-10", [
+      resultRow("Aaaaaaaaa1", "2026-10-01T10:00:00.000Z", "replayMatchTypeTeamMatch", "europe", {
+        players: [{ n: "Vzgo" }, { n: "dbat" }],
+        units: [["WarSelection/1/worker", 100], ["WarSelection/1/house", 40]],
+      }),
+      resultRow("Bbbbbbbbbb2", "2026-10-02T10:00:00.000Z", "replayMatchTypeFFA", "asia", {
+        players: [{ n: "Vzgo" }],
+        units: [["WarSelection/1/worker", 50]],
+      }),
+    ]);
+    expect(stats).toMatchObject({
+      season: "2026-10",
+      replays: 2,
+      players: 2,
+      avgDurationS: 3600,
+      lastStarted: "2026-10-02T10:00:00.000Z",
+    });
+    expect(stats.modes).toEqual([
+      { modeKey: "replayMatchTypeFFA", count: 1 },
+      { modeKey: "replayMatchTypeTeamMatch", count: 1 },
+    ]);
+    expect(stats.regions).toEqual([
+      { region: "asia", count: 1 },
+      { region: "europe", count: 1 },
+    ]);
+    expect(stats.topUnits).toEqual([
+      { unitId: "WarSelection/1/worker", count: 150 },
+      { unitId: "WarSelection/1/house", count: 40 },
+    ]);
+  });
+
+  it("saison vide → zéro partout, durée null, sans erreur", () => {
+    const stats = aggregateSeasonStats("2026-12", []);
+    expect(stats).toMatchObject({ replays: 0, players: 0, avgDurationS: null, lastStarted: null });
+    expect(stats.topUnits).toEqual([]);
+  });
+
+  it("digest illisible ignoré sans casser l'agrégation", () => {
+    const stats = aggregateSeasonStats(
+      "2026-10",
+      [resultRow("Cccccccccc3", "2026-10-03T10:00:00.000Z", "replayMatchTypeTeamMatch", null, {})].map(
+        (r) => ({ ...r, data: "{{{" }),
+      ),
+    );
+    expect(stats.replays).toBe(1);
+    expect(stats.players).toBe(0);
   });
 });
 
