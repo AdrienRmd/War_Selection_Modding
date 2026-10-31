@@ -322,7 +322,7 @@ describe("clés et budgets", () => {
   it("clé R2 d'avatar dérivée de l'userId, jamais du nom de fichier", () => {
     expect(avatarKeyFor("u-123")).toBe("avatars/u-123/avatar");
   });
-  it("budget PATCH : 10 modifications / 60 s, clé par compte", () => {
+  it("budget PATCH : 10 modifications AUTORISÉES par fenêtre de 60 s (la 11ᵉ refusée), clé par compte", () => {
     expect(PROFILE_PATCH_BUDGET).toEqual({ limit: 10, windowMs: 60000 });
     expect(profileAttemptKey("user-1")).toBe("profile:user-1");
     expect(profileAttemptKey("x".repeat(100))).toBe(`profile:${"x".repeat(64)}`);

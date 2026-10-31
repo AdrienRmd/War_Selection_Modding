@@ -11,6 +11,13 @@ const { envStub, getChatGPTUser } = vi.hoisted(() => ({
 
 vi.mock("cloudflare:workers", () => ({ env: envStub }));
 vi.mock("@/app/chatgpt-auth", () => ({ getChatGPTUser }));
+// V3-P2 #3 : le throttle est compilé hors des builds DEV (RATE_LIMITS_ENABLED
+// = !import.meta.env.DEV) ; on l'active explicitement ici pour tester le
+// comportement PRODUCTION du budget PATCH (10 autorisées, la 11ᵉ refusée).
+vi.mock("@/lib/auth-server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/auth-server")>()),
+  RATE_LIMITS_ENABLED: true,
+}));
 
 import { PATCH } from "@/app/api/account/profile/route";
 
@@ -244,6 +251,94 @@ describe("avatar", () => {
 function bucket() {
   return envStub.BUCKET as ReturnType<typeof makeBucket>;
 }
+
+// ---------------------------------------------------------------------------
+// SB1-d — comportement EXACT du throttle PATCH (V3-P2 #3) : PROFILE_PATCH_BUDGET
+// = { limit: 10, windowMs: 60 000 }. count>=limit → refus : les 10 PREMIÈRES
+// modifications d'une fenêtre de 60 s passent, la 11ᵉ reçoit 429. Le DB de
+// test maintient l'état auth_attempts (fenêtre + compteur) comme D1.
+
+function makeThrottleDb(
+  log: DbLog,
+  attempts: Map<string, { window_start: number; count: number }>,
+) {
+  return {
+    prepare(sql: string) {
+      log.sql.push(sql);
+      return {
+        bind(...args: unknown[]) {
+          return {
+            // marqueurs lus par batch() (statements liés réels de D1)
+            __sql: sql,
+            __args: args,
+            first: async () => {
+              if (sql.includes("FROM sessions s JOIN users")) return log.sessionRow;
+              if (sql.includes("SELECT display_name, avatar_key")) return log.updatedRow;
+              if (sql.includes("FROM auth_attempts"))
+                return attempts.get(String(args[0])) ?? null;
+              return null;
+            },
+            all: async () => ({ results: [] }),
+            run: async () => {
+              if (sql.startsWith("UPDATE users")) return { meta: { changes: log.updateChanges } };
+              if (sql.includes("UPDATE auth_attempts")) {
+                const row = attempts.get(String(args[0]));
+                if (row) row.count += 1;
+                return { meta: { changes: 1 } };
+              }
+              return { meta: { changes: 0 } };
+            },
+          };
+        },
+      };
+    },
+    batch: async (stmts: { __sql?: string; __args?: unknown[] }[]) => {
+      for (const stmt of stmts) {
+        if (stmt.__sql?.includes("INSERT INTO auth_attempts") && stmt.__args) {
+          attempts.set(String(stmt.__args[0]), {
+            window_start: Number(stmt.__args[1]),
+            count: 1,
+          });
+        }
+      }
+      return { results: stmts.map(() => ({ meta: { changes: 1 } })) };
+    },
+  };
+}
+
+describe("SB1-d — throttling PATCH : 10 autorisées par fenêtre, la 11ᵉ refusée", () => {
+  let attempts: Map<string, { window_start: number; count: number }>;
+  beforeEach(() => {
+    attempts = new Map();
+    envStub.DB = makeThrottleDb(log, attempts);
+  });
+
+  it("rafale de 11 PATCH en < 1 min : #1 à #10 → 200, #11 → 429", async () => {
+    for (let i = 1; i <= 10; i++) {
+      const r = await PATCH(jsonReq({ locale: "en" }));
+      expect(r.status, `PATCH n°${i} de la fenêtre`).toBe(200);
+    }
+    const r11 = await PATCH(jsonReq({ locale: "en" }));
+    expect(r11.status).toBe(429);
+    expect(((await r11.json()) as { error: string }).error).toBe("修改过于频繁，请 1 分钟后再试。");
+    // Retry-After borné à la fenêtre restante (≤ 60 s), jamais 0
+    const retry = Number(r11.headers.get("Retry-After"));
+    expect(retry).toBeGreaterThan(0);
+    expect(retry).toBeLessThanOrEqual(60);
+    // la 11ᵉ requête refusée ne touche jamais users (rien d'écrit)
+    expect(log.sql.filter((s) => s.startsWith("UPDATE users"))).toHaveLength(10);
+  });
+
+  it("fenêtre expirée : le compteur repart à zéro (plus de 429)", async () => {
+    attempts.set(`profile:${USER_ID}`, { window_start: Date.now() - 61_000, count: 99 });
+    const r = await PATCH(jsonReq({ locale: "fr" }));
+    expect(r.status).toBe(200);
+    expect(attempts.get(`profile:${USER_ID}`)).toEqual({
+      window_start: expect.any(Number),
+      count: 1,
+    });
+  });
+});
 
 describe("cohérence transactionnelle", () => {
   it("échec de la mise à jour D1 → l'objet R2 fraîchement posé est purgé", async () => {

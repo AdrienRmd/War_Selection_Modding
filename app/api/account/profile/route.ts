@@ -17,7 +17,8 @@ import {
 
 // PATCH /api/account/profile — édition du profil par le titulaire (SB1).
 // Authentifié session uniquement, garde CSRF sameOrigin identique aux autres
-// mutations du site, throttling persisté via auth_attempts (10PATCH/min/compte).
+// mutations du site, throttling persisté via auth_attempts (10 PATCH/min
+// autorisés par compte : la 11ᵉ requête de la fenêtre reçoit 429).
 // Corps JSON (pseudo, locale) OU multipart (avatar en plus). L'identité vient
 // TOUJOURS de la session serveur : aucune donnée client (userId, email…) n'est
 // lue dans le corps.

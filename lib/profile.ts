@@ -266,8 +266,10 @@ export function avatarKeyFor(userId: string): string {
 
 // ---------------------------------------------------------------------------
 // Throttling du PATCH profil (SB1-d) : même table auth_attempts que l'auth.
-// ≥ 10 modifications en < 1 min depuis un même compte → 429. Le budget borne
-// les tentatives, réussies comme refusées (comme le budget signup).
+// Comportement EXACT (V3-P2 #3, count>=limit → refus) : les 10 PREMIÈRES
+// modifications d'une fenêtre de 60 s sont autorisées, la 11ᵉ reçoit 429.
+// Le budget borne les tentatives, réussies comme refusées (comme le budget
+// signup) — testé de bout en bout dans account-profile-route.test.ts.
 
 export const PROFILE_PATCH_BUDGET = { limit: 10, windowMs: 60 * 1000 };
 
