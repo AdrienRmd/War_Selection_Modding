@@ -4,14 +4,18 @@ import { describe, expect, it } from "vitest";
 import { translate } from "@/lib/i18n";
 import { unitsIndex } from "@/lib/units";
 import {
+  AGE_ADVANCE_FILTER,
   countAgeAdvances,
   countByType,
+  countInFamily,
+  countInSubFilter,
   countResearches,
   countWonders,
   isAgeAdvance,
   isWonder,
   localizedResearchDescription,
   localizedResearchName,
+  researchFamilies,
   researchesIndex,
   researchImageUrl,
   researchTypeLabels,
@@ -344,6 +348,64 @@ describe("ne code aucun compte en dur dans la page /researches", () => {
   });
 });
 
+describe("familles de filtres /researches (Chantier A)", () => {
+  it("couvre chaque recherche d'une famille par exactement une famille ; les hors-familles restent dans « Tout »", () => {
+    const familyIds = researchFamilies.filter((f) => f.id !== "all").map((f) => f.id);
+    expect(familyIds).toEqual(["age", "military", "economy", "wonder"]);
+    // Union dédupliquée : une avancée d'âge de type age-transition n'est
+    // comptée qu'une fois dans « Âge », jamais dans une autre famille.
+    for (const research of researchesIndex.researches) {
+      const memberships = researchFamilies.filter(
+        (f) => f.id !== "all" && f.match(research),
+      );
+      if (memberships.length > 0) {
+        expect(memberships).toHaveLength(1);
+      } else {
+        // Hors famille (ex. aura) : type connu du sélecteur, couvert par « Tout ».
+        expect(researchesIndex.types.some((t) => t.name === research.type)).toBe(true);
+      }
+    }
+  });
+
+  it("compte les familles du dataset publié (union dédupliquée, valeurs verrouillées)", () => {
+    expect(countInFamily(researchesIndex.researches, "all")).toBe(156);
+    expect(countInFamily(researchesIndex.researches, "age")).toBe(41);
+    expect(countInFamily(researchesIndex.researches, "military")).toBe(65);
+    expect(countInFamily(researchesIndex.researches, "economy")).toBe(36);
+    expect(countInFamily(researchesIndex.researches, "wonder")).toBe(8);
+  });
+
+  it("restreint les sous-filtres au périmètre de leur famille (mock)", () => {
+    const mock: ResearchEntry[] = [
+      // Âge : 1 avancée (description transition) + 1 transition sans marqueur.
+      { gameId: 1, type: "researchTypeAgeTransition", descriptions: { fr: "Mène à l'âge de Fer" } },
+      { gameId: 2, type: "researchTypeAgeTransition", descriptions: { fr: "Autre" } },
+      // Militaire.
+      { gameId: 3, type: "researchTypeCombat", descriptions: {} },
+      { gameId: 4, type: "researchTypeUnit", descriptions: {} },
+      // Économie & Empire.
+      { gameId: 5, type: "researchTypeEco", descriptions: {} },
+      { gameId: 6, type: "researchTypeBuff", descriptions: {} },
+      // Merveille.
+      { gameId: 7, type: "researchTypeWonderTransition", descriptions: {} },
+      // Hors famille (aura).
+      { gameId: 8, type: "researchTypeAura", descriptions: {} },
+    ];
+    expect(countInFamily(mock, "all")).toBe(8);
+    expect(countInFamily(mock, "age")).toBe(2);
+    expect(countInFamily(mock, "military")).toBe(2);
+    expect(countInFamily(mock, "economy")).toBe(2);
+    expect(countInFamily(mock, "wonder")).toBe(1);
+    expect(countInSubFilter(mock, "age", AGE_ADVANCE_FILTER)).toBe(1);
+    expect(countInSubFilter(mock, "age", "researchTypeAgeTransition")).toBe(2);
+    expect(countInSubFilter(mock, "military", "researchTypeCombat")).toBe(1);
+    expect(countInSubFilter(mock, "military", "researchTypeUnit")).toBe(1);
+    expect(countInSubFilter(mock, "economy", "researchTypeBuff")).toBe(1);
+    // Merveille : famille mono-sous-type, pas de barre de sous-filtres.
+    expect(researchFamilies.find((f) => f.id === "wonder")?.sub).toHaveLength(0);
+  });
+});
+
 describe("couverture i18n des libellés /researches", () => {
   const keys = [
     "科技档案",
@@ -377,6 +439,13 @@ describe("couverture i18n des libellés /researches", () => {
     "增益",
     "奇观过渡",
     "光环",
+    "时代",
+    "军事",
+    "经济与帝国",
+    "研究子类型",
+    "档案",
+    "Mod",
+    "账户菜单",
   ];
 
   it("traduit chaque libellé en EN et FR", () => {

@@ -1,43 +1,64 @@
 "use client";
-import { T, useI18n } from "@/components/i18n";
-
 import { usePathname } from "next/navigation";
-import { SlidersHorizontal, ShieldCheck } from "lucide-react";
+import { T, useI18n } from "@/components/i18n";
+import { HeaderMenu } from "@/components/header-menu";
 import Link from "@/components/site-link";
-export function AtlasNav({ admin }: { admin: boolean }) {
+
+/** Groupe « Archives » : données de jeu publiées (cartes, unités, recherches, modding). */
+const ARCHIVES_ITEMS = [
+  { href: "/maps", name: "地图档案" },
+  { href: "/units", name: "单位档案" },
+  { href: "/researches", name: "科技档案" },
+  { href: "/modding", name: "参数档案" },
+];
+
+/** Groupe « Mods » : bibliothèque communautaire et atelier de création. */
+const MODS_ITEMS = [
+  { href: "/mods", name: "Mod 资料库" },
+  { href: "/workbench", name: "Mod 工作台" },
+];
+
+export function AtlasNav() {
   const { t } = useI18n();
   const path = usePathname() || "/";
+  const isActive = (href: string) =>
+    href === "/" ? path === "/" : path.startsWith(href);
   return (
     <nav aria-label={t("主导航")}>
-      {[
-        { href: "/maps", name: "地图档案", active: path === "/" || path.startsWith("/maps") },
-        { href: "/units", name: "单位档案", active: path.startsWith("/units") },
-        { href: "/researches", name: "科技档案", active: path.startsWith("/researches") },
-        { href: "/modding", name: "参数档案", active: path.startsWith("/modding") },
-        { href: "/mods", name: "Mod 资料库", active: path.startsWith("/mods") },
-        {
-          href: "/workbench",
-          name: "Mod 工作台",
-          active: path.startsWith("/workbench"),
-          icon: <SlidersHorizontal size={15} />,
-        },
-        { href: "/submissions", name: "我的创作", active: path.startsWith("/submissions") },
-        ...(admin
-          ? [
-              {
-                href: "/admin",
-                name: "管理",
-                active: path.startsWith("/admin"),
-                icon: <ShieldCheck size={15} />,
-              },
-            ]
-          : []),
-      ].map((i) => (
-        <Link key={i.href} href={i.href} aria-current={i.active ? "page" : undefined}>
-          <T text={i.icon} />
-          <T text={i.name} />
-        </Link>
-      ))}
+      <HeaderMenu
+        ariaLabel="档案"
+        trigger={<span className="nav-menu-label">{t("档案")}</span>}
+        active={ARCHIVES_ITEMS.some((i) => isActive(i.href))}
+      >
+        {ARCHIVES_ITEMS.map((i) => (
+          <Link
+            key={i.href}
+            role="menuitem"
+            className="nav-menu-item"
+            href={i.href}
+            aria-current={isActive(i.href) ? "page" : undefined}
+          >
+            <T text={i.name} />
+          </Link>
+        ))}
+      </HeaderMenu>
+      <HeaderMenu
+        ariaLabel="Mod"
+        trigger={<span className="nav-menu-label">{t("Mod")}</span>}
+        active={MODS_ITEMS.some((i) => isActive(i.href))}
+      >
+        {MODS_ITEMS.map((i) => (
+          <Link
+            key={i.href}
+            role="menuitem"
+            className="nav-menu-item"
+            href={i.href}
+            aria-current={isActive(i.href) ? "page" : undefined}
+          >
+            <T text={i.name} />
+          </Link>
+        ))}
+      </HeaderMenu>
     </nav>
   );
 }

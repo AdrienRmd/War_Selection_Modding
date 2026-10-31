@@ -1,6 +1,16 @@
 /* Page /researches — archive des recherches du dataset wus-data.
    Réutilise les classes .units-* de app/units.css ; seuls les éléments
    spécifiques (description, puces de liens vers /units) sont définis ici. */
+/* Chantier A — filtres à deux niveaux : familles puis sous-types. Chaque
+   barre occupe une ligne pleine (width 100%) : filtres ≤ 2 lignes garanties,
+   en desktop comme en mobile (flex-wrap, pas de défilement horizontal). */
+.units-families,
+.units-subfamilies {
+  width: 100%;
+}
+.units-subfamilies {
+  margin-top: -6px;
+}
 .researches-section {
   margin-top: 28px;
   min-width: 0;

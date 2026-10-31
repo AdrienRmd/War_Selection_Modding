@@ -2285,4 +2285,12 @@ export const french: Record<string, string> = {
   "创作者已验证：署名与账号一致。": "Créateur vérifié : la signature correspond au compte.",
   "已按账号昵称预填，可修改；与昵称一致时展示“创作者已验证”。":
     "Prérempli avec le pseudo du compte — modifiable ; en le laissant identique, le badge « Créateur vérifié » s'affiche.",
+  // Chantier A — menus déroulants du header + familles de filtres /researches.
+  档案: "Archives",
+  Mod: "Mods",
+  账户菜单: "Menu du compte",
+  时代: "Âge",
+  军事: "Militaire",
+  经济与帝国: "Économie & Empire",
+  研究子类型: "Sous-type de recherche",
 };

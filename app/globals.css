@@ -133,6 +133,82 @@ nav {
 nav a:hover {
   color: var(--foreground);
 }
+/* Chantier A — menus déroulants du header (groupes « Archives » / « Mods » et
+   menu « Compte »). Accessibilité keyboard gérée dans header-menu.tsx. */
+.nav-menu {
+  position: relative;
+}
+.nav-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 2px;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 15px;
+  color: var(--muted-foreground);
+}
+nav .nav-menu-trigger:hover,
+nav .nav-menu-trigger[aria-expanded="true"],
+.nav-menu-active > .nav-menu-trigger {
+  color: var(--foreground);
+}
+.nav-menu-active > .nav-menu-trigger .nav-menu-label {
+  color: var(--primary);
+}
+.header-actions .nav-menu-trigger {
+  font-size: 14px;
+}
+.nav-chevron {
+  transition: transform 0.15s ease;
+}
+.nav-menu-trigger[aria-expanded="true"] .nav-chevron {
+  transform: rotate(180deg);
+}
+.nav-menu-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 70;
+  min-width: 210px;
+  max-width: min(300px, calc(100vw - 36px));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+}
+.nav-menu-panel-end {
+  left: auto;
+  right: 0;
+}
+.nav-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  border: 0;
+  border-radius: calc(var(--radius) - 2px);
+  background: none;
+  color: var(--popover-foreground);
+  text-align: left;
+  white-space: nowrap;
+}
+.nav-menu-item:hover,
+.nav-menu-item:focus-visible {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.nav-menu-item[aria-current="page"] {
+  color: var(--primary);
+}
 .button {
   display: inline-flex;
   align-items: center;

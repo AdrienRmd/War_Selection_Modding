@@ -2249,4 +2249,12 @@ export const english: Record<string, string> = {
   "创作者已验证：署名与账号一致。": "Verified creator: byline matches the account.",
   "已按账号昵称预填，可修改；与昵称一致时展示“创作者已验证”。":
     "Pre-filled with your account nickname — editable; keeping it exactly as-is shows the “Verified creator” badge.",
+  // Chantier A — menus déroulants du header + familles de filtres /researches.
+  档案: "Archives",
+  Mod: "Mods",
+  账户菜单: "Account menu",
+  时代: "Age",
+  军事: "Military",
+  经济与帝国: "Economy & Empire",
+  研究子类型: "Research subtype",
 };

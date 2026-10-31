@@ -2,7 +2,15 @@
 import { useState } from "react";
 import { T } from "@/components/i18n";
 
-export function SignOutAllButton() {
+export function SignOutAllButton({
+  role,
+  className = "account-link",
+}: {
+  /** role="menuitem" quand le bouton vit dans un menu déroulant du header. */
+  role?: "menuitem";
+  /** Classe de style : account-link seul, ou nav-menu-item dans le menu. */
+  className?: string;
+}) {
   const [busy, setBusy] = useState(false);
   async function signOutAll() {
     if (busy) return;
@@ -11,7 +19,7 @@ export function SignOutAllButton() {
     window.location.assign("/");
   }
   return (
-    <button className="account-link" type="button" onClick={signOutAll} disabled={busy}>
+    <button className={className} type="button" role={role} onClick={signOutAll} disabled={busy}>
       <T text={"退出所有设备"} />
     </button>
   );

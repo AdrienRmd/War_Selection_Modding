@@ -16,8 +16,6 @@ import {
   type UnitIndexEntry,
 } from "@/lib/units";
 import {
-  countAgeAdvances,
-  countByType,
   countResearches,
   isAgeAdvance,
   isWonder,
@@ -27,16 +25,17 @@ import {
   researchImageUrl,
   researchTypeLabel,
   searchResearches,
-  typesInUse,
   unitDeepLink,
+  AGE_ADVANCE_FILTER,
+  countInFamily,
+  countInSubFilter,
+  researchFamilies,
   type ResearchEntry,
+  type ResearchFamilyId,
   type ResearchProducer,
   type ResearchesIndex,
 } from "@/lib/researches";
 import type { CostPair, UnitRequirement } from "@/lib/units";
-
-/** Filtre « Avancées d'âge » : valeur sentinel dédiée dans la barre de types. */
-const AGE_FILTER = "age-advance";
 
 export function ResearchesBrowser({
   index,
@@ -49,7 +48,10 @@ export function ResearchesBrowser({
   const { locale, t } = useI18n();
   const l = useBilingual();
   const [query, setQuery] = useState("");
-  const [type, setType] = useState("all");
+  // Filtres à deux niveaux : famille (Tout / Âge / Militaire / Économie &
+  // Empire / Merveille) puis sous-type dans la famille active (optionnel).
+  const [family, setFamily] = useState<ResearchFamilyId>("all");
+  const [sub, setSub] = useState<string>("all");
   const [selected, setSelected] = useState<ResearchEntry | null>(() =>
     initialGameId === null
       ? null
@@ -69,19 +71,21 @@ export function ResearchesBrowser({
     return unit ? localizedUnitName(unit, locale) : unitId;
   };
 
-  const perType = useMemo(() => countByType(index.researches), [index]);
-  const ageAdvanceCount = useMemo(() => countAgeAdvances(index.researches), [index]);
+  const activeFamily = useMemo(
+    () => researchFamilies.find((f) => f.id === family) ?? researchFamilies[0],
+    [family],
+  );
   const totalResearches = meta?.counts?.researches ?? countResearches(index.researches);
-  const activeTypes = useMemo(() => typesInUse(index), [index]);
   const filtered = useMemo(() => {
-    const scoped =
-      type === "all"
-        ? index.researches
-        : type === AGE_FILTER
-          ? index.researches.filter(isAgeAdvance)
-          : index.researches.filter((r) => r.type === type);
-    return searchResearches(scoped, query);
-  }, [index, type, query]);
+    const scoped = index.researches.filter(activeFamily.match);
+    const narrowed =
+      sub === "all"
+        ? scoped
+        : scoped.filter((r) =>
+            sub === AGE_ADVANCE_FILTER ? isAgeAdvance(r) : r.type === sub,
+          );
+    return searchResearches(narrowed, query);
+  }, [index, activeFamily, sub, query]);
 
   const badge = (
     <UpdatedDatasetBadge
@@ -114,41 +118,56 @@ export function ResearchesBrowser({
             aria-label={l("搜索研究", "Search researches")}
           />
         </div>
-        <div className="units-factions" role="group" aria-label={t("研究类型")}>
-          <button
-            type="button"
-            className={type === "all" ? "active" : ""}
-            aria-pressed={type === "all"}
-            onClick={() => setType("all")}
-          >
-            {l("全部", "All")}
-            <span className="units-faction-count">{countResearches(index.researches)}</span>
-          </button>
-          <button
-            type="button"
-            className={type === AGE_FILTER ? "active" : ""}
-            aria-pressed={type === AGE_FILTER}
-            onClick={() => setType(AGE_FILTER)}
-          >
-            {l("时代进阶", "Age advances")}
-            <span className="units-faction-count">{ageAdvanceCount}</span>
-          </button>
-          {activeTypes.map((researchType) => {
-            const label = researchTypeLabel(researchType.name);
-            return (
-              <button
-                key={researchType.name}
-                type="button"
-                className={type === researchType.name ? "active" : ""}
-                aria-pressed={type === researchType.name}
-                onClick={() => setType(researchType.name)}
-              >
-                {l(label.zh, label.en)}
-                <span className="units-faction-count">{perType[researchType.name] ?? 0}</span>
-              </button>
-            );
-          })}
+        <div className="units-factions units-families" role="group" aria-label={t("研究类型")}>
+          {researchFamilies.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              className={family === f.id ? "active" : ""}
+              aria-pressed={family === f.id}
+              onClick={() => {
+                setFamily(f.id);
+                setSub("all");
+              }}
+            >
+              {l(f.zh, f.en)}
+              <span className="units-faction-count">{countInFamily(index.researches, f.id)}</span>
+            </button>
+          ))}
         </div>
+        {activeFamily.sub.length > 1 ? (
+          <div
+            className="units-factions units-subfamilies"
+            role="group"
+            aria-label={t("研究子类型")}
+          >
+            <button
+              type="button"
+              className={sub === "all" ? "active" : ""}
+              aria-pressed={sub === "all"}
+              onClick={() => setSub("all")}
+            >
+              {l("全部", "All")}
+              <span className="units-faction-count">
+                {countInFamily(index.researches, activeFamily.id)}
+              </span>
+            </button>
+            {activeFamily.sub.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className={sub === s.id ? "active" : ""}
+                aria-pressed={sub === s.id}
+                onClick={() => setSub(s.id)}
+              >
+                {l(s.zh, s.en)}
+                <span className="units-faction-count">
+                  {countInSubFilter(index.researches, activeFamily.id, s.id)}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <p className="caption units-note">

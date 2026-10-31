@@ -148,6 +148,103 @@ export const researchTypeLabels: ReadonlyArray<{ id: string; zh: string; en: str
 export const researchTypeLabel = (type: string): { zh: string; en: string } =>
   researchTypeLabels.find((t) => t.id === type) ?? { zh: type, en: type };
 
+/** Sentinel de sous-filtre « Avancées d'âge » (avancées ET transitions partagent le type age-transition). */
+export const AGE_ADVANCE_FILTER = "age-advance";
+
+export type ResearchFamilyId = "all" | "age" | "military" | "economy" | "wonder";
+
+export interface ResearchSubFilter {
+  /** Identifiant : type de recherche ou sentinel AGE_ADVANCE_FILTER. */
+  id: string;
+  zh: string;
+  en: string;
+}
+
+/**
+ * Familles de filtres de /researches — regroupement des types en 4 familles
+ * + « Tout » (arbitrage simplification UI) :
+ *   Âge        = avancées d'âge + transitions d'âge
+ *   Militaire  = combat + unités
+ *   Économie & Empire = économie + population + territoire + bonus
+ *   Merveille  = transition de merveille
+ * Les compteurs par famille sont des unions dédupliquées (une recherche
+ * n'est comptée qu'une fois par famille, même si avancée + transition).
+ */
+export const researchFamilies: ReadonlyArray<{
+  id: ResearchFamilyId;
+  zh: string;
+  en: string;
+  match: (research: ResearchEntry) => boolean;
+  sub: ReadonlyArray<ResearchSubFilter>;
+}> = [
+  { id: "all", zh: "全部", en: "All", match: () => true, sub: [] },
+  {
+    id: "age",
+    zh: "时代",
+    en: "Age",
+    match: (r) => isAgeAdvance(r) || r.type === "researchTypeAgeTransition",
+    sub: [
+      { id: AGE_ADVANCE_FILTER, zh: "时代进阶", en: "Age advances" },
+      { id: "researchTypeAgeTransition", zh: "时代过渡", en: "Age transition" },
+    ],
+  },
+  {
+    id: "military",
+    zh: "军事",
+    en: "Military",
+    match: (r) => r.type === "researchTypeCombat" || r.type === "researchTypeUnit",
+    sub: [
+      { id: "researchTypeCombat", zh: "战斗", en: "Combat" },
+      { id: "researchTypeUnit", zh: "单位", en: "Units" },
+    ],
+  },
+  {
+    id: "economy",
+    zh: "经济与帝国",
+    en: "Economy & Empire",
+    match: (r) =>
+      r.type === "researchTypeEco" ||
+      r.type === "researchTypePop" ||
+      r.type === "researchTypeTerritory" ||
+      r.type === "researchTypeBuff",
+    sub: [
+      { id: "researchTypeEco", zh: "经济", en: "Economy" },
+      { id: "researchTypePop", zh: "人口", en: "Population" },
+      { id: "researchTypeTerritory", zh: "领土", en: "Territory" },
+      { id: "researchTypeBuff", zh: "增益", en: "Buffs" },
+    ],
+  },
+  {
+    id: "wonder",
+    zh: "奇观",
+    en: "Wonder",
+    match: (r) => r.type === "researchTypeWonderTransition",
+    sub: [],
+  },
+];
+
+/** Compteur d'une famille (union dédupliquée des types qui la composent). */
+export const countInFamily = (
+  researches: readonly ResearchEntry[],
+  familyId: ResearchFamilyId,
+): number => {
+  const family = researchFamilies.find((f) => f.id === familyId) ?? researchFamilies[0];
+  return researches.filter(family.match).length;
+};
+
+/** Compteur d'un sous-filtre, restreint au périmètre de sa famille. */
+export const countInSubFilter = (
+  researches: readonly ResearchEntry[],
+  familyId: ResearchFamilyId,
+  subId: string,
+): number => {
+  const family = researchFamilies.find((f) => f.id === familyId) ?? researchFamilies[0];
+  const scoped = researches.filter(family.match);
+  return scoped.filter((r) =>
+    subId === AGE_ADVANCE_FILTER ? isAgeAdvance(r) : r.type === subId,
+  ).length;
+};
+
 const searchable = (research: ResearchEntry): string[] => {
   const names = research.names ?? {};
   const descriptions = research.descriptions ?? {};

@@ -2,11 +2,10 @@ import Link from "@/components/site-link";
 import { ArrowUpRight } from "lucide-react";
 import { LanguageSwitcher, T } from "@/components/i18n";
 import { AtlasNav } from "@/components/atlas-nav";
+import { AccountMenu } from "@/components/account-menu";
 import { SiteFooter } from "@/components/site-footer";
 import { identity } from "@/lib/atlas-server";
-import { initialsOf } from "@/lib/profile";
 import { chatGPTSignInPath, chatGPTSignOutPath } from "@/app/chatgpt-auth";
-import { SignOutAllButton } from "@/components/auth/signout-all-button";
 export async function AtlasHeader() {
   const { user, admin } = await identity();
   return (
@@ -20,32 +19,15 @@ export async function AtlasHeader() {
             <small>WAR SELECTION · COMMUNITY</small>
           </span>
         </Link>
-        <AtlasNav admin={admin} />
+        <AtlasNav />
         <div className="header-actions">
           {user ? (
-            <>
-              {user.avatarKey ? (
-                <img
-                  className="header-avatar"
-                  src="/api/account/avatar"
-                  alt=""
-                  width={28}
-                  height={28}
-                />
-              ) : (
-                <span className="header-avatar header-initials" aria-hidden="true">
-                  {initialsOf(user.displayName)}
-                </span>
-              )}
-              <span className="account-name">{user.displayName}</span>
-              <Link className="account-link" href="/account">
-                <T text="我的账号" />
-              </Link>
-              <a className="account-link" href={chatGPTSignOutPath()} target="_top">
-                <T text={"退出登录"} />
-              </a>
-              <SignOutAllButton />
-            </>
+            <AccountMenu
+              displayName={user.displayName}
+              avatarKey={user.avatarKey}
+              admin={admin}
+              signOutHref={chatGPTSignOutPath()}
+            />
           ) : (
             <a className="account-link" href={chatGPTSignInPath("/")} target="_top">
               <T text={"登录"} />
