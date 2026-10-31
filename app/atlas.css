@@ -1253,14 +1253,22 @@ code {
   .header {
     gap: 20px 10px;
   }
+  /* V3-P1 — cause racine du débordement 375 px des pages authentifiées :
+     la barre de compte (avatar + nom + « 我的账号 » + « 退出登录 » + « 退出所有
+     设备 » + bouton « 提交作品 ») mesurait ~521 px en nowrap alors que le
+     viewport offrait ~337 px ; seul overflow-x:hidden masquait le drame.
+     Elle se replie désormais sur plusieurs lignes, alignée à droite. */
+  .header-actions {
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 8px;
+  }
   .header nav {
     width: 100%;
     justify-content: space-between;
     gap: 12px;
     font-size: 14px;
-  }
-  .header-actions {
-    gap: 10px;
   }
   .header .brand small {
     font-size: 10px;
