@@ -273,20 +273,44 @@
   margin-top: 35px;
 }
 .collection-management {
+  position: relative;
+  isolation: isolate;
   display: flex;
   gap: 18px;
   justify-content: space-between;
   align-items: center;
-  padding: 22px;
-  border: 1px solid #344553;
+  padding: 28px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
   margin: 20px 0;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(13 17 16 / 0.92) 0%,
+      rgb(13 17 16 / 0.55) 55%,
+      rgb(13 17 16 / 0.15) 100%
+    ),
+    url("/stalingrad-map.webp") center / cover no-repeat;
+}
+.collection-management::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--gradient-sheen);
 }
 .collection-management p {
   margin: 6px 0 0;
-  color: #b8c7d3;
+  color: #d5dcd6;
+  max-width: 480px;
 }
 .collection-management h2 {
   font-size: 22px;
+}
+.collection-management .button {
+  position: relative;
+  flex: none;
 }
 @media (max-width: 1000px) {
   .collection-grid {

@@ -81,9 +81,7 @@ export function ResearchesBrowser({
     const narrowed =
       sub === "all"
         ? scoped
-        : scoped.filter((r) =>
-            sub === AGE_ADVANCE_FILTER ? isAgeAdvance(r) : r.type === sub,
-          );
+        : scoped.filter((r) => (sub === AGE_ADVANCE_FILTER ? isAgeAdvance(r) : r.type === sub));
     return searchResearches(narrowed, query);
   }, [index, activeFamily, sub, query]);
 
@@ -178,7 +176,35 @@ export function ResearchesBrowser({
       </p>
 
       {filtered.length === 0 ? (
-        <p className="notice">{l("没有找到对应研究。", "No matching researches found.")}</p>
+        <div className="units-empty">
+          <span className="units-empty-art" aria-hidden="true">
+            <img
+              src={researchImageUrl(index.researches[0]?.image ?? "upgrade/9.png")}
+              alt=""
+              width={104}
+              height={104}
+              loading="lazy"
+            />
+          </span>
+          <h3>{l("没有找到对应研究。", "No matching researches found.")}</h3>
+          <p>
+            {l(
+              "换个名称或类型试试，或清除筛选查看全部研究。",
+              "Try another name or type, or clear the filters to see every research.",
+            )}
+          </p>
+          <button
+            type="button"
+            className="button"
+            onClick={() => {
+              setQuery("");
+              setFamily("all");
+              setSub("all");
+            }}
+          >
+            {l("清除筛选", "Clear filters")}
+          </button>
+        </div>
       ) : (
         <ul className="units-grid">
           {filtered.map((research) => {
@@ -196,14 +222,12 @@ export function ResearchesBrowser({
                         src={researchImageUrl(research.image)}
                         alt={localizedResearchName(research, locale)}
                         loading="lazy"
-                        width={96}
-                        height={96}
+                        width={160}
+                        height={160}
                       />
                     ) : null}
                   </span>
-                  <span className="units-card-name">
-                    {localizedResearchName(research, locale)}
-                  </span>
+                  <span className="units-card-name">{localizedResearchName(research, locale)}</span>
                   <span className="research-card-flags">
                     {isWonder(research) ? (
                       <span className="research-flag research-flag-wonder">{t("奇观")}</span>
@@ -223,7 +247,11 @@ export function ResearchesBrowser({
       )}
 
       {selected ? (
-        <div className="units-detail-backdrop" role="presentation" onClick={() => setSelected(null)}>
+        <div
+          className="units-detail-backdrop"
+          role="presentation"
+          onClick={() => setSelected(null)}
+        >
           <div
             className="units-detail"
             role="dialog"
@@ -237,7 +265,7 @@ export function ResearchesBrowser({
                   className="units-detail-image"
                   src={researchImageUrl(selected.image)}
                   alt={localizedResearchName(selected, locale)}
-                  width={96}
+                  width={128}
                   height={96}
                 />
               ) : null}
@@ -300,13 +328,7 @@ function ResearchCostChips({ costs }: { costs: CostPair[] }) {
         const name = localizedResourceLabel(unitsIndex, resourceId, locale);
         return (
           <span key={resourceId} className="units-cost">
-            <img
-              src={resourceImageUrl(resourceId)}
-              alt=""
-              width={18}
-              height={18}
-              loading="lazy"
-            />
+            <img src={resourceImageUrl(resourceId)} alt="" width={18} height={18} loading="lazy" />
             {name ? <span>{name}</span> : null}
             <b>{formatStatNumber(value, locale)}</b>
           </span>
@@ -428,7 +450,9 @@ function ResearchDetail({
         <div className="units-block">
           <h4>{l("研究费用与时长", "Cost & duration")}</h4>
           {producers.length > 1 ? (
-            <p className="units-subtitle">{l("每行对应一个产出建筑。", "Each row is one producing building.")}</p>
+            <p className="units-subtitle">
+              {l("每行对应一个产出建筑。", "Each row is one producing building.")}
+            </p>
           ) : null}
           <ul className="research-ways">
             {producers.map((way) => (

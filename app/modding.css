@@ -31,11 +31,13 @@
   overflow-wrap: anywhere;
 }
 .modding-tree {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   background: var(--card);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
   margin-top: 12px;
   min-width: 0;
+  overflow: hidden;
   overflow-wrap: anywhere;
 }
 .modding-nodes {
@@ -80,10 +82,12 @@
 }
 .modding-row-main:not(:disabled):hover {
   background: var(--muted);
+  border-radius: var(--radius-sm);
 }
 .modding-row[data-current] .modding-row-main {
   box-shadow: inset 3px 0 0 var(--primary);
-  background: var(--muted);
+  background: rgb(240 178 100 / 0.07);
+  border-radius: var(--radius-sm);
 }
 .modding-toggle {
   flex: none;
@@ -111,8 +115,8 @@
   flex: none;
   font-size: 11px;
   line-height: 1.5;
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
   padding: 0 7px;
   color: var(--muted-foreground);
 }
@@ -198,12 +202,16 @@
   background: transparent;
   color: var(--primary);
   font-size: 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 6px 12px;
   cursor: pointer;
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
 }
 .modding-more button:hover {
-  border-color: var(--primary);
+  border-color: rgb(240 178 100 / 0.45);
+  background: rgb(240 178 100 / 0.06);
 }
 .modding-search-block {
   margin-top: 10px;
@@ -226,17 +234,21 @@
 .modding-search-results a {
   display: block;
   padding: 6px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
   background: var(--card);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
   color: var(--primary);
   text-decoration: none;
   overflow-wrap: anywhere;
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
 }
 .modding-search-results a:hover {
-  border-color: var(--primary);
+  border-color: rgb(240 178 100 / 0.45);
+  background: var(--card-raised);
 }
 .modding-missing code {
   overflow-wrap: anywhere;

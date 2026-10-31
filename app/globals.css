@@ -50,13 +50,18 @@
   --dur-slow: 250ms;
   /* — Dégradés signatures — */
   --gradient-primary: linear-gradient(135deg, #f6c07a 0%, #f0b264 45%, #e09a44 100%);
-  --gradient-hero: linear-gradient(180deg, rgb(13 17 16 / 0.1) 0%, rgb(13 17 16 / 0.55) 55%, #101413 100%);
+  --gradient-hero: linear-gradient(
+    180deg,
+    rgb(13 17 16 / 0.1) 0%,
+    rgb(13 17 16 / 0.55) 55%,
+    #101413 100%
+  );
   --gradient-card: linear-gradient(180deg, rgb(255 246 230 / 0.035), rgb(255 246 230 / 0) 45%);
   --gradient-sheen: radial-gradient(120% 90% at 85% 0%, rgb(240 178 100 / 0.14), transparent 55%);
   /* — Typographie — */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", Arial,
-    sans-serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Courier New", monospace;
 }
 @theme inline {
@@ -187,7 +192,9 @@ svg {
   background: rgb(14 18 17 / 0.86);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: inset 0 1px 0 rgb(255 246 230 / 0.03), var(--shadow-sm);
+  box-shadow:
+    inset 0 1px 0 rgb(255 246 230 / 0.03),
+    var(--shadow-sm);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -205,7 +212,9 @@ svg {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  box-shadow: var(--shadow-sm), 0 0 0 1px rgb(240 178 100 / 0.18);
+  box-shadow:
+    var(--shadow-sm),
+    0 0 0 1px rgb(240 178 100 / 0.18);
 }
 .brand svg {
   color: var(--primary);
@@ -306,7 +315,9 @@ nav .nav-menu-trigger[aria-expanded="true"],
   color: var(--popover-foreground);
   text-align: left;
   white-space: nowrap;
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
 .nav-menu-item:hover,
 .nav-menu-item:focus-visible {
@@ -390,9 +401,7 @@ nav .nav-menu-trigger[aria-expanded="true"],
   padding: 26px;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-lg);
-  background:
-    var(--gradient-sheen),
-    radial-gradient(140% 120% at 15% 10%, #232b28, #171c1a 70%);
+  background: var(--gradient-sheen), radial-gradient(140% 120% at 15% 10%, #232b28, #171c1a 70%);
   overflow: hidden;
 }
 .art-panel img {
@@ -606,21 +615,24 @@ h1 em {
   color: #a2aaa1;
 }
 .empty-surface {
-  padding: 80px 25px;
+  padding: 64px 25px;
   text-align: center;
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
 }
 .empty-surface svg {
   margin: auto auto 15px;
   color: var(--primary);
+  opacity: 0.85;
 }
 .empty-surface h2 {
-  font-size: 25px;
+  font-size: 23px;
 }
 .empty-surface p {
   color: var(--muted-foreground);
-  margin: 12px 0 22px;
+  margin: 12px auto 22px;
+  max-width: 460px;
 }
 @media (max-width: 900px) {
   .header {

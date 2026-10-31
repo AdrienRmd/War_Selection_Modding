@@ -26,6 +26,10 @@ const produce = async (source, name, pipeline) => {
   console.log(`${name} : ${kb} Ko`);
 };
 
+// Carte Stalingrad : fond du panneau « sélection » de /maps.
+await produce(join(PUB, "stalingrad-map.png"), "stalingrad-map.webp", (s) =>
+  s.resize({ width: 1200, withoutEnlargement: true }).webp({ quality: 82, effort: 4 }),
+);
 // Hero : décor Stalingrad, léger et net à 1920px de large.
 await produce(join(PUB, "stalingrad-art.png"), "stalingrad-art.webp", (s) =>
   s.resize({ width: 1920, withoutEnlargement: true }).webp({ quality: 80, effort: 4 }),

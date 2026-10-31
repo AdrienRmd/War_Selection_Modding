@@ -112,10 +112,20 @@ button.account-link:disabled {
 }
 .search-input input {
   padding-left: 40px;
-  background: #171e1b;
-  height: 43px;
-  border-radius: 3px;
-  font-size: 14px;
+  background: var(--card);
+  height: 44px;
+  border-radius: var(--radius-md);
+  font-size: 16px; /* anti-zoom iOS */
+  border-color: var(--border-soft);
+  transition:
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.search-input input:focus,
+.search-input input:focus-visible {
+  outline: none;
+  border-color: rgb(240 178 100 / 0.55);
+  box-shadow: var(--ring-soft);
 }
 .community-grid {
   display: grid;
@@ -123,28 +133,39 @@ button.account-link:disabled {
   gap: 22px;
 }
 .map-card {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   background: var(--card);
-  transition: 0.2s;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  transition:
+    transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
   overflow: hidden;
 }
 .map-card:hover {
-  border-color: var(--primary);
+  border-color: rgb(240 178 100 / 0.4);
   transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
 }
 .map-card-cover {
   height: 220px;
-  background: #26332e;
+  background: radial-gradient(120% 120% at 30% 0%, #2b3531, #1c2321 70%);
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #829b89;
+  overflow: hidden;
 }
 .map-card-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform var(--dur-slow) var(--ease);
+}
+.map-card:hover .map-card-cover img {
+  transform: scale(1.04);
 }
 .map-card-cover .tag {
   position: absolute;
@@ -188,11 +209,12 @@ button.account-link:disabled {
 }
 .community-empty {
   padding: 28px;
-  border: 1px dashed #455047;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   gap: 22px;
-  background: #171d19;
+  background: var(--card);
 }
 .community-empty > svg {
   color: var(--primary);
@@ -475,9 +497,20 @@ button.account-link:disabled {
 }
 .mod-card {
   padding: 25px;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--gradient-card), var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
   position: relative;
+  box-shadow: var(--shadow-xs);
+  transition:
+    transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.mod-card:hover {
+  border-color: rgb(240 178 100 / 0.4);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 .mod-card-head {
   display: flex;
@@ -807,14 +840,31 @@ button.account-link:disabled {
   margin-top: 7px;
 }
 .page-title {
-  padding: 15px 0 35px;
+  padding: 18px 0 38px;
+  position: relative;
+}
+.page-title .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--primary);
+}
+.page-title .eyebrow::before {
+  content: "";
+  width: 26px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--gradient-primary);
 }
 .page-title h1 {
   margin: 12px 0;
-  font-size: 36px;
+  font-size: clamp(30px, 4vw, 40px);
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 .page-title > p:last-child {
   font-size: 16px;
+  max-width: 720px;
 }
 .form-layout {
   display: grid;
@@ -1958,9 +2008,7 @@ code {
   align-items: flex-start;
   padding: 26px;
   border: 1px solid var(--border-soft);
-  background:
-    var(--gradient-sheen),
-    linear-gradient(160deg, var(--card-raised), var(--card));
+  background: var(--gradient-sheen), linear-gradient(160deg, var(--card-raised), var(--card));
   border-radius: var(--radius-lg);
   transition:
     transform var(--dur) var(--ease),
@@ -2027,7 +2075,9 @@ code {
   color: var(--muted-foreground);
   flex: none;
   align-self: center;
-  transition: transform var(--dur) var(--ease), color var(--dur) var(--ease);
+  transition:
+    transform var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
 .explore-links {
   display: flex;
@@ -2081,7 +2131,12 @@ code {
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(90deg, rgb(13 17 16 / 0.88) 0%, rgb(13 17 16 / 0.45) 46%, rgb(13 17 16 / 0.05) 78%),
+    linear-gradient(
+      90deg,
+      rgb(13 17 16 / 0.88) 0%,
+      rgb(13 17 16 / 0.45) 46%,
+      rgb(13 17 16 / 0.05) 78%
+    ),
     linear-gradient(180deg, rgb(13 17 16 / 0.25) 0%, rgb(13 17 16 / 0.1) 45%, var(--background) 98%);
 }
 .hero-home-content {
