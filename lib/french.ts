@@ -2287,7 +2287,6 @@ export const french: Record<string, string> = {
     "Prérempli avec le pseudo du compte — modifiable ; en le laissant identique, le badge « Créateur vérifié » s'affiche.",
   // Chantier A — menus déroulants du header + familles de filtres /researches.
   档案: "Archives",
-  Mod: "Mods",
   账户菜单: "Menu du compte",
   时代: "Âge",
   军事: "Militaire",

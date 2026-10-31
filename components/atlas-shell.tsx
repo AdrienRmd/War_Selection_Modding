@@ -24,7 +24,7 @@ export async function AtlasHeader() {
           {user ? (
             <AccountMenu
               displayName={user.displayName}
-              avatarKey={user.avatarKey}
+              avatarKey={user.avatarKey ?? null}
               admin={admin}
               signOutHref={chatGPTSignOutPath()}
             />

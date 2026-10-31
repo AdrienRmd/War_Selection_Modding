@@ -2251,7 +2251,6 @@ export const english: Record<string, string> = {
     "Pre-filled with your account nickname — editable; keeping it exactly as-is shows the “Verified creator” badge.",
   // Chantier A — menus déroulants du header + familles de filtres /researches.
   档案: "Archives",
-  Mod: "Mods",
   账户菜单: "Account menu",
   时代: "Age",
   军事: "Military",

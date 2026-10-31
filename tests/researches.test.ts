@@ -378,18 +378,18 @@ describe("familles de filtres /researches (Chantier A)", () => {
   it("restreint les sous-filtres au périmètre de leur famille (mock)", () => {
     const mock: ResearchEntry[] = [
       // Âge : 1 avancée (description transition) + 1 transition sans marqueur.
-      { gameId: 1, type: "researchTypeAgeTransition", descriptions: { fr: "Mène à l'âge de Fer" } },
-      { gameId: 2, type: "researchTypeAgeTransition", descriptions: { fr: "Autre" } },
+      { gameId: 1, type: "researchTypeAgeTransition", image: "", descriptions: { fr: "Mène à l'âge de Fer" } },
+      { gameId: 2, type: "researchTypeAgeTransition", image: "", descriptions: { fr: "Autre" } },
       // Militaire.
-      { gameId: 3, type: "researchTypeCombat", descriptions: {} },
-      { gameId: 4, type: "researchTypeUnit", descriptions: {} },
+      { gameId: 3, type: "researchTypeCombat", image: "", descriptions: {} },
+      { gameId: 4, type: "researchTypeUnit", image: "", descriptions: {} },
       // Économie & Empire.
-      { gameId: 5, type: "researchTypeEco", descriptions: {} },
-      { gameId: 6, type: "researchTypeBuff", descriptions: {} },
+      { gameId: 5, type: "researchTypeEco", image: "", descriptions: {} },
+      { gameId: 6, type: "researchTypeBuff", image: "", descriptions: {} },
       // Merveille.
-      { gameId: 7, type: "researchTypeWonderTransition", descriptions: {} },
+      { gameId: 7, type: "researchTypeWonderTransition", image: "", descriptions: {} },
       // Hors famille (aura).
-      { gameId: 8, type: "researchTypeAura", descriptions: {} },
+      { gameId: 8, type: "researchTypeAura", image: "", descriptions: {} },
     ];
     expect(countInFamily(mock, "all")).toBe(8);
     expect(countInFamily(mock, "age")).toBe(2);
