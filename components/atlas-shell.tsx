@@ -13,7 +13,7 @@ export async function AtlasHeader() {
       <LanguageSwitcher />
       <header className="header">
         <Link className="brand" href="/">
-          <img className="atlas-emblem" src="/atlas-emblem-v4.png" alt="" width={48} height={48} />
+          <img className="atlas-emblem" src="/atlas-emblem-96.png" alt="" width={44} height={44} />
           <span>
             WS <b>ATLAS</b>
             <small>WAR SELECTION · COMMUNITY</small>

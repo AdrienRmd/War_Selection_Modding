@@ -26,9 +26,12 @@ interface DatasetMeta {
 export function GameExplore({
   stats,
   samples,
+  researchIcons = [],
 }: {
   stats: ExploreStats;
   samples: ExploreSampleUnit[];
+  /** Icônes de recherches du dataset (sélection serveur déterministe). */
+  researchIcons?: string[];
 }) {
   const { locale, t } = useI18n();
   const [meta, setMeta] = useState<DatasetMeta | null>(null);
@@ -83,7 +86,9 @@ export function GameExplore({
             <span className="eyebrow">{t("ARCHIVE / 01")}</span>
             <h3>{t("单位档案")}</h3>
             <p className="explore-count">{t(`共 ${unitsCount} 个单位`)}</p>
-            <p className="explore-desc">{t("按时代浏览全部单位：原始数值、武器、护甲与官方名称。")}</p>
+            <p className="explore-desc">
+              {t("按时代浏览全部单位：原始数值、武器、护甲与官方名称。")}
+            </p>
             {samples.length > 0 ? (
               <span className="explore-thumbs">
                 {samples.map((sample) => (
@@ -112,6 +117,20 @@ export function GameExplore({
             <p className="explore-desc">
               {t("每项研究的官方名称、说明与解锁单位，直达单位档案。")}
             </p>
+            {researchIcons.length > 0 ? (
+              <span className="explore-thumbs" aria-hidden="true">
+                {researchIcons.map((image) => (
+                  <img
+                    key={image}
+                    src={datasetImageUrl(image)}
+                    alt=""
+                    width={44}
+                    height={44}
+                    loading="lazy"
+                  />
+                ))}
+              </span>
+            ) : null}
           </span>
           <ChevronRight size={20} className="explore-chevron" aria-hidden="true" />
         </Link>

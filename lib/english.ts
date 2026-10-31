@@ -1,5 +1,10 @@
 // Source-backed English UI and archived-content translations. Canonical data keys stay unchanged.
 export const english: Record<string, string> = {
+  浏览单位档案: "Browse the units",
+  "换个名称或 ID 试试，或清除筛选查看全部单位。":
+    "Try another name or ID, or clear the filters to see every unit.",
+  清除筛选: "Clear filters",
+
   收藏地图管理: "Manage saved maps",
   "寻找下一张地图，查看原始预览与分享码；测试状态独立标注。":
     "Find your next map, inspect original previews and copy map codes. Testing status is shown separately.",

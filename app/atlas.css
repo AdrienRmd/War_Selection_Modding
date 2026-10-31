@@ -1,11 +1,16 @@
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 .account-link {
   color: var(--muted-foreground);
   font-size: 14px;
+  transition: color var(--dur) var(--ease);
+}
+a.account-link:hover,
+button.account-link:hover:not(:disabled) {
+  color: var(--foreground);
 }
 button.account-link {
   background: none;
@@ -1939,7 +1944,7 @@ code {
    portal-card : bord, dégradé de carte, chevron. Anti-déformation mobile :
    min-width:0 sur les enfants flex + overflow-wrap sur les textes. */
 .explore-section {
-  margin-top: 35px;
+  margin-top: 40px;
 }
 .explore-grid {
   display: grid;
@@ -1947,24 +1952,40 @@ code {
   gap: 22px;
 }
 .explore-card {
+  position: relative;
   display: flex;
   gap: 20px;
   align-items: flex-start;
-  padding: 24px;
-  border: 1px solid var(--border);
-  background: linear-gradient(120deg, #172331, #101921);
-  border-radius: 4px;
-  transition: 0.2s;
+  padding: 26px;
+  border: 1px solid var(--border-soft);
+  background:
+    var(--gradient-sheen),
+    linear-gradient(160deg, var(--card-raised), var(--card));
+  border-radius: var(--radius-lg);
+  transition:
+    transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
   min-width: 0;
 }
 .explore-card:hover {
-  border-color: #6e8c9f;
+  border-color: rgb(240 178 100 / 0.45);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.explore-card:hover .explore-chevron {
+  color: var(--primary);
+  transform: translateX(3px);
 }
 .explore-icon {
   color: var(--primary);
   display: inline-flex;
   flex: none;
   margin-top: 3px;
+  padding: 12px;
+  border: 1px solid rgb(240 178 100 / 0.22);
+  border-radius: var(--radius-md);
+  background: rgb(240 178 100 / 0.08);
 }
 .explore-body {
   min-width: 0;
@@ -1979,7 +2000,7 @@ code {
 .explore-count {
   font-size: 13px;
   letter-spacing: 0.5px;
-  color: #a4bfcd;
+  color: var(--primary);
   margin: 2px 0 6px;
 }
 .explore-desc {
@@ -1997,15 +2018,16 @@ code {
   width: 44px;
   height: 44px;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--muted);
   object-fit: contain;
 }
 .explore-chevron {
   margin-left: auto;
-  color: #a4bfcd;
+  color: var(--muted-foreground);
   flex: none;
   align-self: center;
+  transition: transform var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .explore-links {
   display: flex;
@@ -2026,5 +2048,119 @@ code {
   .explore-thumbs img {
     width: 40px;
     height: 40px;
+  }
+}
+
+/* ============================================================
+   Refonte 2026 — hero d'accueil « pleine largeur »
+   Décor du jeu (WebP + repli PNG), compteurs réels des archives.
+   ============================================================ */
+.hero-home {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: flex-end;
+  min-height: min(86vh, 780px);
+  overflow: hidden;
+  background: #101413;
+}
+.hero-home > picture {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+.hero-home > picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+.hero-home::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgb(13 17 16 / 0.88) 0%, rgb(13 17 16 / 0.45) 46%, rgb(13 17 16 / 0.05) 78%),
+    linear-gradient(180deg, rgb(13 17 16 / 0.25) 0%, rgb(13 17 16 / 0.1) 45%, var(--background) 98%);
+}
+.hero-home-content {
+  width: 100%;
+  max-width: 1510px;
+  margin: 0 auto;
+  padding: 110px 4.5% 64px;
+}
+.hero-home .eyebrow {
+  color: #e8d9bd;
+  letter-spacing: 3px;
+}
+.hero-home h1 {
+  margin-top: 14px;
+  font-size: clamp(38px, 6vw, 68px);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: 1px;
+  text-shadow: 0 4px 30px rgb(6 9 8 / 0.6);
+}
+.hero-home h1 em {
+  display: block;
+  font-style: normal;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-home-sub {
+  margin-top: 16px;
+  max-width: 540px;
+  font-size: 17px;
+  color: #d8d4c8;
+  text-shadow: 0 2px 14px rgb(6 9 8 / 0.7);
+}
+.hero-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
+.hero-home-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 44px;
+  margin: 42px 0 0;
+  padding: 18px 24px;
+  border: 1px solid rgb(212 200 170 / 0.16);
+  border-radius: var(--radius-lg);
+  background: rgb(13 17 16 / 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.hero-home-stats dt {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #cdc6b4;
+}
+.hero-home-stats dd {
+  margin: 2px 0 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 700px) {
+  .hero-home {
+    min-height: 0;
+  }
+  .hero-home-content {
+    padding: 72px 5.5% 44px;
+  }
+  .hero-home-stats {
+    gap: 10px 26px;
+    padding: 14px 18px;
+  }
+  .hero-home-stats dd {
+    font-size: 21px;
   }
 }

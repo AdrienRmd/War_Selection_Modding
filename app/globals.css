@@ -178,38 +178,52 @@ svg {
   color: var(--muted-foreground);
 }
 .header {
-  min-height: 100px;
-  padding: 20px 4.5%;
-  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  min-height: 76px;
+  padding: 12px 4.5%;
+  border-bottom: 1px solid var(--border-soft);
+  background: rgb(14 18 17 / 0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 0 rgb(255 246 230 / 0.03), var(--shadow-sm);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 30px;
+  gap: 24px;
 }
 .brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 25px;
+  font-size: 24px;
   letter-spacing: 2px;
   line-height: 1.2;
+}
+.brand .atlas-emblem {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm), 0 0 0 1px rgb(240 178 100 / 0.18);
 }
 .brand svg {
   color: var(--primary);
 }
 .brand b {
   font-weight: 500;
+  color: var(--primary);
 }
 .brand small {
   display: block;
-  font-size: 12px;
-  letter-spacing: 1px;
-  margin-top: 8px;
+  font-size: 11px;
+  letter-spacing: 2.2px;
+  margin-top: 5px;
   color: var(--muted-foreground);
 }
 nav {
   display: flex;
-  gap: 35px;
+  gap: 28px;
   font-size: 15px;
   color: var(--muted-foreground);
 }
@@ -225,12 +239,14 @@ nav a:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 2px;
+  padding: 8px 2px;
   background: none;
   border: 0;
+  border-radius: var(--radius-sm);
   font: inherit;
   font-size: 15px;
   color: var(--muted-foreground);
+  transition: color var(--dur) var(--ease);
 }
 nav .nav-menu-trigger:hover,
 nav .nav-menu-trigger[aria-expanded="true"],
@@ -254,17 +270,24 @@ nav .nav-menu-trigger[aria-expanded="true"],
   top: calc(100% + 10px);
   left: 0;
   z-index: 70;
-  min-width: 210px;
+  min-width: 220px;
   max-width: min(300px, calc(100vw - 36px));
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 8px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   background: var(--popover);
   color: var(--popover-foreground);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-lg);
+  animation: menu-pop var(--dur) var(--ease-out);
+}
+@keyframes menu-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
 }
 .nav-menu-panel-end {
   left: auto;
@@ -278,11 +301,12 @@ nav .nav-menu-trigger[aria-expanded="true"],
   font-size: 14px;
   line-height: 1.4;
   border: 0;
-  border-radius: calc(var(--radius) - 2px);
+  border-radius: var(--radius-sm);
   background: none;
   color: var(--popover-foreground);
   text-align: left;
   white-space: nowrap;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .nav-menu-item:hover,
 .nav-menu-item:focus-visible {

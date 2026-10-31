@@ -21,9 +21,19 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     ...meta,
     icons: {
-      icon: "/atlas-emblem-v4.png",
-      shortcut: "/atlas-emblem-v4.png",
+      icon: [
+        { url: "/atlas-emblem-192.png", type: "image/png", sizes: "192x192" },
+        { url: "/favicon.svg", type: "image/svg+xml" },
+      ],
+      shortcut: "/favicon.svg",
+      apple: "/atlas-emblem-192.png",
     },
+    openGraph: {
+      siteName: "WS ATLAS",
+      type: "website",
+      images: [{ url: "/og-cover.jpg", width: 1200, height: 630, alt: "WS ATLAS" }],
+    },
+    twitter: { card: "summary_large_image" },
   };
 }
 

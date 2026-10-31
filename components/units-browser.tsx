@@ -134,7 +134,34 @@ export function UnitsBrowser({
       </p>
 
       {filtered.length === 0 ? (
-        <p className="notice">{l("没有找到对应单位。", "No matching units found.")}</p>
+        <div className="units-empty">
+          <span className="units-empty-art" aria-hidden="true">
+            <img
+              src={unitImageUrl("WarSelection/animals/tiger/male.png")}
+              alt=""
+              width={104}
+              height={104}
+              loading="lazy"
+            />
+          </span>
+          <h3>{l("没有找到对应单位。", "No matching units found.")}</h3>
+          <p>
+            {l(
+              "换个名称或 ID 试试，或清除筛选查看全部单位。",
+              "Try another name or ID, or clear the filters to see every unit.",
+            )}
+          </p>
+          <button
+            type="button"
+            className="button"
+            onClick={() => {
+              setQuery("");
+              setGroup("all");
+            }}
+          >
+            {l("清除筛选", "Clear filters")}
+          </button>
+        </div>
       ) : (
         <ul className="units-grid">
           {filtered.map((unit) => (
@@ -150,8 +177,8 @@ export function UnitsBrowser({
                       src={unitImageUrl(unit.image)}
                       alt={unitName(unit)}
                       loading="lazy"
-                      width={96}
-                      height={96}
+                      width={160}
+                      height={160}
                     />
                   ) : null}
                 </span>
@@ -182,8 +209,8 @@ export function UnitsBrowser({
                   className="units-detail-image"
                   src={unitImageUrl(selected.image)}
                   alt={unitName(selected)}
-                  width={96}
-                  height={96}
+                  width={128}
+                  height={128}
                 />
               ) : null}
               <div className="units-detail-title">
@@ -209,9 +236,7 @@ function UnitSubtitle({ unit, index }: { unit: UnitIndexEntry; index: UnitsIndex
   const { locale } = useI18n();
   const l = useBilingual();
   const nation =
-    unit.nationId !== undefined
-      ? localizedNationLabel(index, unit.nationId, locale)
-      : undefined;
+    unit.nationId !== undefined ? localizedNationLabel(index, unit.nationId, locale) : undefined;
   const category = unit.s?.category ? categoryLabel(unit.s.category) : undefined;
   if (!nation && !category) return null;
   return (
@@ -256,8 +281,12 @@ function UnitFicheBody({
     }
     return { requiredBy, affectedBy };
   }, []);
-  const requiredResearch = [...new Set(inverse.requiredBy.get(unit.id) ?? [])].sort((a, b) => a - b);
-  const affectedResearch = [...new Set(inverse.affectedBy.get(unit.id) ?? [])].sort((a, b) => a - b);
+  const requiredResearch = [...new Set(inverse.requiredBy.get(unit.id) ?? [])].sort(
+    (a, b) => a - b,
+  );
+  const affectedResearch = [...new Set(inverse.affectedBy.get(unit.id) ?? [])].sort(
+    (a, b) => a - b,
+  );
   const linkedPrograms = s?.researchIds ?? [];
   const researchLabel = (gameId: number): string => {
     const research = researchesById.get(gameId);
@@ -442,7 +471,9 @@ function UnitFicheBody({
                   : "";
               return (
                 <li key={i}>
-                  <code>{typeLabel ? l(typeLabel.zh, typeLabel.en) : shortTag(weapon.type ?? "")}</code>
+                  <code>
+                    {typeLabel ? l(typeLabel.zh, typeLabel.en) : shortTag(weapon.type ?? "")}
+                  </code>
                   {damages.length > 0 ? (
                     <span>
                       {damages.map(([type, value], j) => {
@@ -539,13 +570,7 @@ function CostChips({ index, costs }: { index: UnitsIndex; costs: CostPair[] | un
         const name = localizedResourceLabel(index, resourceId, locale);
         return (
           <span key={resourceId} className="units-cost">
-            <img
-              src={resourceImageUrl(resourceId)}
-              alt=""
-              width={18}
-              height={18}
-              loading="lazy"
-            />
+            <img src={resourceImageUrl(resourceId)} alt="" width={18} height={18} loading="lazy" />
             {name ? <span>{name}</span> : null}
             <b>{formatStatNumber(value, locale)}</b>
           </span>
@@ -573,13 +598,7 @@ function RequirementChips({
         return (
           <a key={`${unitId}-${i}`} className="research-chip" href={unitDeepLink(unitId)}>
             {unit?.image ? (
-              <img
-                src={unitImageUrl(unit.image)}
-                alt=""
-                width={20}
-                height={20}
-                loading="lazy"
-              />
+              <img src={unitImageUrl(unit.image)} alt="" width={20} height={20} loading="lazy" />
             ) : null}
             {unit ? localizedUnitName(unit, locale) : unitId}
             <span className="units-qty">
@@ -655,13 +674,7 @@ function WorkEntityChip({
   if (entity.kind === "research") {
     return (
       <a className="research-chip" href={researchDeepLink(entity.gameId)}>
-        <img
-          src={upgradeImageUrl(entity.gameId)}
-          alt=""
-          width={20}
-          height={20}
-          loading="lazy"
-        />
+        <img src={upgradeImageUrl(entity.gameId)} alt="" width={20} height={20} loading="lazy" />
         {label(entity.gameId)}
       </a>
     );
@@ -670,13 +683,7 @@ function WorkEntityChip({
   return (
     <a className="research-chip" href={unitDeepLink(entity.id)}>
       {unit?.image ? (
-        <img
-          src={unitImageUrl(unit.image)}
-          alt=""
-          width={20}
-          height={20}
-          loading="lazy"
-        />
+        <img src={unitImageUrl(unit.image)} alt="" width={20} height={20} loading="lazy" />
       ) : null}
       {unit ? localizedUnitName(unit, locale) : entity.id}
     </a>

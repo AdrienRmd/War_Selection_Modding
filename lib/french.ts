@@ -1,5 +1,10 @@
 // Traductions françaises de l'interface et des archives. Les clés canoniques restent inchangées.
 export const french: Record<string, string> = {
+  浏览单位档案: "Parcourir les unités",
+  "换个名称或 ID 试试，或清除筛选查看全部单位。":
+    "Essayez un autre nom ou identifiant, ou effacez les filtres pour voir toutes les unités.",
+  清除筛选: "Effacer les filtres",
+
   收藏地图管理: "Gérer les cartes sauvegardées",
   "寻找下一张地图，查看原始预览与分享码；测试状态独立标注。":
     "Trouvez votre prochaine carte, consultez les aperçus d'origine et les codes de partage. Le statut de test est indiqué séparément.",
