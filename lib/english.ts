@@ -2502,5 +2502,15 @@ export const english: Record<string, string> = {
   "没有匹配的玩家。": "No player matches this search.",
   "单排/双排与大部队分开计算：切换上方标签查看。":
     "Solo/duo and big team are ranked separately — switch tabs above.",
+  // Replay phase 2 (B4) — widget « données exactes ? » + récap admin.
+  "数据准确性反馈": "Replay data feedback",
+  "这些数据准确吗？": "How accurate is this data?",
+  准确: "Accurate",
+  "大致准确": "Close enough",
+  "我看到问题": "I see problems",
+  "登录后反馈数据准确性": "Sign in to rate this data",
+  "已记录，谢谢！可以随时修改你的评价。": "Recorded, thanks! You can change your rating at any time.",
+  "反馈次数已达上限（24 小时内 10 次）。": "Feedback limit reached (10 per 24h).",
+  投票: "Vote",
   沙盒: "Sandbox",
 };

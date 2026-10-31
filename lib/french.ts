@@ -2544,5 +2544,15 @@ export const french: Record<string, string> = {
   "没有匹配的玩家。": "Aucun joueur ne correspond à cette recherche.",
   "单排/双排与大部队分开计算：切换上方标签查看。":
     "Solo/duo et grandes équipes sont classés séparément — changez d'onglet ci-dessus.",
+  // Replay phase 2 (B4) — widget « données exactes ? » + récap admin.
+  "数据准确性反馈": "Retour sur l'exactitude des données",
+  "这些数据准确吗？": "Ces données sont-elles exactes ?",
+  准确: "Exactes",
+  "大致准确": "À peu près",
+  "我看到问题": "Je vois des problèmes",
+  "登录后反馈数据准确性": "Connectez-vous pour évaluer ces données",
+  "已记录，谢谢！可以随时修改你的评价。": "Enregistré, merci ! Vous pouvez modifier votre évaluation à tout moment.",
+  "反馈次数已达上限（24 小时内 10 次）。": "Limite de retours atteinte (10 sur 24 h).",
+  投票: "Vote",
   沙盒: "Bac à sable",
 };

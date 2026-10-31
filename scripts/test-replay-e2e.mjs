@@ -164,6 +164,17 @@ try {
     (await page.textContent("nav"))?.includes("/replay");
   check("menu Archives accessible", !!archiveOpened);
 
+  /* ---- Widget feedback (B4) : anonyme → lien de connexion -------- */
+  await page.waitForSelector(".rp-feedback", { timeout: 15000 });
+  check(
+    "widget « How accurate is this data? » visible (anonyme)",
+    ((await page.textContent(".rp-feedback-q")) ?? "").includes("How accurate is this data?"),
+  );
+  check(
+    "anonyme → lien « Sign in to rate this data »",
+    ((await page.textContent(".rp-feedback-signin")) ?? "").includes("Sign in to rate this data"),
+  );
+
   /* ---- Locale FR ------------------------------------------------ */
   const frContext = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   await mockRoutes(frContext);
@@ -201,6 +212,34 @@ try {
   }
   check("analyse du code frais (retry hydratation)", submitted);
   check("bouton de soumission visible (session active)", (await subPage.locator(".rp-share-button").count()) === 1);
+
+  /* ---- Widget feedback signé : vote, changement d'avis, agrégat --- */
+  await subPage.waitForSelector(".rp-feedback-btn", { timeout: 15000 });
+  check("session active : 3 boutons de vote", (await subPage.locator(".rp-feedback-btn").count()) === 3);
+  await subPage.click('.rp-feedback-btn[data-vote="accurate"]');
+  await subPage.waitForSelector('.rp-feedback-btn[aria-pressed="true"]', { timeout: 15000 });
+  check(
+    "vote « accurate » enregistré (aria-pressed)",
+    (await subPage.getAttribute('.rp-feedback-btn[aria-pressed="true"]', "data-vote")) === "accurate",
+  );
+  check(
+    "message de remerciement",
+    ((await subPage.textContent(".rp-feedback-status")) ?? "").includes("Recorded, thanks"),
+  );
+  await subPage.click('.rp-feedback-btn[data-vote="issues"]');
+  await subPage.waitForFunction(
+    () =>
+      document
+        .querySelector('.rp-feedback-btn[aria-pressed="true"]')
+        ?.getAttribute("data-vote") === "issues",
+    { timeout: 15000 },
+  );
+  check("changement d'avis possible (accurate → issues)", true);
+  check(
+    "agrégat public affiché (compteurs)",
+    ((await subPage.textContent(".rp-feedback-counts")) ?? "").includes("I see problems 1"),
+  );
+
   await subPage.click(".rp-share-button");
   await subPage.waitForSelector(".rp-share-done", { timeout: 15000 });
   check(

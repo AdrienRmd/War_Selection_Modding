@@ -17,6 +17,14 @@ interface ReplaySubmissionView {
   note: string | null;
 }
 
+interface FeedbackSummaryRow {
+  code: string;
+  accurate: number;
+  mostly: number;
+  issues: number;
+  total: number;
+}
+
 const STATUS_LABELS: Record<string, { zh: string; en: string }> = {
   pending: { zh: "待审核", en: "Pending" },
   published: { zh: "已公开", en: "Published" },
@@ -36,6 +44,24 @@ export function ReplayModeration({ admin = false }: { admin?: boolean }) {
   const [items, setItems] = useState<ReplaySubmissionView[]>([]);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
+  // Récap des retours « données exactes ? » (admin uniquement) — indexé par code.
+  const [feedback, setFeedback] = useState<Map<string, FeedbackSummaryRow>>(new Map());
+
+  useEffect(() => {
+    if (!admin) return;
+    let cancelled = false;
+    fetch("/api/replay/feedback-summary")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("unavailable"))))
+      .then((raw: unknown) => {
+        const data = raw as { items?: FeedbackSummaryRow[] };
+        if (!cancelled && Array.isArray(data.items))
+          setFeedback(new Map(data.items.map((row) => [row.code, row])));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [admin]);
 
   const refresh = useCallback(async () => {
     setBusy(true);
@@ -123,6 +149,19 @@ export function ReplayModeration({ admin = false }: { admin?: boolean }) {
                   )}
                   {item.note ? ` — ${item.note}` : ""}
                 </span>
+                {feedback.get(item.code) ? (
+                  <span
+                    className="replay-mod-feedback"
+                    title={l("数据准确性反馈", "Replay data feedback")}
+                  >
+                    {" \u2713 "}
+                    {feedback.get(item.code)!.accurate}
+                    {" \u2248 "}
+                    {feedback.get(item.code)!.mostly}
+                    {" ! "}
+                    {feedback.get(item.code)!.issues}
+                  </span>
+                ) : null}
               </div>
               <div className="replay-mod-actions">
                 {admin && item.status === "pending" ? (

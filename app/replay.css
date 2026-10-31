@@ -704,3 +704,104 @@ tr.rp-row:hover {
   gap: 8px;
   flex-wrap: wrap;
 }
+
+/* — Widget « Ces données sont-elles exactes ? » (Replay phase 2, B4) :
+   3 votes discrets sous le résultat, cibles tactiles ≥ 44 px, agrégat
+   barré après vote. Thème clair scopé à .replay-page comme le reste. */
+.rp-feedback {
+  margin: 26px auto 6px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  max-width: 640px;
+}
+.rp-feedback-q {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.rp-feedback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rp-feedback-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill, 999px);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.rp-feedback-btn:hover {
+  border-color: #94a39a;
+}
+.rp-feedback-btn[aria-pressed="true"] {
+  border-color: #2f6b46;
+  background: #e8f3ec;
+  color: #1e4a31;
+}
+.rp-feedback-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.rp-feedback-signin {
+  min-height: 44px;
+}
+.rp-feedback-status {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  margin: 10px 0 0;
+  min-height: 18px;
+}
+.rp-feedback-counts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.rp-feedback-count.accurate {
+  color: #1e6b3f;
+}
+.rp-feedback-count.issues {
+  color: #a33c2e;
+}
+.rp-feedback-share {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 480px) {
+  .rp-feedback {
+    padding: 14px;
+  }
+  .rp-feedback-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+/* Récap feedback dans la file de modération (/admin, onglet replays). */
+.replay-mod-feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 10px;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}

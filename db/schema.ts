@@ -266,3 +266,22 @@ export const playerStats = sqliteTable(
   },
   (t) => [uniqueIndex("pk_player_stats").on(t.season, t.category, t.playerName)],
 );
+
+// Replay phase 2 (B4, migration 0012 additive) — retours « ces données
+// sont-elles exactes ? » sur la page résultat : un vote par (replay,
+// compte), modifiable, quotas miroir de la couche soumissions.
+export const replayFeedback = sqliteTable(
+  "replay_feedback",
+  {
+    code: text("code").notNull(),
+    userId: text("user_id").notNull(),
+    vote: text("vote").notNull(),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (t) => [
+    uniqueIndex("pk_replay_feedback").on(t.code, t.userId),
+    index("idx_replay_feedback_user").on(t.userId, t.updatedAt),
+    index("idx_replay_feedback_code").on(t.code),
+  ],
+);

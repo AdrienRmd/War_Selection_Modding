@@ -14,6 +14,7 @@ import { getGameContext, loadLegacyUnitIds, parseReplayCode } from "@/lib/replay
 import { isReplaySuccess, type Player, type ReplayParseResult } from "@/lib/replay/structure";
 import { ReplayResult } from "./replay-result";
 import { PlayerDetail } from "./player-detail";
+import { ReplayFeedbackWidget } from "./replay-feedback";
 
 interface LoadedReplay {
   result: ReplayParseResult;
@@ -350,6 +351,10 @@ export function ReplayPortal({
                 {l("提交失败，请稍后再试。", "Submission failed. Try again later.")}
               </p>
             ) : null}
+            <ReplayFeedbackWidget
+              code={(success.result as Extract<ReplayParseResult, { error: 0 }>).match.replayCode}
+              signedIn={signedIn}
+            />
           </div>
         </>
       ) : null}
