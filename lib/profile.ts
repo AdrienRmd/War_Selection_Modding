@@ -96,7 +96,9 @@ function isJpeg(bytes: Uint8Array): boolean {
 
 /**
  * JPEG : retire APP1..APP15 (EXIF, XMP, ICC…) et COM (commentaires) en
- * recopiant le reste ; le flux entropique après SOS est recopié tel quel.
+ * recopiant le reste ; le flux entropique après SOS est recopié jusqu'à
+ * l'EOI inclus, et tout octet APRÈS l'EOI est tronqué (V3-P2 : les données
+ * cachées post-EOI ne survivent pas — PNG post-IEND déjà tronqué de même).
  * Retourne null si la structure est invalide (désynchronisation, SOS absent).
  */
 export function stripJpegMetadata(bytes: Uint8Array): Uint8Array | null {
@@ -112,10 +114,20 @@ export function stripJpegMetadata(bytes: Uint8Array): Uint8Array | null {
       i += 2;
       continue;
     }
-    if (marker === 0xda || marker === 0xd9) {
-      // SOS/EOI : fin de la structure analysable, le reste est recopié tel
-      // quel (données d'image).
-      chunks.push(bytes.subarray(i));
+    if (marker === 0xda) {
+      // SOS : fin de la structure analysable. On recopie le segment + le flux
+      // entropique jusqu'à l'EOI inclus, et JETTE tout ce qui suit (V3-P2 : des
+      // données malveillantes dissimulées après l'EOI ne survivent pas).
+      // Sans EOI (JPEG tronqué) : le reste est recopié tel quel, comme avant.
+      const length = (bytes[i + 2]! << 8) | bytes[i + 3]!;
+      if (length < 2 || i + 2 + length > bytes.length) return null;
+      const eoi = jpegEoiAt(bytes, i + 2 + length);
+      chunks.push(bytes.subarray(i, eoi === -1 ? bytes.length : eoi + 2));
+      return concat(chunks);
+    }
+    if (marker === 0xd9) {
+      // EOI direct dans le scan des marqueurs : tout ce qui suit est jeté.
+      chunks.push(bytes.subarray(i, i + 2));
       return concat(chunks);
     }
     const length = (bytes[i + 2]! << 8) | bytes[i + 3]!;
@@ -125,6 +137,21 @@ export function stripJpegMetadata(bytes: Uint8Array): Uint8Array | null {
     i += 2 + length;
   }
   return null; // ni SOS ni EOI rencontrés : JPEG invalide
+}
+
+/**
+ * Position du marqueur EOI (FF D9) qui termine le flux entropique, ou -1.
+ * Le scan démarre APRÈS l'en-tête du segment SOS : dans le flux entropique,
+ * un octet 0xFF n'est jamais suivi de 0xD9 (bourrage 0xFF 0x00 ou marqueurs
+ * RST D0–D7), donc la première occurrence est l'EOI réel — même pour un JPEG
+ * progressif multi-scans (les segments intermédiaires DHT/DRI/SOS ne sont
+ * jamais D9).
+ */
+function jpegEoiAt(bytes: Uint8Array, entropyStart: number): number {
+  for (let i = entropyStart; i + 1 < bytes.length; i++) {
+    if (bytes[i] === 0xff && bytes[i + 1] === 0xd9) return i;
+  }
+  return -1;
 }
 
 /**
@@ -143,7 +170,9 @@ export function stripPngMetadata(bytes: Uint8Array): Uint8Array | null {
     const type = String.fromCharCode(bytes[i + 4]!, bytes[i + 5]!, bytes[i + 6]!, bytes[i + 7]!);
     if (!dropped.has(type)) chunks.push(bytes.subarray(i, i + 12 + length));
     i += 12 + length;
-    if (type === "IEND") return i === bytes.length ? concat(chunks) : concat(chunks); // IEND atteint
+    // IEND atteint : les octets éventuels après IEND ne sont PAS recopiés
+    // (même règle anti-cachette que le JPEG post-EOI).
+    if (type === "IEND") return concat(chunks);
   }
   return null; // IEND manquant : PNG invalide
 }

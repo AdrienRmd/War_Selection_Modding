@@ -85,8 +85,7 @@ const jpegWithExif = () =>
     ...jpegSeg(0xfe, chars("Commentaire secret")), // COM
     ...jpegSeg(0xdb, [0, 1, 2, 3]), // DQT
     ...jpegSeg(0xc0, [0, 1, 2, 3]), // SOF0
-    0xff,
-    0xda, // SOS
+    ...jpegSeg(0xda, [0x01, 0x00]), // SOS (segment AVEC longueur, cf. spec)
     0x12, 0x34, 0x56, // flux entropique
     0xff,
     0xd9, // EOI
@@ -133,6 +132,71 @@ describe("stripJpegMetadata", () => {
     const truncated = jpegWithExif().slice(0, 20);
     expect(stripJpegMetadata(truncated)).toBeNull();
   });
+
+  // V3-P2 #2 : les octets APRÈS l'EOI sont tronqués — des métadonnées
+  // malveillantes dissimulées en fin de fichier ne survivent pas.
+  it("tronque tout ce qui suit l'EOI (données post-EOI jetées, image intacte)", () => {
+    const source = jpegWithExif();
+    const hidden = chars("SECRET-POST-EOI-METADATA");
+    const dirty = new Uint8Array([...source, ...hidden, 0xff, 0xd9, ...hidden]);
+    const out = stripJpegMetadata(dirty)!;
+    const text = new TextDecoder().decode(out);
+    expect(text).not.toContain("SECRET");
+    // Sortie IDENTIQUE à celle du même JPEG propre : SOI→EOI, rien après.
+    expect(Array.from(out)).toEqual(Array.from(stripJpegMetadata(source)!));
+    expect(out[out.length - 1]).toBe(0xd9);
+    expect(out[out.length - 2]).toBe(0xff);
+  });
+
+  it("bourrage entropique FF 00 : pas de confusion avec un EOI au milieu du flux", () => {
+    const dirty = new Uint8Array([
+      0xff, 0xd8, // SOI
+      ...jpegSeg(0xdb, [0, 1]), // DQT conservé
+      0xff, 0xda, 0, 3, 0x01, 0x00, // SOS (en-tête complet)
+      0x11, 0xff, 0x00, 0xd9, 0x22, // flux entropique avec bourrage FF 00
+      0xff, 0xd9, // vrai EOI
+      ...chars("CACHE"), // données post-EOI à jeter
+    ]);
+    const out = stripJpegMetadata(dirty)!;
+    expect(Array.from(out)).toEqual([
+      0xff, 0xd8, // SOI
+      ...jpegSeg(0xdb, [0, 1]), // DQT
+      0xff, 0xda, 0, 3, 0x01, 0x00, // SOS
+      0x11, 0xff, 0x00, 0xd9, 0x22, // entropie intacte (bourrage préservé)
+      0xff, 0xd9, // EOI final, dernier octet du fichier
+    ]);
+  });
+
+  it("JPEG progressif multi-scans : la troncature se fait au vrai EOI final", () => {
+    const dirty = new Uint8Array([
+      0xff, 0xd8, // SOI
+      ...jpegSeg(0xc0, [0, 1]), // SOF0
+      0xff, 0xda, 0, 3, 0x01, 0x00, // SOS #1
+      0xaa, 0xbb, // scan #1
+      ...jpegSeg(0xc4, [0, 1]), // DHT inter-scans (jamais D9)
+      0xff, 0xda, 0, 3, 0x01, 0x00, // SOS #2
+      0xcc, 0xdd, // scan #2
+      0xff, 0xd9, // EOI
+      ...chars("TAIL"), // post-EOi à jeter
+    ]);
+    const out = stripJpegMetadata(dirty)!;
+    expect(out[out.length - 1]).toBe(0xd9);
+    expect(new TextDecoder().decode(out)).not.toContain("TAIL");
+    // tout le contenu intermédiaire est conservé jusqu'à l'EOI
+    expect(out.length).toBe(dirty.length - 4);
+  });
+
+  it("EOI atteint pendant le scan des marqueurs (sans SOS) : octets suivants jetés", () => {
+    const dirty = new Uint8Array([
+      0xff, 0xd8, // SOI
+      ...jpegSeg(0xdb, [0, 1]), // DQT
+      0xff, 0xd9, // EOI
+      ...chars("GHOST"), // jeté
+      0xff, 0xd9, // second EOI jeté aussi
+    ]);
+    const out = stripJpegMetadata(dirty)!;
+    expect(Array.from(out)).toEqual([0xff, 0xd8, ...jpegSeg(0xdb, [0, 1]), 0xff, 0xd9]);
+  });
 });
 
 describe("stripPngMetadata", () => {
@@ -176,6 +240,18 @@ describe("inspectAvatar", () => {
     if ("error" in result) throw new Error("unreachable");
     expect(result.type).toBe("image/jpeg");
     expect(new TextDecoder().decode(result.bytes)).not.toContain("Exif");
+  });
+
+  it("V3-P2 : un JPEG avec données après EOI est stocké SANS rien après EOI", () => {
+    const source = jpegWithExif();
+    const dirty = new Uint8Array([...source, ...chars("GPS-CACHE-POST-EOI")]);
+    const result = inspectAvatar(dirty);
+    expect("error" in result).toBe(false);
+    if ("error" in result) throw new Error("unreachable");
+    // octets stockés = exactement le JPEG purgé, terminé par l'EOI
+    expect(Array.from(result.bytes)).toEqual(Array.from(stripJpegMetadata(source)!));
+    expect(result.bytes[result.bytes.length - 1]).toBe(0xd9);
+    expect(new TextDecoder().decode(result.bytes)).not.toContain("GPS-CACHE");
   });
 
   it("refuse les mauvais types (GIF), le vide et le dépassement 2 Mo", () => {
