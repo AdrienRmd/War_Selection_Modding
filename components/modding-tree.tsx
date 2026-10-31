@@ -18,6 +18,7 @@ import {
   Search,
 } from "lucide-react";
 import { useBilingual, useI18n } from "@/components/i18n";
+import { UpdatedDatasetBadge, useDatasetMeta } from "@/components/dataset-badge";
 import {
   PATH_INDEX_URL,
   breadcrumbOf,
@@ -30,13 +31,11 @@ import {
   countMatches,
   segmentsOf,
   treeFileUrl,
-  type DatasetMeta,
   type ModdingHome,
   type ModdingMeta,
   type ModdingNode,
   type ModdingPathIndex,
 } from "@/lib/modding";
-import { UPDATED_AT_URL, formatPublishedDate } from "@/lib/units";
 
 const CHILDREN_PAGE = 150;
 const SEARCH_LIMIT = 60;
@@ -141,7 +140,7 @@ export function ModdingTreeBrowser({
   /** Lien profond /modding?path=gameplay.root.unitType.5 (SSR : fil d'Ariane). */
   initialPath?: string;
 }) {
-  const { locale, t } = useI18n();
+  const { t } = useI18n();
   const l = useBilingual();
   const homeChildren = useMemo(() => home.ch ?? [], [home]);
   const [childrenByParent, setChildrenByParent] = useState<Map<string, ModdingNode[]>>(
@@ -157,22 +156,7 @@ export function ModdingTreeBrowser({
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Badge SB4/SB6 : version du dataset publiée (publishedAt + compte), jamais en dur.
-  const [datasetMeta, setDatasetMeta] = useState<DatasetMeta | null>(null);
-  const [datasetFailed, setDatasetFailed] = useState(false);
-  useEffect(() => {
-    let alive = true;
-    fetch(UPDATED_AT_URL)
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
-      .then((data) => {
-        if (!alive) return;
-        if (typeof data !== "object" || data === null) throw new Error("bad meta");
-        setDatasetMeta(data as DatasetMeta);
-      })
-      .catch(() => alive && setDatasetFailed(true));
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const { meta: datasetMeta, failed: datasetFailed } = useDatasetMeta();
 
   // Recherche : état local + index chargé à la demande.
   const [query, setQuery] = useState("");
@@ -317,22 +301,14 @@ export function ModdingTreeBrowser({
     [],
   );
 
-  const badge = datasetFailed ? (
-    <span className="units-badge" data-badge={UPDATED_BADGE}>
-      {l("数据版本暂时不可用", "Dataset version unavailable")}
-    </span>
-  ) : datasetMeta ? (
-    <span className="units-badge" data-badge={UPDATED_BADGE}>
-      {t(
-        `数据更新于 ${formatPublishedDate(datasetMeta.publishedAt ?? "", locale)}，共 ${
-          datasetMeta.counts?.treeFiles ?? meta.pathCount
-        } 个参数节点`,
-      )}
-    </span>
-  ) : (
-    <span className={`units-badge units-badge-loading`} data-badge={UPDATED_BADGE}>
-      {l("正在读取数据版本…", "Reading dataset version…")}
-    </span>
+  const badge = (
+    <UpdatedDatasetBadge
+      testId={UPDATED_BADGE}
+      meta={datasetMeta}
+      failed={datasetFailed}
+      count={datasetMeta?.counts?.treeFiles ?? meta.pathCount}
+      noun="个参数节点"
+    />
   );
 
   const queryResults = useMemo(

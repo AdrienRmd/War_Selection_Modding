@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "@/components/site-link";
 import { Search, Download, Upload, Copy, Check, RotateCcw, Plus, ArrowRight, ArrowLeft, AlertTriangle, FileCode2, Save, Info } from "lucide-react";
 import { useI18n, useBilingual } from "@/components/i18n";
+import { DatasetBadge } from "@/components/dataset-badge";
 import { Button } from "@/components/ui/button";
 import {
   isSimpleCatalog,
@@ -363,9 +364,9 @@ function SimpleHeader({ count, version }: { count: number | null; version?: stri
       </div>
       <div className="simple-head-side">
         {count !== null && (
-          <span className="units-badge" data-badge="simple-count">
+          <DatasetBadge testId="simple-count">
             {t(`数据 ${version ?? ""} · ${count} 个可修改单位`)}
-          </span>
+          </DatasetBadge>
         )}
         <Link href="/workbench" className="simple-switch">
           <SlidersIcon /> {t("需要完整参数？使用专家工作台")}

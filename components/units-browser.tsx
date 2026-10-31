@@ -1,15 +1,14 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { useI18n, useBilingual } from "@/components/i18n";
+import { UpdatedDatasetBadge, useDatasetMeta } from "@/components/dataset-badge";
 import {
-  UPDATED_AT_URL,
   categoryLabel,
   countByGroup,
   countUnits,
   damageTypeLabel,
   formatDuration,
-  formatPublishedDate,
   formatStatNumber,
   localizedGroupLabel,
   localizedNationLabel,
@@ -29,7 +28,6 @@ import {
   upgradeImageUrl,
   weaponTypeLabel,
   type CostPair,
-  type DatasetMeta,
   type UnitGroup,
   type UnitIndexEntry,
   type UnitRequirement,
@@ -54,24 +52,8 @@ export function UnitsBrowser({
   const [selectedId, setSelectedId] = useState<string | null>(() =>
     initialUnitId && index.units.some((u) => u.id === initialUnitId) ? initialUnitId : null,
   );
-  const [meta, setMeta] = useState<DatasetMeta | null>(null);
-  const [metaFailed, setMetaFailed] = useState(false);
-
   // Badge SB6 : version du dataset publiée (publishedAt + compte), jamais en dur.
-  useEffect(() => {
-    let alive = true;
-    fetch(UPDATED_AT_URL)
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
-      .then((data) => {
-        if (!alive) return;
-        if (typeof data !== "object" || data === null) throw new Error("bad meta");
-        setMeta(data as DatasetMeta);
-      })
-      .catch(() => alive && setMetaFailed(true));
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const { meta, failed } = useDatasetMeta();
 
   const unitsById = useMemo(() => {
     const map = new Map<string, UnitIndexEntry>();
@@ -88,20 +70,14 @@ export function UnitsBrowser({
     return searchUnits(scoped, query);
   }, [index, group, query]);
 
-  const badge = metaFailed ? (
-    <span className="units-badge" data-badge="units-updated">
-      {l("数据版本暂时不可用", "Dataset version unavailable")}
-    </span>
-  ) : meta ? (
-    <span className="units-badge" data-badge="units-updated">
-      {t(
-        `数据更新于 ${formatPublishedDate(meta.publishedAt ?? "", locale)}，共 ${meta.counts?.units ?? countUnits(index.units)} 个单位`,
-      )}
-    </span>
-  ) : (
-    <span className="units-badge units-badge-loading" data-badge="units-updated">
-      {l("正在读取数据版本…", "Reading dataset version…")}
-    </span>
+  const badge = (
+    <UpdatedDatasetBadge
+      testId="units-updated"
+      meta={meta}
+      failed={failed}
+      count={meta?.counts?.units ?? countUnits(index.units)}
+      noun="个单位"
+    />
   );
 
   return (

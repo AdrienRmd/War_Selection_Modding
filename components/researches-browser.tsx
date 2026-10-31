@@ -1,11 +1,10 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { useI18n, useBilingual } from "@/components/i18n";
+import { UpdatedDatasetBadge, useDatasetMeta } from "@/components/dataset-badge";
 import {
-  UPDATED_AT_URL,
   formatDuration,
-  formatPublishedDate,
   formatStatNumber,
   localizedResourceLabel,
   localizedUnitName,
@@ -30,7 +29,6 @@ import {
   searchResearches,
   typesInUse,
   unitDeepLink,
-  type DatasetMeta,
   type ResearchEntry,
   type ResearchProducer,
   type ResearchesIndex,
@@ -57,24 +55,8 @@ export function ResearchesBrowser({
       ? null
       : (index.researches.find((r) => r.gameId === initialGameId) ?? null),
   );
-  const [meta, setMeta] = useState<DatasetMeta | null>(null);
-  const [metaFailed, setMetaFailed] = useState(false);
-
   // Badge SB4 : version du dataset publiée (publishedAt + compte), jamais en dur.
-  useEffect(() => {
-    let alive = true;
-    fetch(UPDATED_AT_URL)
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
-      .then((data) => {
-        if (!alive) return;
-        if (typeof data !== "object" || data === null) throw new Error("bad meta");
-        setMeta(data as DatasetMeta);
-      })
-      .catch(() => alive && setMetaFailed(true));
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const { meta, failed: metaFailed } = useDatasetMeta();
 
   // Lookup id → unité pour libeller les liens (nom localisé, repli id).
   const unitsById = useMemo(() => {
@@ -101,20 +83,14 @@ export function ResearchesBrowser({
     return searchResearches(scoped, query);
   }, [index, type, query]);
 
-  const badge = metaFailed ? (
-    <span className="units-badge" data-badge="researches-updated">
-      {l("数据版本暂时不可用", "Dataset version unavailable")}
-    </span>
-  ) : meta ? (
-    <span className="units-badge" data-badge="researches-updated">
-      {t(
-        `数据更新于 ${formatPublishedDate(meta.publishedAt ?? "", locale)}，共 ${meta.counts?.researches ?? countResearches(index.researches)} 项研究`,
-      )}
-    </span>
-  ) : (
-    <span className="units-badge units-badge-loading" data-badge="researches-updated">
-      {l("正在读取数据版本…", "Reading dataset version…")}
-    </span>
+  const badge = (
+    <UpdatedDatasetBadge
+      testId="researches-updated"
+      meta={meta}
+      failed={metaFailed}
+      count={meta?.counts?.researches ?? countResearches(index.researches)}
+      noun="项研究"
+    />
   );
 
   return (

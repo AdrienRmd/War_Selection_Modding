@@ -295,8 +295,7 @@ const jpegWithExif = () =>
     ...jpegSeg(0xfe, chars("Secret GPS stamp")),
     ...jpegSeg(0xdb, [0, 1, 2, 3]),
     ...jpegSeg(0xc0, [0, 1, 2, 3]),
-    0xff,
-    0xda,
+    ...jpegSeg(0xda, [0x01, 0x00]), // SOS (segment AVEC longueur, cf. spec)
     0x12,
     0x34,
     0xff,
