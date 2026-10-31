@@ -58,6 +58,7 @@ export const legalDocs: Record<LegalDocKey, Record<Locale, LegalDoc>> = {
           paragraphs: [
             "斯大林格勒档案与社区收藏中的地图由其作者提供，图片与说明在作者授权下使用；收藏条目逐条标注作者与来源。",
             "Mod 资料库引用的 GitHub 项目均为独立作品，遵循其各自的许可协议；本站仅作介绍与链接。",
+            "回放分析功能基于 IbubussI 的开源项目 wsunitstats-static（GitHub）移植实现，界面另参考了 malticNL 的 WS Replay Stats；相关名称归其作者所有。",
           ],
         },
       ],
@@ -107,6 +108,7 @@ export const legalDocs: Record<LegalDocKey, Record<Locale, LegalDoc>> = {
           paragraphs: [
             "Maps in the Stalingrad archive and the community collection are provided by their authors, with images and descriptions used under their authorization; each collection entry credits its author and source.",
             "GitHub projects referenced in the mod library are independent works governed by their own licenses; the site only presents and links them.",
+            "The replay analyzer is a port of IbubussI's open-source project wsunitstats-static (GitHub), with UX inspired by malticNL's WS Replay Stats; those names belong to their authors.",
           ],
         },
       ],
@@ -156,6 +158,7 @@ export const legalDocs: Record<LegalDocKey, Record<Locale, LegalDoc>> = {
           paragraphs: [
             "Les cartes de l'archive Stalingrad et de la collection communautaire sont fournies par leurs auteurs, avec leurs images et descriptions utilisées selon leur autorisation ; chaque entrée de la collection mentionne son auteur et sa source.",
             "Les projets GitHub référencés dans la bibliothèque de mods sont des œuvres indépendantes, régies par leurs propres licences ; le site se limite à les présenter et à y renvoyer.",
+            "L'analyseur de replay est un portage du projet open source wsunitstats-static d'IbubussI (GitHub), avec une ergonomie inspirée de WS Replay Stats de malticNL ; ces noms appartiennent à leurs auteurs respectifs.",
           ],
         },
       ],

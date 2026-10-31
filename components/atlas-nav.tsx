@@ -4,11 +4,12 @@ import { T, useI18n } from "@/components/i18n";
 import { HeaderMenu } from "@/components/header-menu";
 import Link from "@/components/site-link";
 
-/** Groupe « Archives » : données de jeu publiées (cartes, unités, recherches, modding). */
+/** Groupe « Archives » : données de jeu publiées (cartes, unités, recherches, replay, modding). */
 const ARCHIVES_ITEMS = [
   { href: "/maps", name: "地图档案" },
   { href: "/units", name: "单位档案" },
   { href: "/researches", name: "科技档案" },
+  { href: "/replay", name: "回放分析" },
   { href: "/modding", name: "参数档案" },
 ];
 

@@ -9,6 +9,7 @@ import "./community.css";
 import "./collection.css";
 import "./units.css";
 import "./researches.css";
+import "./replay.css";
 import "./modding.css";
 import "./workbench.css";
 import "./simple.css";

@@ -91,7 +91,10 @@ const SECURITY_HEADERS: readonly (readonly [string, string])[] = [
   ["x-content-type-options", "nosniff"],
   [
     "content-security-policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests",
+    // Chantier B — connect-src inclut l'API officielle des replays
+    // (games-api.warselect.io), seule destination externe autorisée,
+    // appelée côté navigateur pour l'analyse des codes rep-…
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://games-api.warselect.io; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests",
   ],
 ];
 

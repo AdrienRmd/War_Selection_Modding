@@ -32,6 +32,7 @@ export const pageRoutes: Record<string, PageRoute> = {
   },
   units: { path: /^\/units$/, meta: { title: "单位档案 | WS ATLAS" } },
   researches: { path: /^\/researches$/, meta: { title: "科技档案 | WS ATLAS" } },
+  replay: { path: /^\/replay$/, meta: { title: "回放分析 | WS ATLAS" } },
   modding: { path: /^\/modding$/, meta: { title: "参数档案 | WS ATLAS" } },
   maps: { path: /^\/maps$/, meta: { title: "地图档案 | WS ATLAS" } },
   mapsStalingrad: {
