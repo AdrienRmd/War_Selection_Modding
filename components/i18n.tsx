@@ -20,12 +20,49 @@ const Context = createContext<{ locale: Locale; setLocale: (l: Locale) => void }
 // chaque choix explicite — « dernier choix gagne ». Fire-and-forget : un
 // visiteur anonyme reçoit un 401 silencieux, la locale device reste le
 // mécanisme premier. Le même endpoint sert le sélecteur de /account.
-export function saveLocalePreference(locale: Locale) {
+//
+// V3-P2 #7 : ce PATCH partage le budget profil (10/min/compte, cf.
+// PROFILE_PATCH_BUDGET) — un clic rapide sur le sélecteur ne doit pas
+// l'épuiser (l'utilisateur se verrait alors refuser l'édition de profil
+// pendant 60 s). D'où, sans nouvelle surface d'API :
+//   - débounce court : une rafale de changements = UN seul PATCH (le
+//     dernier choix, éventuellement envoyé avec keepalive) ;
+//   - doublon ignoré : re-choisir la locale déjà envoyée ne re-PATCH pas ;
+//   - grâce au 429 : plus aucune tentative tant que la fenêtre du throttle
+//     n'est pas passée (le cookie atlas_locale, prioritaire côté serveur,
+//     porte déjà le choix de cet appareil).
+const SAVE_LOCALE_DEBOUNCE_MS = 1500;
+let pendingLocale: Locale | null = null;
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let lastSent: Locale | null = null;
+let skipUntil = 0;
+
+function flushLocalePreference() {
+  saveTimer = null;
+  const locale = pendingLocale;
+  pendingLocale = null;
+  if (!locale || locale === lastSent || Date.now() < skipUntil) return;
+  lastSent = locale;
   void fetch("/api/account/profile", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ locale }),
-  }).catch(() => undefined);
+    keepalive: true,
+  })
+    .then((res) => {
+      if (res.status === 429) {
+        const retry = Number.parseInt(res.headers.get("Retry-After") ?? "", 10);
+        skipUntil = Date.now() + (retry > 0 ? retry : 60) * 1000;
+        lastSent = null; // non enregistré : resauvegardable après la fenêtre
+      }
+    })
+    .catch(() => undefined);
+}
+
+export function saveLocalePreference(locale: Locale) {
+  pendingLocale = locale;
+  if (saveTimer !== null) return;
+  saveTimer = setTimeout(flushLocalePreference, SAVE_LOCALE_DEBOUNCE_MS);
 }
 export function LocaleProvider({ initial, children }: { initial: Locale; children: ReactNode }) {
   const [locale, setLocaleState] = useState(initial);
