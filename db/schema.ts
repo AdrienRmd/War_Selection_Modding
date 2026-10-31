@@ -218,3 +218,51 @@ export const replays = sqliteTable(
     index("idx_replays_owner_created").on(t.ownerId, t.createdAt),
   ],
 );
+
+// Replay phase 2 (31/10/2026, migration 0011 additive) — digest public par
+// replay soumis : saison (calendaire mensuelle UTC, fallback documenté : pas
+// de champ saison dans les données games-api), catégorie big/solo, horodatage
+// de début, durée, région, top unités produites et joueurs (pseudo, victoire,
+// MVP, unités tuées/perdues). Écrit à la soumission (client qui a parsé le
+// replay), consommé à la publication pour l'agrégation incrémentale.
+// aggregated_at = garde-fou d'idempotence (contribution actuellement appliquée
+// dans player_stats).
+export const replayResults = sqliteTable(
+  "replay_results",
+  {
+    code: text("code").primaryKey(),
+    season: text("season").notNull(),
+    category: text("category").notNull(),
+    startedAt: text("started_at").notNull(),
+    durationS: integer("duration_s").notNull(),
+    modeKey: text("mode_key").notNull(),
+    teamSize: integer("team_size").notNull(),
+    region: text("region"),
+    mapCode: text("map_code"),
+    data: text("data").notNull(),
+    updatedAt: text("updated_at").notNull(),
+    aggregatedAt: text("aggregated_at"),
+  },
+  (t) => [index("idx_replay_results_season").on(t.season)],
+);
+
+// Classement joueurs par saison/catégorie (agrégation incrémentale à la
+// publication d'un replay ; formule de points documentée dans
+// lib/replay-stats.ts : participation×1 + victoire×2 + MVP×2 + ⌊tués/100⌋).
+// Rebuildable intégralement depuis replays × replay_results.
+export const playerStats = sqliteTable(
+  "player_stats",
+  {
+    season: text("season").notNull(),
+    category: text("category").notNull(),
+    playerName: text("player_name").notNull(),
+    games: integer("games").notNull().default(0),
+    wins: integer("wins").notNull().default(0),
+    mvps: integer("mvps").notNull().default(0),
+    kills: integer("kills").notNull().default(0),
+    losses: integer("losses").notNull().default(0),
+    points: integer("points").notNull().default(0),
+    lastPlayed: text("last_played").notNull(),
+  },
+  (t) => [uniqueIndex("pk_player_stats").on(t.season, t.category, t.playerName)],
+);

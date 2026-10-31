@@ -1,20 +1,25 @@
-import { bindings, identity, json, sameOrigin, limitedBody, HttpError } from "@/lib/atlas-server";
+import { identity, json, sameOrigin, limitedBody, HttpError } from "@/lib/atlas-server";
 import { parseReplayCode } from "@/lib/replay";
 import {
   listReplaySubmissions,
   moderateReplay,
+  moderateWithdrawReplay,
   recentReplays,
   submitReplay,
   withdrawReplay,
 } from "@/lib/replay-submissions";
+import { rebuildPlayerStats } from "@/lib/replay-stats";
 export const dynamic = "force-dynamic";
 
 /** API Replay (Chantier B) :
  *  GET  /api/replay/recent?limit=5        — listing public (publiés) ;
  *  GET  /api/replay/submissions[?scope=admin] — mes soumissions / file admin ;
- *  POST /api/replay/submit                — soumission (auth, quotas) ;
+ *  POST /api/replay/submit                — soumission (auth, quotas, digest
+ *       statistique optionnel → replay_results) ;
  *  PATCH /api/replay/<code>               — modération admin (published /
- *       rejected + note) ou retrait auteur (withdrawn). */
+ *       rejected + note) ou retrait auteur (withdrawn) ;
+ *  POST /api/replay/stats-rebuild         — recalcul défensif des stats
+ *       joueurs (admin) : player_stats = f(replays publiés, digests). */
 async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }) {
   try {
     const path = (await ctx.params).path ?? [];
@@ -49,6 +54,14 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       return json(await submitReplay(user.userId, body), 201);
     }
 
+    if (req.method === "POST" && action === "stats-rebuild") {
+      sameOrigin(req);
+      if (!user) throw new HttpError(401, "请先登录。 / Please sign in.");
+      if (!admin) throw new HttpError(403, "需要管理员权限。 / Admin access required.");
+      const result = await rebuildPlayerStats();
+      return json({ ok: true, ...result });
+    }
+
     if (req.method === "PATCH" && action) {
       const bytes = await limitedBody(req, 4096);
       sameOrigin(req);
@@ -66,7 +79,7 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       if (body.status === "withdrawn") {
         if (admin) {
           // L'admin peut retirer n'importe quelle ligne via le même verbe.
-          return json({ item: await moderateWithdraw(code) });
+          return json({ item: await moderateWithdrawReplay(code) });
         }
         return json({ item: await withdrawReplay(code, user.userId) });
       }
@@ -85,19 +98,6 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
       e instanceof HttpError ? e.status : 503,
     );
   }
-}
-
-/** Retrait admin (toute ligne, tout statut). */
-async function moderateWithdraw(code: string) {
-  const db = bindings().DB;
-  const now = new Date().toISOString();
-  const changed = await db
-    .prepare("UPDATE replays SET status='withdrawn', moderated_at=? WHERE code=?")
-    .bind(now, code)
-    .run();
-  if (changed.meta.changes !== 1) throw new HttpError(404, "回放不存在。 / Replay not found.");
-  const row = await db.prepare("SELECT * FROM replays WHERE code = ?").bind(code).first();
-  return row;
 }
 
 export const GET = route;

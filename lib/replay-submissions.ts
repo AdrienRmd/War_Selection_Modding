@@ -3,10 +3,22 @@
  *  viennent du client ; aucun appel serveur vers games-api), listing public
  *  des 5 derniers publiés, modération par le socle existant (admin) et
  *  retrait par l'auteur. Quotas miroir de ceux des cartes : 3 en attente et
- *  5 par 24 h par compte, verrouillés atomiquement dans l'INSERT. */
+ *  5 par 24 h par compte, verrouillés atomiquement dans l'INSERT.
+ *  Replay phase 2 (31/10/2026) : la soumission peut joindre un digest
+ *  statistique (lib/replay-stats.ts) stocké dans replay_results ; la
+ *  PUBLICATION agrège incrémentalement les stats joueurs (player_stats),
+ *  le retrait/refus d'un replay publié les retire — idempotent via
+ *  aggregated_at, recalcul défensif rebuildPlayerStats(). */
 import { bindings, HttpError } from "@/lib/atlas-server";
 import { parseReplayCode } from "@/lib/replay";
 import { MATCH_TYPES } from "@/lib/replay/structure";
+import {
+  applyReplayStats,
+  cleanDigest,
+  removeReplayStats,
+  upsertReplayResult,
+  type ReplayDigest,
+} from "@/lib/replay-stats";
 
 export const REPLAY_SUBMIT_LIMIT = 3; // soumissions en attente par compte
 export const REPLAY_SUBMIT_DAILY = 5; // soumissions par 24 h par compte
@@ -68,7 +80,9 @@ export function cleanReplayBody(value: unknown): {
 }
 
 /** Soumet un replay (auth requis). 409 si déjà publié/en attente, 429 si
- *  quota dépassé (contrôle anticipé + verrou atomique, comme les cartes). */
+ *  quota dépassé (contrôle anticipé + verrou atomique, comme les cartes).
+ *  Digest statistique optionnel (replay_results) : absent → compatibilité
+ *  clients antérieurs ; présent mais malformé → 400 (bug client visible). */
 export async function submitReplay(
   ownerId: string,
   body: unknown,
@@ -76,6 +90,10 @@ export async function submitReplay(
   const cleaned = cleanReplayBody(body);
   if (!cleaned) throw new HttpError(400, "提交内容无效：需要回放代码、模式与队伍规模。 / Invalid submission: replay code, mode and team size required.");
   const { code, teamSize, mvpName, modeKey } = cleaned;
+  let digest: ReplayDigest | null = null;
+  if (body && typeof body === "object" && !Array.isArray(body)) {
+    digest = cleanDigest((body as Record<string, unknown>).digest);
+  }
   const db = bindings().DB;
 
   const existing = await db
@@ -112,6 +130,7 @@ export async function submitReplay(
       .run();
     if (changed.meta.changes !== 1)
       throw new HttpError(429, "投稿频率已达上限（24 小时内 5 个，或已有 3 个待审核）。 / Submission limit reached (5 per 24h, or 3 pending).");
+    if (digest) await upsertReplayResult(code, teamSize, modeKey, digest, now);
     return { item: { code, teamSize, mvpName, modeKey, status: "pending", createdAt: now, moderatedAt: null, note: null, mine: true } };
   }
 
@@ -124,6 +143,7 @@ export async function submitReplay(
     .run();
   if (inserted.meta.changes !== 1)
     throw new HttpError(429, "投稿频率已达上限（24 小时内 5 个，或已有 3 个待审核）。 / Submission limit reached (5 per 24h, or 3 pending).");
+  if (digest) await upsertReplayResult(code, teamSize, modeKey, digest, now);
   return { item: { code, teamSize, mvpName, modeKey, status: "pending", createdAt: now, moderatedAt: null, note: null, mine: true } };
 }
 
@@ -175,7 +195,9 @@ export async function listReplaySubmissions(
   return (result.results ?? []).map((r) => toView(r, true));
 }
 
-/** Modération admin : published / rejected (+ note). */
+/** Modération admin : published / rejected (+ note). La publication agrège
+ *  les stats joueurs (incrémental, idempotent) ; un refus/refus d'un replay
+ *  déjà publié retire sa contribution. */
 export async function moderateReplay(
   code: string,
   status: "published" | "rejected",
@@ -184,26 +206,60 @@ export async function moderateReplay(
   const cleanNote = note?.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 300) || null;
   const db = bindings().DB;
   const now = new Date().toISOString();
+  const before = await db
+    .prepare("SELECT status FROM replays WHERE code = ?")
+    .bind(code)
+    .first<{ status: string }>();
   const changed = await db
     .prepare("UPDATE replays SET status=?, moderated_at=?, note=? WHERE code=?")
     .bind(status, now, cleanNote, code)
     .run();
   if (changed.meta.changes !== 1) throw new HttpError(404, "回放不存在。 / Replay not found.");
+  if (status === "published") {
+    await applyReplayStats(code);
+  } else if (before?.status === "published") {
+    await removeReplayStats(code);
+  }
   const row = await db.prepare("SELECT * FROM replays WHERE code = ?").bind(code).first<ReplayRecord>();
   if (!row) throw new HttpError(404, "回放不存在。 / Replay not found.");
   return toView(row);
 }
 
-/** Retrait par l'auteur : pending/published → withdrawn. */
+/** Retrait par l'auteur : pending/published → withdrawn (un replay publié
+ *  retire sa contribution aux stats joueurs). */
 export async function withdrawReplay(code: string, ownerId: string): Promise<ReplaySubmissionView> {
   const db = bindings().DB;
   const now = new Date().toISOString();
+  const before = await db
+    .prepare("SELECT status FROM replays WHERE code = ? AND owner_id = ?")
+    .bind(code, ownerId)
+    .first<{ status: string }>();
   const changed = await db
     .prepare("UPDATE replays SET status='withdrawn', moderated_at=? WHERE code=? AND owner_id=? AND status IN ('pending','published')")
     .bind(now, code, ownerId)
     .run();
   if (changed.meta.changes !== 1) throw new HttpError(404, "找不到可撤回的回放。 / No withdrawable replay found.");
+  if (before?.status === "published") await removeReplayStats(code);
   const row = await db.prepare("SELECT * FROM replays WHERE code = ?").bind(code).first<ReplayRecord>();
   if (!row) throw new HttpError(404, "回放不存在。 / Replay not found.");
   return toView(row, true);
+}
+
+/** Retrait admin (toute ligne, tout statut). */
+export async function moderateWithdrawReplay(code: string): Promise<ReplayRecord> {
+  const db = bindings().DB;
+  const now = new Date().toISOString();
+  const before = await db
+    .prepare("SELECT status FROM replays WHERE code = ?")
+    .bind(code)
+    .first<{ status: string }>();
+  const changed = await db
+    .prepare("UPDATE replays SET status='withdrawn', moderated_at=? WHERE code=?")
+    .bind(now, code)
+    .run();
+  if (changed.meta.changes !== 1) throw new HttpError(404, "回放不存在。 / Replay not found.");
+  if (before?.status === "published") await removeReplayStats(code);
+  const row = await db.prepare("SELECT * FROM replays WHERE code = ?").bind(code).first<ReplayRecord>();
+  if (!row) throw new HttpError(404, "回放不存在。 / Replay not found.");
+  return row;
 }

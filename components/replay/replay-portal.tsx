@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Clock, Search, Send, TriangleAlert } from "lucide-react";
 import { useBilingual, useI18n } from "@/components/i18n";
 import { buildReplayAnalysis, type ReplayAnalysis } from "@/lib/replay/analysis";
+import { buildReplayDigest } from "@/lib/replay/digest";
 import { ReplayInfoParser } from "@/lib/replay/parser";
 import { getGameContext, loadLegacyUnitIds, parseReplayCode } from "@/lib/replay";
 import { isReplaySuccess, type Player, type ReplayParseResult } from "@/lib/replay/structure";
@@ -222,6 +223,11 @@ export function ReplayPortal({
           teamSize: data.analysis.verdict.teamSize,
           mvpName: mvp?.nickname ?? null,
           modeKey: data.analysis.verdict.modeKey,
+          // Digest statistique (saisons/classement) — validé côté serveur.
+          digest: buildReplayDigest(
+            data.result as Extract<ReplayParseResult, { error: 0 }>,
+            data.analysis,
+          ),
         }),
       });
       if (r.status === 409) {
