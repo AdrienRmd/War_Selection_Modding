@@ -1924,3 +1924,99 @@ code {
     font-size: 16px;
   }
 }
+
+/* --------------------- Vitrine « Explorer le jeu » (accueil, V3-P1) --------
+   Bloc présentant les 4 sections de données (unités, recherches, arbre
+   modding, atelier) avec compteurs réels. Même langage visuel que les
+   portal-card : bord, dégradé de carte, chevron. Anti-déformation mobile :
+   min-width:0 sur les enfants flex + overflow-wrap sur les textes. */
+.explore-section {
+  margin-top: 35px;
+}
+.explore-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+.explore-card {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 24px;
+  border: 1px solid var(--border);
+  background: linear-gradient(120deg, #172331, #101921);
+  border-radius: 4px;
+  transition: 0.2s;
+  min-width: 0;
+}
+.explore-card:hover {
+  border-color: #6e8c9f;
+}
+.explore-icon {
+  color: var(--primary);
+  display: inline-flex;
+  flex: none;
+  margin-top: 3px;
+}
+.explore-body {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: break-word;
+}
+.explore-body h3 {
+  font-size: 21px;
+  font-weight: 550;
+  margin: 4px 0 2px;
+}
+.explore-count {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: #a4bfcd;
+  margin: 2px 0 6px;
+}
+.explore-desc {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+.explore-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.explore-thumbs img {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--muted);
+  object-fit: contain;
+}
+.explore-chevron {
+  margin-left: auto;
+  color: #a4bfcd;
+  flex: none;
+  align-self: center;
+}
+.explore-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 14px;
+}
+@media (max-width: 900px) {
+  .explore-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 550px) {
+  .explore-card {
+    padding: 18px;
+    gap: 14px;
+  }
+  .explore-thumbs img {
+    width: 40px;
+    height: 40px;
+  }
+}

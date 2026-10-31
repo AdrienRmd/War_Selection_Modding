@@ -1976,6 +1976,23 @@ export const english: Record<string, string> = {
   单位档案: "Unit archive",
   "按时代浏览游戏单位，查看原始数值、武器与图片；数据来自公开导出。":
     "Browse game units by age with raw stats, weapons and images, straight from the public export.",
+  // --- Vitrine « Explorer le jeu » de l'accueil (V3-P1) — chaînes t() ---
+  "探索游戏数据": "Explore game data",
+  "单位、科技与参数档案同步自公开数据集，与游戏版本一致。":
+    "Units, researches and modding parameters sync from the public dataset, matching the live game version.",
+  "数据更新于": "Data updated",
+  "ARCHIVE / 01": "ARCHIVE / 01",
+  "ARCHIVE / 02": "ARCHIVE / 02",
+  "ARCHIVE / 03": "ARCHIVE / 03",
+  "WORKSHOP / 04": "WORKSHOP / 04",
+  "按时代浏览全部单位：原始数值、武器、护甲与官方名称。":
+    "Browse every unit by age: raw stats, weapons, armor and official names.",
+  "每项研究的官方名称、说明与解锁单位，直达单位档案。":
+    "Official name, description and unlocked units for every research, linked to the unit archive.",
+  "逐节点展开游戏参数树：数值、字符串与函数签名，支持路径搜索。":
+    "Expand the game parameter tree node by node: values, strings and function signatures, with path search.",
+  "共 ${count} 个参数节点": "${count} parameter nodes",
+  "简易模式（三步导出）": "Simple mode (3-step export)",
   "共 ${count} 个单位": "${count} units",
   "数据更新于 ${date}，共 ${count} 个单位": "Data updated ${date} · ${count} units",
   "正在读取数据版本…": "Reading dataset version…",

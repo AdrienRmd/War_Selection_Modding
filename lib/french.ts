@@ -2013,6 +2013,23 @@ export const french: Record<string, string> = {
   单位档案: "Archives des unités",
   "按时代浏览游戏单位，查看原始数值、武器与图片；数据来自公开导出。":
     "Parcourez les unités du jeu par ère : valeurs brutes, armes et images, issues de l’export public.",
+  // --- Vitrine « Explorer le jeu » de l'accueil (V3-P1) — chaînes t() ---
+  "探索游戏数据": "Explorer les données du jeu",
+  "单位、科技与参数档案同步自公开数据集，与游戏版本一致。":
+    "Unités, recherches et paramètres de modding synchronisés depuis le jeu de données public, alignés sur la version du jeu.",
+  "数据更新于": "Données mises à jour le",
+  "ARCHIVE / 01": "ARCHIVES / 01",
+  "ARCHIVE / 02": "ARCHIVES / 02",
+  "ARCHIVE / 03": "ARCHIVES / 03",
+  "WORKSHOP / 04": "ATELIER / 04",
+  "按时代浏览全部单位：原始数值、武器、护甲与官方名称。":
+    "Parcourez toutes les unités par âge : statistiques brutes, armes, blindages et noms officiels.",
+  "每项研究的官方名称、说明与解锁单位，直达单位档案。":
+    "Nom officiel, description et unités débloquées pour chaque recherche, reliés aux archives des unités.",
+  "逐节点展开游戏参数树：数值、字符串与函数签名，支持路径搜索。":
+    "Dépliez l’arbre des paramètres du jeu nœud par nœud : valeurs, chaînes et signatures de fonctions, avec recherche par chemin.",
+  "共 ${count} 个参数节点": "${count} nœuds de paramètres",
+  "简易模式（三步导出）": "Mode simple (export en 3 étapes)",
   "共 ${count} 个单位": "${count} unités",
   "数据更新于 ${date}，共 ${count} 个单位": "Données mises à jour le ${date} · ${count} unités",
   "正在读取数据版本…": "Lecture de la version du jeu de données…",

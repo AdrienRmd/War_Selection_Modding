@@ -12,6 +12,12 @@ import { identity } from "@/lib/atlas-server";
 import type { CollectedMap } from "@/lib/collection";
 import { getFeaturedMap } from "@/lib/featured-server";
 import { stalingradDefault } from "@/lib/map-content";
+import { unitsIndex } from "@/lib/units";
+import { researchesIndex } from "@/lib/researches";
+import { moddingMeta } from "@/lib/modding";
+import { exploreStats, pickSampleUnits } from "@/lib/explore";
+import { requestLocale } from "@/lib/page-metadata";
+import { GameExplore } from "@/components/game-explore";
 export const dynamic = "force-dynamic";
 export default async function Home() {
   let collection: CollectedMap[] = [],
@@ -29,6 +35,18 @@ export default async function Home() {
   } catch {
     unavailable = true;
   }
+  // Vitrine « Explorer le jeu » (V3-P1) : compteurs RÉELS des sections,
+  // dérivés des index embarqués côté serveur (jamais codés en dur) et
+  // mini-vignettes d'unités déterministes, localisées dans la locale de la
+  // requête. Seules ces données minuscules partent vers le client — jamais
+  // un index complet.
+  const locale = await requestLocale();
+  const stats = exploreStats({
+    units: unitsIndex.units,
+    researches: researchesIndex.researches,
+    parameterNodes: moddingMeta.pathCount,
+  });
+  const samples = pickSampleUnits(unitsIndex.units, locale);
   return (
     <>
       <AtlasHeader />
@@ -133,6 +151,7 @@ export default async function Home() {
             </Link>
           </div>
         </section>
+        <GameExplore stats={stats} samples={samples} />
         <div className="portal-grid">
           <Link href="/mods" className="portal-card">
             <Layers3 size={30} />
