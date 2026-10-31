@@ -56,6 +56,39 @@ export const segmentsOf = (path: string): string[] => path.split(".").filter(Boo
 export const childPath = (parent: string, key: string): string =>
   parent ? `${parent}.${key}` : key;
 
+/**
+ * Validation défensive du JSON fetché pour les enfants d'un nœud (V3-P2 #8) :
+ * un contenu inattendu (HTML d'erreur, objet, chaîne, tableau d'objets sans
+ * clé k:string) devient null — l'appelant le traite en échec de chargement
+ * au lieu de crasher au rendu. Chaque enfant doit au minimum porter k ;
+ * les autres champs restent optionnels (interface ModdingNode).
+ */
+export function sanitizeChildren(raw: unknown): ModdingNode[] | null {
+  if (!Array.isArray(raw)) return null;
+  for (const node of raw) {
+    if (
+      typeof node !== "object" ||
+      node === null ||
+      typeof (node as { k?: unknown }).k !== "string"
+    )
+      return null;
+  }
+  return raw as ModdingNode[];
+}
+
+/**
+ * Borne un Map utilisé comme cache : éviction FIFO des plus anciennes clés
+ * jusqu'à maxEntries (V3-P2 #9 — l'ordre d'insertion d'un Map JS fait foi,
+ * comme le cache session de l'arbre modding).
+ */
+export function capMapSize(cache: Map<string, unknown>, maxEntries: number): void {
+  while (cache.size > maxEntries) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
+
 export const isLazyNode = (node: ModdingNode): boolean => node.as === true;
 export const hasInlineChildren = (node: ModdingNode): boolean =>
   Array.isArray(node.ch) && node.ch.length > 0;

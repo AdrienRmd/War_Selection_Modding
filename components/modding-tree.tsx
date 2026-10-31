@@ -22,11 +22,13 @@ import { UpdatedDatasetBadge, useDatasetMeta } from "@/components/dataset-badge"
 import {
   PATH_INDEX_URL,
   breadcrumbOf,
+  capMapSize,
   childPath,
   hasInlineChildren,
   isExpandableNode,
   isLazyNode,
   resolveDeepLink,
+  sanitizeChildren,
   searchPaths,
   countMatches,
   segmentsOf,
@@ -44,10 +46,19 @@ const UPDATED_BADGE = "modding-updated";
 // --- Cache de session --------------------------------------------------------
 // Module : survit aux remontées du composant dans la session. sessionStorage :
 // survit aux navigations pleine page (garde-fou quota, ~60 nœuds <64 Ko).
+// V3-P2 #9 : le cache module est borné (40 entrées, FIFO) — les gros nœuds
+// (fichiers tree jusqu'à plusieurs Mo) ne peuvent plus y accumuler de la
+// mémoire sans limite pendant une longue session de navigation.
+const NODE_CACHE_MAX = 40;
 const nodeCache = new Map<string, ModdingNode[]>();
 const inflight = new Map<string, Promise<ModdingNode[]>>();
 const SESSION_PREFIX = "ws-modding-node:";
 const sessionKeys: string[] = [];
+
+function cacheChildren(path: string, children: ModdingNode[]): void {
+  nodeCache.set(path, children);
+  capMapSize(nodeCache, NODE_CACHE_MAX);
+}
 
 function sessionGet(path: string): ModdingNode[] | null {
   try {
@@ -81,8 +92,12 @@ function fetchChildren(path: string): Promise<ModdingNode[]> {
       res.ok ? (res.json() as Promise<unknown>) : Promise.reject(new Error(String(res.status))),
     )
     .then((raw: unknown) => {
-      const children = raw as ModdingNode[];
-      nodeCache.set(path, children);
+      // V3-P2 #8 : validation défensive avant tout usage — un JSON inattendu
+      // (HTML d'erreur, objet, entrée sans k) devient un échec de chargement
+      // géré par l'UI (failedPaths), pas un crash au rendu.
+      const children = sanitizeChildren(raw);
+      if (!children) throw new Error("bad children payload");
+      cacheChildren(path, children);
       sessionSet(path, children);
       inflight.delete(path);
       return children;
@@ -100,7 +115,7 @@ function loadChildren(path: string): Promise<ModdingNode[]> {
   if (cached) return Promise.resolve(cached);
   const stored = sessionGet(path);
   if (stored) {
-    nodeCache.set(path, stored);
+    cacheChildren(path, stored);
     return Promise.resolve(stored);
   }
   return fetchChildren(path);

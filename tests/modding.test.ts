@@ -4,9 +4,11 @@ import { describe, expect, it } from "vitest";
 import { translate } from "@/lib/i18n";
 import {
   breadcrumbOf,
+  capMapSize,
   childPath,
   moddingMeta,
   resolveDeepLink,
+  sanitizeChildren,
   searchPaths,
   segmentsOf,
   treeFileUrl,
@@ -259,6 +261,61 @@ describe("logique lazy et lien profond (arbre mocké)", () => {
     ]);
     expect(breadcrumbOf("")).toEqual([]);
     expect(segmentsOf("gameplay.root.unitType.5")).toHaveLength(4);
+  });
+});
+
+describe("robustesse V3-P2 #8 — sanitizeChildren (JSON fetché défensivement)", () => {
+  it("accepte un tableau de nœuds avec k:string (champs optionnels absents)", () => {
+    const raw = [
+      { k: "unitType" },
+      { k: "5", tp: "number", v: "42" },
+      { k: "costs", ch: [{ k: "wood", v: "10" }] },
+    ];
+    expect(sanitizeChildren(raw)).toBe(raw);
+  });
+
+  it("rejette tout ce qui n'est pas un tableau de nœuds { k: string }", () => {
+    for (const bad of [
+      null,
+      undefined,
+      "gameplay.root",
+      42,
+      { ch: [] },
+      "<html>page d'erreur</html>",
+      [null],
+      ["unitType"],
+      [{ tp: "number" }], // k absent
+      [{ k: 5 }], // k non chaîne
+      [{ k: "ok" }, { k: 7 }], // un seul invalide suffit
+    ])
+      expect(sanitizeChildren(bad), JSON.stringify(bad)).toBeNull();
+  });
+
+  it("tableau vide : valide (nœud sans enfants, pas un crash)", () => {
+    expect(sanitizeChildren([])).toEqual([]);
+  });
+});
+
+describe("robustesse V3-P2 #9 — capMapSize (borne FIFO du cache module)", () => {
+  it("évince les plus anciennes clés jusqu'à la borne", () => {
+    const cache = new Map<string, unknown>();
+    for (let i = 1; i <= 45; i++) cache.set(`n${i}`, i);
+    capMapSize(cache, 40);
+    expect(cache.size).toBe(40);
+    expect([...cache.keys()]).toEqual([
+      ...Array.from({ length: 40 }, (_, i) => `n${i + 6}`),
+    ]);
+  });
+
+  it("déjà sous la borne : rien n'est évincé ; re-set ne réordonne pas", () => {
+    const cache = new Map<string, unknown>();
+    cache.set("a", 1);
+    cache.set("b", 2);
+    cache.set("a", 3); // ré-écriture : "a" reste le plus ancien (FIFO)
+    capMapSize(cache, 2);
+    expect([...cache.keys()]).toEqual(["a", "b"]);
+    capMapSize(cache, 1);
+    expect([...cache.keys()]).toEqual(["b"]);
   });
 });
 
