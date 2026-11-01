@@ -310,7 +310,8 @@ html[lang="en"] .mod-title-row .mod-source {
   html[lang="en"] .header nav {
     justify-content: flex-start;
     gap: 15px;
-    overflow: auto;
+    /* FIX 02/11 : overflow:auto retiré — il rognait les panneaux déroulants
+       (même pattern que command.css ≤760 px, cf. test-header-menus-e2e). */
   }
   html[lang="en"] .header nav a {
     white-space: nowrap;

@@ -1131,11 +1131,14 @@ des color-mix de jetons pour les teintes — harmonisation sans rupture, la
   .header {
     padding: 18px 5%;
   }
+  /* FIX 02/11 (menu mobile rogné) : plus d'overflow:auto sur le nav —
+     l'ancien défilement horizontal des liens à plat rognait ENTÈREMENT
+     les panneaux déroulants Archives/Mods (position:absolute, z-index 70,
+     sous la ligne de base du nav). Le nav en mode menus déroulants tient
+     sur une ligne ; aucun lien à plat à faire défiler. */
   .header nav {
     gap: 20px;
     justify-content: flex-start;
-    overflow: auto;
-    padding-bottom: 8px;
   }
   .header nav a[aria-current="page"]::after {
     bottom: -8px;
