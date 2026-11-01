@@ -1,0 +1,104 @@
+#!/usr/bin/env node
+/** E2E filtre Joueurs NvN sur /maps (finitions 08/11).
+ *  Contrôles (375 px, locale fr) :
+ *   1. le sélecteur « Joueurs » existe avec les formats RÉELS des données
+ *      (options NvN construites depuis le champ players, compte impair
+ *      jamais proposé) ;
+ *   2. filtrer 4v4 → ne restent QUE des cartes 8 joueurs (méta « 8 joueurs »)
+ *      et le compteur = nombre de cartes 8 joueurs du corpus complet
+ *      (chargées via « afficher plus ») ; aucune carte « non renseignée » ;
+ *   3. « Nombre de joueurs inconnu » → uniquement des cartes sans nombre ;
+ *   4. retour à « Joueurs : tous » → compteur initial restauré.
+ *  Usage : node scripts/test-maps-filters-e2e.mjs [origin] */
+import { chromium } from "playwright";
+
+const origin = process.argv[2] || "http://localhost:5173";
+if (!/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin))
+  throw new Error("Tests are restricted to a local, non-production origin.");
+
+const report = [];
+const check = (name, ok, detail = "") => {
+  if (!ok) throw new Error(`FAIL ${name} ${detail}`);
+  report.push(name);
+  console.log("PASS", name, detail);
+};
+
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 375, height: 812 }, hasTouch: true });
+await page.context().addCookies([{ name: "atlas_locale", value: "fr", url: origin }]);
+await page.goto(origin + "/maps", { waitUntil: "networkidle" });
+
+const counter = page.locator(".collection-toolbar > span[aria-live]");
+const playersSelect = page.locator("select[aria-label='Filtrer par nombre de joueurs']");
+await playersSelect.waitFor({ state: "visible", timeout: 10000 });
+
+const options = await playersSelect.locator("option").allTextContents();
+console.log("options Joueurs :", JSON.stringify(options));
+check(
+  "sélecteur Joueurs : « tous » + formats NvN pairs uniquement",
+  options.some((o) => o.startsWith("Joueurs : tous")) &&
+    options.some((o) => o.startsWith("4v4")) &&
+    options.some((o) => o.startsWith("1v1")) &&
+    options.some((o) => o.startsWith("25v25")),
+);
+check(
+  "formats impairs jamais proposés (3, 9, 15, 25 joueurs ≠ NvN)",
+  !options.some((o) => /^(3 ·|9 ·|15 ·|25 ·|31 ·|43 ·|63 ·)/.test(o)),
+);
+
+const initialCount = Number((await counter.innerText()).match(/\d+/)?.[0] ?? 0);
+
+/** Charge toutes les cartes restantes (« afficher plus ») puis lit les méta. */
+async function loadAllCards() {
+  for (let i = 0; i < 40; i++) {
+    const more = page.getByRole("button", { name: /cartes de plus/ });
+    if (!(await more.count())) break;
+    await more.first().click();
+    await page.waitForTimeout(150);
+  }
+  const metas = await page.locator(".collection-meta span").allTextContents();
+  // Seul le second span de chaque carte porte le nombre de joueurs
+  // (l'auteur peut contenir « joueurs » dans un pseudo — filtre structurel).
+  return metas.filter((_, i) => i % 2 === 1);
+}
+
+// — Filtre 4v4 —
+await playersSelect.selectOption({ label: options.find((o) => o.startsWith("4v4")) });
+await page.waitForTimeout(300);
+const count4v4 = Number((await counter.innerText()).match(/\d+/)?.[0] ?? 0);
+const metas4v4 = await loadAllCards();
+const with8 = metas4v4.filter((t) => /8 joueurs/.test(t)).length;
+const unknownMeta = metas4v4.filter((t) => /inconnu/i.test(t)).length;
+check("4v4 : uniquement des cartes « 8 joueurs »", with8 === metas4v4.length && metas4v4.length > 0,
+  `(${with8}/${metas4v4.length} cartes « 8 joueurs »)`);
+check("4v4 : aucune carte sans nombre de joueurs", unknownMeta === 0);
+check("4v4 : compteur = cartes du corpus au format 8 joueurs", count4v4 === with8, `(${count4v4})`);
+
+// — Non renseigné —
+const noneLabel = options.find((o) => o.startsWith("Nombre de joueurs inconnu"));
+check("option « non renseigné » présente (volumétrie significative)", !!noneLabel);
+if (noneLabel) {
+  await playersSelect.selectOption({ label: noneLabel });
+  await page.waitForTimeout(300);
+  const countNone = Number((await counter.innerText()).match(/\d+/)?.[0] ?? 0);
+  const metasNone = await loadAllCards();
+  check(
+    "non renseigné : uniquement des cartes sans nombre",
+    metasNone.length > 0 && metasNone.every((t) => /inconnu/i.test(t)),
+    `(${metasNone.length} cartes)`,
+  );
+  check("non renseigné : compteur = option annoncée", countNone === Number(noneLabel.match(/(\d+)\s*$/)?.[1]),
+    `(${countNone})`);
+}
+
+// — Retour à tous —
+await playersSelect.selectOption({ index: 0 });
+await page.waitForTimeout(300);
+check(
+  "retour « Joueurs : tous » restaure le corpus complet",
+  Number((await counter.innerText()).match(/\d+/)?.[0] ?? 0) === initialCount,
+);
+
+await page.close();
+await browser.close();
+console.log(`\nOK — ${report.length} contrôles e2e filtre Joueurs NvN`);

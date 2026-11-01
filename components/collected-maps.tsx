@@ -52,7 +52,34 @@ export function CollectedMaps({
     pair ? (locale === "zh" ? pair[0] : t(pair[1])) : "";
   const [query, setQuery] = useState(""),
     [filter, setFilter] = useState("all"),
+    [playerFilter, setPlayerFilter] = useState("all"),
     [limit, setLimit] = useState(12);
+  // Filtre « Joueurs : NvN » (finitions 08/11) — construit sur les formats
+  // RÉELS des données servies : champ players, N = players/2 équipes quand il
+  // est pair. Les cartes sans nombre (et les comptes impairs — équipes
+  // asymétriques, ex. 15) ne forment pas de groupe NvN et restent dans
+  // « Tous ». L'entrée « Non renseigné » n'apparaît que si la volumétrie est
+  // significative (≥ 10 fiches).
+  const playerFormats = (() => {
+    // NB : lucide-react exporte une icône `Map` qui masque le constructeur
+    // global dans ce module — comptage via objet, pas `new Map()`.
+    const counts: Record<number, number> = {};
+    let unknown = 0;
+    for (const m of items) {
+      if (m.players == null) unknown++;
+      else if (m.players % 2 === 0 && m.players >= 2) {
+        const n = m.players / 2;
+        counts[n] = (counts[n] ?? 0) + 1;
+      }
+    }
+    const teams = Object.entries(counts)
+      .map(([k, v]) => [Number(k), v] as [number, number])
+      .sort((a, b) => a[0] - b[0]);
+    return { teams, unknown };
+  })();
+  const playerMatch = (m: CollectedMap) =>
+    playerFilter === "all" ||
+    (playerFilter === "none" ? m.players == null : m.players === Number(playerFilter) * 2);
   const matches = items.filter(
     (m) =>
       [
@@ -73,7 +100,8 @@ export function CollectedMaps({
         (filter === "named" && !!m.title) ||
         (filter === "unknown" && !m.title) ||
         filter === m.test_status ||
-        filter === m.category),
+        filter === m.category) &&
+      playerMatch(m),
   );
   return (
     <section id="collection" className="collection-section">
@@ -132,6 +160,26 @@ export function CollectedMaps({
               {label(collectionLabels[k])}
             </option>
           ))}
+        </select>
+        <select
+          aria-label={l("按人数筛选", "Filter by player count")}
+          value={playerFilter}
+          onChange={(e) => {
+            setPlayerFilter(e.target.value);
+            setLimit(12);
+          }}
+        >
+          <option value="all">{l("人数：全部", "Players: all")}</option>
+          {playerFormats.teams.map(([n, count]) => (
+            <option key={n} value={String(n)}>
+              {`${n}v${n} · ${count}`}
+            </option>
+          ))}
+          {playerFormats.unknown >= 10 && (
+            <option value="none">
+              {`${l("人数待确认", "Player count unknown")} · ${playerFormats.unknown}`}
+            </option>
+          )}
         </select>
         <span aria-live="polite">
           {locale === "zh"

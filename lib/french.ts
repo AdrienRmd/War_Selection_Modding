@@ -1794,6 +1794,8 @@ export const french: Record<string, string> = {
   "Permission / license (optional)": "Autorisation / licence (facultatif)",
   "Player count (source notes)": "Nombre de joueurs (relevé d'origine)",
   "Player count unknown": "Nombre de joueurs inconnu",
+  "按人数筛选": "Filtrer par nombre de joueurs",
+  "人数：全部": "Joueurs : tous",
   "PLAYER SUBMISSIONS": "SOUMISSIONS DES JOUEURS",
   players: "joueurs",
   "Players (source)": "Joueurs (relevé d'origine)",

@@ -1763,6 +1763,8 @@ export const english: Record<string, string> = {
   "Permission / license (optional)": "Permission / license (optional)",
   "Player count (source notes)": "Player count (source notes)",
   "Player count unknown": "Player count unknown",
+  "按人数筛选": "Filter by player count",
+  "人数：全部": "Players: all",
   "PLAYER SUBMISSIONS": "PLAYER SUBMISSIONS",
   players: "players",
   "Players (source)": "Players (source)",
