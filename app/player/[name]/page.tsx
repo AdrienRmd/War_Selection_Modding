@@ -7,6 +7,23 @@ import "../../wsva.css"; // Design-system wsva scopé .rp (profil joueur, V3 01/
 
 export const dynamic = "force-dynamic";
 
+/** vinext livre les params de PAGE sous forme ENCODÉE (canonicalisée) :
+ *  seuls les route handlers reçoivent des params décodés (vinext
+ *  routing/utils normalizeMatchedParamsForRoute → canonicalizeAppPageParams
+ *  pour les pages, decodeMatchedParams pour les handlers). Un seul
+ *  décodage ici — et robuste : une séquence « % » mal formée (préservée
+ *  telle quelle par le repli de canonicalizeAppPageParam) replie sur le
+ *  segment brut au lieu de lever URIError → jamais de 500, état vide.
+ *  Vérifié empiriquement : /player/100%2525Man → profil « 100%25Man »,
+ *  /player/Caf%C3%A9 → « Café » (un seul décodage, pas de double). */
+function playerNameFromSegment(segment: string): string {
+  try {
+    return decodeURIComponent(segment).slice(0, 40);
+  } catch {
+    return segment.slice(0, 40);
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -14,7 +31,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { name } = await params;
   const locale = await requestLocale();
-  const trimmed = decodeURIComponent(name).slice(0, 40);
+  const trimmed = playerNameFromSegment(name);
   const base = await pageMetadata("players");
   // OG riche quand le profil existe (points/parties), discret sinon — et
   // indexation réservée aux profils avec données (V4).
@@ -50,7 +67,7 @@ export default async function PlayerPage({
 }) {
   const { name } = await params;
   const locale = await requestLocale();
-  const profile = await playerProfile(decodeURIComponent(name), locale);
+  const profile = await playerProfile(playerNameFromSegment(name), locale);
   return (
     <>
       <AtlasHeader />

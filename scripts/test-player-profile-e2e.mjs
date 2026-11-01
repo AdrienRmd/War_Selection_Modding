@@ -5,7 +5,9 @@
  *  Couvert : rendu wsva (pennant, rang, tuiles), courbe de points cliquable,
  *  médailles avec icônes, parties récentes + lien replay, nations/pays,
  *  fastest times, unités favorites par âge (icônes du dataset jeu),
- *  onglets de période, état vide joueur inconnu, 375 px sans débordement.
+ *  onglets de période, état vide joueur inconnu, pseudo contenant « % »
+ *  (/player/100%25Man → 200, décodage unique, pas de 500), 375 px sans
+ *  débordement.
  *  Usage : node scripts/test-player-profile-e2e.mjs [chromium|webkit] [origin] */
 import { chromium, webkit } from "playwright";
 
@@ -75,6 +77,23 @@ check("état vide gracieux (aucun replay publié)", emptyText.includes("aucun re
 check("état vide : lien vers /replay", (await emptyPage.locator('a[href="/replay"]').count()) === 1);
 check("état vide : pas de rang/#", !/#\d+/.test(emptyText));
 await empty.close();
+
+/* ---- Pseudo contenant « % » : /player/100%25Man ---------------------- */
+// Encodage de « 100%Man » : vinext livre le segment ENCODÉ aux pages
+// (seuls les route handlers sont décodés) — la page décode une seule fois,
+// sans jamais lever URIError (repli sur le segment brut si % mal formé).
+const pct = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+await pct.addCookies([{ name: "atlas_locale", value: "fr", url: origin }]);
+const pctPage = await pct.newPage();
+const pctResp = await pctPage.goto(origin + "/player/100%25Man");
+check("« 100%Man » (URL 100%25Man) : HTTP 200, pas de 500", pctResp?.status() === 200);
+await pctPage.waitForSelector(".rp main", { timeout: 20000 });
+check(
+  "« 100%Man » : titre décodé exactement une fois + état vide",
+  (await pctPage.title()) === "100%Man | WS ATLAS" &&
+    (((await pctPage.textContent(".rp main")) ?? "").includes("aucun replay publié")),
+);
+await pct.close();
 
 /* ---- Mobile 375 px ---------------------------------------------------- */
 const mobile = await browser.newContext({

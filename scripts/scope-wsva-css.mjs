@@ -28,12 +28,37 @@ const src = fs.readFileSync(path.join(root, "vendor/wsva-design-system.css"), "u
 // 1. Retirer les @font-face (blocs imbriqués simples : une paire {} interne).
 let css = src.replace(/@font-face\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g, "");
 
-// 2. Collecter et retirer les @keyframes (corps sans imbrication profonde).
+// 2. Collecter et retirer les @keyframes (corps imbriqué d'un niveau :
+//    0%{...}to{...}). Extraction par comptage d'accolades — une regex à
+//    groupe capturant quantifié ne convient pas : un groupe répété ne
+//    conserve que sa DERNIÈRE itération. C'est ce défaut qui produisait
+//    `@keyframes rp-tab-panel-in{{opacity:1;transform:none}}` (corps tronqué
+//    à sa dernière étape + double accolade) : règle invalide, dropée par le
+//    parseur CSS → fade-in des .tab-panel inopérants.
 const keyframes = new Map();
-css = css.replace(/@keyframes\s+([\w-]+)\{((?:[^{}]*\{[^{}]*\})[^{}]*)*\}/g, (_, name, body) => {
-  keyframes.set(name, body);
-  return "";
-});
+{
+  const kf = /@keyframes\s+([\w-]+)[^{]*\{/g;
+  let m;
+  while ((m = kf.exec(css))) {
+    const name = m[1];
+    const open = m.index + m[0].length; // position juste après '{'
+    let depth = 1;
+    let j = open;
+    while (j < css.length) {
+      if (css[j] === "{") depth++;
+      else if (css[j] === "}") {
+        depth--;
+        if (depth === 0) break;
+      }
+      j++;
+    }
+    if (j >= css.length) throw new Error(`@keyframes ${name} : accolade fermante introuvable`);
+    const body = css.slice(open, j);
+    keyframes.set(name, body);
+    css = css.slice(0, m.index) + css.slice(j + 1);
+    kf.lastIndex = 0; // css raccourci : reprendre le scan depuis le début
+  }
+}
 
 // 3. Découper en blocs top-level : at-rules (@media/@supports) vs règles.
 const out = [];
@@ -56,7 +81,6 @@ while (i < len) {
     let depth = 0;
     while (j < len) {
       if (css[j] === "{") {
-        if (depth === 0) start = j;
         depth++;
       } else if (css[j] === "}") {
         depth--;

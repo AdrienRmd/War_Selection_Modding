@@ -80,8 +80,11 @@ read_build_id() {
 }
 
 valid_build_id() {
+  # Charset [A-Za-z0-9._-] ET exclusion explicite de "." / ".." : un BUILD_ID
+  # corrompu ne doit jamais désigner le répertoire courant ou le parent
+  # (rm -rf "$ARCHIVE_DIR/$id", rsync vers "$ARCHIVE_DIR/$id/").
   case "$1" in
-    "" | *[!A-Za-z0-9._-]*) return 1 ;;
+    "" | "." | ".." | *[!A-Za-z0-9._-]*) return 1 ;;
     *) return 0 ;;
   esac
 }

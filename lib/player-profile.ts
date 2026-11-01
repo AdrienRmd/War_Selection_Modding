@@ -271,6 +271,41 @@ function buildView(key: string, rows: LedgerRow[], locale: Locale): PeriodView {
 /* Lecture principale                                                  */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/* Classement toutes périodes (mémoïsé 60 s)                            */
+/* ------------------------------------------------------------------ */
+
+/** Le rang (#N) exige un GROUP BY sur TOUTE la table replay_player_games
+ *  — coûteux en D1 et amplifiable par crawl (chaque vue de profil = un
+ *  scan agrégé complet). Le classement n'évolue qu'à la publication ou au
+ *  retrait d'un replay : 60 s de fraîcheur suffisent, et on borne ainsi le
+ *  coût à un relevé par minute et par isolate (cache module-level à
+ *  entrée unique, ≤ 2000 lignes nom/points). */
+const LEADERBOARD_TTL_MS = 60_000;
+let leaderboardCache: {
+  at: number;
+  rows: { player_name: string; total: number }[];
+} | null = null;
+
+/** Réinitialise le cache de classement — réservé aux tests. */
+export function resetLeaderboardCacheForTests(): void {
+  leaderboardCache = null;
+}
+
+async function rankedRows(): Promise<{ player_name: string; total: number }[]> {
+  if (leaderboardCache && Date.now() - leaderboardCache.at < LEADERBOARD_TTL_MS) {
+    return leaderboardCache.rows;
+  }
+  const ranked = await db()
+    .prepare(
+      "SELECT player_name, SUM(points) AS total FROM replay_player_games GROUP BY player_name ORDER BY total DESC LIMIT 2000",
+    )
+    .all<{ player_name: string; total: number }>();
+  const rows = ranked.results ?? [];
+  leaderboardCache = { at: Date.now(), rows };
+  return rows;
+}
+
 export async function playerProfile(name: string, locale: Locale): Promise<PlayerProfile> {
   const trimmed = name.trim().slice(0, 40);
   const rows = await db()
@@ -294,12 +329,8 @@ export async function playerProfile(name: string, locale: Locale): Promise<Playe
   }
   let rankAllTime: number | null = null;
   if (games.length > 0) {
-    const ranked = await db()
-      .prepare(
-        "SELECT player_name, SUM(points) AS total FROM replay_player_games GROUP BY player_name ORDER BY total DESC LIMIT 2000",
-      )
-      .all<{ player_name: string; total: number }>();
-    const idx = (ranked.results ?? []).findIndex((r) => r.player_name === trimmed);
+    const rows = await rankedRows();
+    const idx = rows.findIndex((r) => r.player_name === trimmed);
     rankAllTime = idx >= 0 ? idx + 1 : null;
   }
   return {
