@@ -69,6 +69,23 @@ async function mockRoutes(context) {
       ),
     }),
   );
+  // /wus-data/content/images/** servi depuis la copie publiée (Apache en
+  // production) — requis pour les contrôles « icônes chargées non cassées ».
+  await context.route("**/wus-data/content/images/**", async (route) => {
+    const rel = decodeURIComponent(
+      new URL(route.request().url()).pathname.split("/wus-data/content/images/")[1],
+    );
+    try {
+      const body = readFileSync(`/home/ubuntu/War-Selection/datasets/served/content/images/${rel}`);
+      await route.fulfill({
+        status: 200,
+        contentType: rel.endsWith(".png") ? "image/png" : "application/octet-stream",
+        body,
+      });
+    } catch {
+      await route.fulfill({ status: 404, body: "" });
+    }
+  });
   await context.route("**/games-api.warselect.io/getByReplay*", (route) => {
     const url = new URL(route.request().url());
     const code = url.searchParams.get("code") ?? "";
@@ -210,6 +227,39 @@ try {
   check("médailles affichées (lignes d'équipe)", (await page.locator(".player-medals img").count()) >= 1);
   check("icônes ressources jeu (food/wood/iron)", (await page.locator('td img[src*="/resource/"]').count()) >= 30);
 
+  /* ---- Transferts de ressources (V4) ---------------------------- */
+  await page.waitForSelector(".transfers-panel", { timeout: 15000 });
+  check(
+    "section transferts : caption « Sent by (55 transactions) »",
+    /Sent by \(55 transactions\)/.test((await page.locator(".transfers-table").first().textContent()) ?? ""),
+  );
+  check(
+    "section transferts : « Transactions (55) »",
+    /Transactions \(55\)/.test((await page.locator(".transfers-table").nth(1).textContent()) ?? ""),
+  );
+  check("badge Very generous présent", (await page.locator(".transfer-gen-veryGenerous").count()) >= 1);
+  check("certitudes Very likely + Likely affichées",
+    (await page.locator(".transfer-cert-veryLikely").count()) >= 1 &&
+    (await page.locator(".transfer-cert-likely").count()) >= 1);
+  check("flèches direction → dans les transactions",
+    (await page.locator(".transfers-table td").filter({ hasText: "→" }).count()) >= 50);
+  await page.waitForFunction(
+    () =>
+      Array.from(document.querySelectorAll(".transfers-panel img"))
+        .filter((i) => i.src.includes("/resource/"))
+        .every((i) => i.complete),
+    undefined,
+    { timeout: 10000 },
+  );
+  check(
+    "icônes de ressource des transactions chargées (non cassées)",
+    await page.evaluate(() =>
+      Array.from(document.querySelectorAll(".transfers-panel img"))
+        .filter((i) => i.src.includes("/resource/"))
+        .every((i) => i.complete && i.naturalWidth > 0),
+    ),
+  );
+
   // Ligne dépliable : détail inline (une ligne AVEC médailles — dbat, MVP).
   const medalRow = page.locator("tbody.team-table-row-toggle:has(.player-medals img) .chevron-button").first();
   await medalRow.click();
@@ -217,6 +267,68 @@ try {
   check("détail de ligne s'ouvre (inline)", (await page.locator("tr.player-detail-row").count()) === 1);
   check("détail : carte médaille", (await page.locator("tr.player-detail-row .medal-card").count()) >= 1);
   check("détail : nom de médaille traduit", ((await page.textContent("tr.player-detail-row")) ?? "").length > 10);
+
+  /* ---- Player statistics : onglets (V4) --------------------------- */
+  await page.waitForSelector(".player-stats", { timeout: 10000 });
+  const statTabs = page.locator(".player-stats-tab");
+  check("5 onglets Resources/Units/Defeated/Buildings/Research", (await statTabs.count()) === 5);
+  check(
+    "onglet Resources actif par défaut",
+    /Resources/.test((await page.locator(".player-stats-tab.chip-active").first().textContent()) ?? ""),
+  );
+  check("cartes ressources denses (≥ 6)", (await page.locator(".player-stats-tile").count()) >= 6);
+  await statTabs.filter({ hasText: "Units" }).click();
+  await page.waitForSelector(".player-stats-group", { timeout: 10000 });
+  check(
+    "onglet Units : sections par catégorie (≥ 2)",
+    (await page.locator(".player-stats-group").count()) >= 2,
+  );
+  check("sections repliées par défaut (aucune tuile rendue)", (await page.locator(".player-stats-unit-tile").count()) === 0);
+  const groupToggle = page.locator(".player-stats-group-toggle").first();
+  await groupToggle.click();
+  await page.waitForSelector(".player-stats-unit-tile", { timeout: 5000 });
+  check("section ouverte → tuiles unité (icône + nom + nombre)", (await page.locator(".player-stats-unit-tile").count()) >= 1);
+  await page.waitForFunction(
+    () =>
+      Array.from(document.querySelectorAll(".player-stats-unit-icon")).every((i) => i.complete),
+    undefined,
+    { timeout: 10000 },
+  );
+  check(
+    "icônes d'unités chargées (non cassées)",
+    await page.evaluate(() =>
+      Array.from(document.querySelectorAll(".player-stats-unit-icon")).every(
+        (i) => i.complete && i.naturalWidth > 0,
+      ),
+    ),
+  );
+  await groupToggle.click();
+  check("section refermée (tuiles démontées)", (await page.locator(".player-stats-unit-tile").count()) === 0);
+  await statTabs.filter({ hasText: "Defeated" }).click();
+  await page.waitForSelector(".player-stats-defeated", { timeout: 5000 });
+  check("onglet Defeated : vaincues + perdues", (await page.locator(".player-stats-groups-title").count()) === 2);
+  await statTabs.filter({ hasText: "Research" }).click();
+  await page.waitForSelector(".player-stats-research", { timeout: 5000 });
+  check("onglet Research : lignes avec horloge m:ss",
+    /^\d+:\d{2}$/.test((((await page.locator(".player-stats-research tbody tr td").nth(1).textContent()) ?? "")).trim()));
+  // Les icônes lazy se chargent juste après le montage de l'onglet : on
+  // attend qu'elles soient toutes résolues (complete) avant de juger.
+  await page.waitForFunction(
+    () =>
+      Array.from(document.querySelectorAll(".player-stats-research .research-image")).every(
+        (i) => i.complete,
+      ),
+    undefined,
+    { timeout: 10000 },
+  );
+  check(
+    "icônes de recherches chargées (non cassées)",
+    await page.evaluate(() =>
+      Array.from(document.querySelectorAll(".player-stats-research .research-image")).every(
+        (i) => i.complete && i.naturalWidth > 0,
+      ),
+    ),
+  );
   await medalRow.click();
   await page.waitForSelector("tr.player-detail-row", { state: "detached" });
   check("détail de ligne se referme", true);
@@ -390,6 +502,19 @@ try {
   const rows = mPage.locator("tr.team-table-main-row");
   check("tables scrollables en mobile", (await rows.count()) === 16);
   check("scroll horizontal table natif (table-scroll)", (await mPage.locator(".table-scroll").count()) >= 2);
+  // V4 : transferts + onglets joueur exploitables à 375 px.
+  check("375 px : section transferts présente", (await mPage.locator(".transfers-panel").count()) === 1);
+  await mPage.locator(".team-table-main-row .chevron-button").first().click();
+  await mPage.waitForSelector(".player-stats", { timeout: 10000 });
+  const mTabs = mPage.locator(".player-stats-tab");
+  check("375 px : 5 onglets joueur", (await mTabs.count()) === 5);
+  await mTabs.filter({ hasText: "Units" }).click();
+  await mPage.waitForSelector(".player-stats-group", { timeout: 5000 });
+  await mPage.locator(".player-stats-group-toggle").first().click();
+  await mPage.waitForSelector(".player-stats-unit-tile", { timeout: 5000 });
+  check("375 px : section catégorie ouvrable, tuiles rendues", (await mPage.locator(".player-stats-unit-tile").count()) >= 1);
+  const scrollW2 = await mPage.evaluate(() => document.scrollingElement.scrollWidth);
+  check("375 px : toujours sans débordement après onglets", scrollW2 <= 376);
   await mobile.close();
   await context.close();
 } finally {
