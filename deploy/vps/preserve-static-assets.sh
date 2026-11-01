@@ -41,10 +41,22 @@
 
 set -euo pipefail
 
-REPO_DIR="${1:-$HOME/war_selecion}"
-ARCHIVE_DIR="${2:-$HOME/ws-atlas-backups/static-builds}"
-KEEP="${3:-5}"
-ACTION="${4:-}"
+# Analyse d'arguments tolérante (fix 01/11) : forme canonique
+#   script [REPO] [ARCHIVE] [KEEP] <action>
+# mais l'action peut être passée seule en 2e position
+#   script REPO archive-current
+# sans que l'action consomme la place d'ARCHIVE (régression du premier fix :
+# ARCHIVE_DIR devenait « archive-current », un dossier relatif au repo).
+_positional=()
+for _arg in "$@"; do
+  case "$_arg" in
+    archive-current | restore-previous) ACTION="$_arg" ;;
+    *) _positional+=("$_arg") ;;
+  esac
+done
+REPO_DIR="${_positional[0]:-$HOME/war_selecion}"
+ARCHIVE_DIR="${_positional[1]:-$HOME/ws-atlas-backups/static-builds}"
+KEEP="${_positional[2]:-5}"
 
 STATIC_DIR="$REPO_DIR/dist/client/_next/static"
 BUILD_ID_FILE="$REPO_DIR/dist/server/BUILD_ID"
