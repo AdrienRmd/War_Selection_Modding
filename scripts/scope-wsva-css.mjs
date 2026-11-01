@@ -304,6 +304,32 @@ const extensions = `
 .rp .player-stats-unit-count{margin-left:auto;min-width:2.5ch;text-align:right;flex:none}
 .rp .player-stats-defeated{gap:var(--space-4);display:grid}
 .rp .player-stats-research .research-image{width:22px;height:22px;object-fit:contain;background:#0006;border-radius:4px}
+
+/* ============================================================
+   Interface façon ws-stats.pl (V C 02/11) — patrons ergonomiques
+   adoptés sur fond Field Archive sombre : en-têtes de section
+   repliables (icône + chevron), sélecteur de métriques en tuiles
+   denses, tables à filets fins.
+   ============================================================ */
+.rp .rp-section{gap:var(--space-2);display:grid;grid-template-columns:minmax(0,1fr)}
+.rp .rp-section>.rp-section-toggle,.rp .rp-section>.rp-section-body{min-width:0}
+.rp .rp-section-body>*{min-width:0}
+.rp .rp-section-toggle{width:100%;justify-content:flex-start;align-items:center;gap:var(--space-2);padding:var(--space-1) var(--space-2);font:inherit;font-family:var(--font-display);font-weight:600;font-size:var(--text-h3);color:var(--text-primary);cursor:pointer;background:0 0;border:0;display:flex}
+.rp .rp-section-toggle:hover{color:var(--gold)}
+.rp .rp-section-toggle:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.rp .rp-section-chevron{width:16px;height:16px;flex:none;margin-left:auto;transition:transform var(--collapse-open-ms) var(--ease-out);color:var(--text-muted)}
+.rp .rp-section-chevron:not(.rp-section-chevron-open){transform:rotate(-90deg)}
+.rp .rp-section-body{gap:var(--space-3);display:grid;grid-template-columns:minmax(0,1fr)}
+/* Sélecteur de métriques : tuiles denses alignées (icône + libellé),
+   cible tactile ≥ 44 px, état actif souligné or — façon ws-stats. */
+.rp .timeline-header .chip-group{gap:var(--space-1);width:100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr))}
+.rp .timeline-header .chip{min-height:48px;flex-direction:column;justify-content:center;align-items:center;gap:5px;padding:8px 6px;border-color:var(--edge);background:var(--panel-raised);text-align:center;line-height:1.2}
+.rp .timeline-header .chip:hover{border-color:var(--edge-strong);color:var(--text-primary)}
+.rp .timeline-header .chip-active{border-color:var(--line-gold);color:var(--text-primary);background:var(--row-open);box-shadow:inset 0 -2px 0 var(--line-gold)}
+.rp .timeline-header .chip .icon{width:20px;height:20px}
+/* Tables denses : filets fins entre lignes (units-table des onglets). */
+.rp .units-table td,.rp .units-table th{border-bottom:1px solid var(--edge)}
+.rp .units-table tbody tr:last-child td{border-bottom:0}
 `;
 
 // 8. Override « Field Archive » (V B 02/11) : encre et dégradé de page du

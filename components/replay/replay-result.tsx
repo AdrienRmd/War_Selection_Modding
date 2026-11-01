@@ -9,7 +9,8 @@
  *  images) ; icônes d'interface : pack wsva (public/icons, cf.
  *  THIRD_PARTY_NOTICES.md). Médailles : lib/replay/medals.ts (calque
  *  documenté). Liens joueur → /player/<name>. */
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { ChevronDown } from "lucide-react";
 import Link from "@/components/site-link";
 import { useBilingual, useI18n } from "@/components/i18n";
 import type { PlayerImpact, ReplayAnalysis, Side, TeamImpact } from "@/lib/replay/analysis";
@@ -148,8 +149,12 @@ export function ReplayResult({
           </p>
         ) : null}
 
-        {/* Bandeau d'informations du match. */}
-        <section className="panel overview-panel" aria-label={l("对局信息", "Match facts")}>
+        {/* Bandeau d'informations du match — section repliable ws-stats. */}
+        <CollapsibleSection
+          title={l("对局信息", "Match facts")}
+          icon="/icons/report.png"
+          className="overview-panel"
+        >
           <div className="fact-row">
             <Fact icon="/icons/stopwatch.png" label={l("时长", "Duration")} value={formatClock(match.duration)} />
             <Fact
@@ -314,7 +319,7 @@ export function ReplayResult({
               </div>
             </div>
           ) : null}
-        </section>
+        </CollapsibleSection>
 
         {/* Tables par équipe. */}
         <div className="team-grid">
@@ -334,9 +339,9 @@ export function ReplayResult({
             section omise si aucune transaction détectée. */}
         {transfers ? <TransfersPanel transfers={transfers} players={data.players} /> : null}
 
-        {/* Timeline à métriques + phases. */}
+        {/* Timeline à métriques + phases — section repliable ws-stats. */}
         {analysis.stages && analysis.power ? (
-          <section className="panel">
+          <CollapsibleSection title={l("前中后期时间线", "Early / mid / late timeline")} icon="/icons/stopwatch.png">
             <header className="timeline-header">
               <div className="chip-group">
                 {TIMELINE_METRICS.map((m) => (
@@ -394,7 +399,7 @@ export function ReplayResult({
                 </section>
               </div>
             </div>
-          </section>
+          </CollapsibleSection>
         ) : null}
       </main>
     </div>
@@ -404,6 +409,44 @@ export function ReplayResult({
 /* ------------------------------------------------------------------ */
 /* Sous-composants                                                     */
 /* ------------------------------------------------------------------ */
+
+/** Section repliable « façon ws-stats » : en-tête icône + titre + chevron,
+ *  contenu monté seulement si ouvert (V C 02/11 — patron ergonomique
+ *  ws-stats.pl : chaque bloc de la page résultat se replie). */
+function CollapsibleSection({
+  title,
+  icon,
+  className = "",
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  icon: string;
+  /** Classe stable additionnelle (sélecteurs e2e : overview-panel…). */
+  className?: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className={`panel rp-section${className ? ` ${className}` : ""}`}>
+      <button
+        type="button"
+        className="rp-section-toggle"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <img className="icon icon-md" src={icon} alt="" aria-hidden="true" />
+        {title}
+        <ChevronDown
+          className={`rp-section-chevron${open ? " rp-section-chevron-open" : ""}`}
+          aria-hidden="true"
+        />
+      </button>
+      {open ? <div className="rp-section-body">{children}</div> : null}
+    </section>
+  );
+}
 
 function metricLabel(key: string, l: ReturnType<typeof useBilingual>): string {
   switch (key) {

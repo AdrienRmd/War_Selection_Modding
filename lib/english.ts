@@ -2115,6 +2115,7 @@ export const english: Record<string, string> = {
   前置条件: "Prerequisites",
   时代过渡: "Age transition",
   经济: "Economy",
+  防御: "Defense",
   领土: "Territory",
   战斗: "Combat",
   单位: "Units",

@@ -2151,6 +2151,7 @@ export const french: Record<string, string> = {
   前置条件: "Prérequis",
   时代过渡: "Transition d’âge",
   经济: "Économie",
+  防御: "Défense",
   领土: "Territoire",
   战斗: "Combat",
   单位: "Unités",

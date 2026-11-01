@@ -227,6 +227,25 @@ try {
   check("médailles affichées (lignes d'équipe)", (await page.locator(".player-medals img").count()) >= 1);
   check("icônes ressources jeu (food/wood/iron)", (await page.locator('td img[src*="/resource/"]').count()) >= 30);
 
+  /* ---- Sections repliables façon ws-stats (V C) -------------------- */
+  check(
+    "sections de page repliables présentes (≥ 2 en-têtes + chevron)",
+    (await page.locator(".rp-section-toggle").count()) >= 2,
+  );
+  const factsToggle = page.locator(".overview-panel .rp-section-toggle");
+  await factsToggle.click();
+  check(
+    "bandeau infos replié : contenu démonté (aria-expanded=false)",
+    (await factsToggle.getAttribute("aria-expanded")) === "false" &&
+      (await page.locator(".overview-panel .fact-row").count()) === 0,
+  );
+  await factsToggle.click();
+  check(
+    "bandeau infos rouvert : faits remontés",
+    (await factsToggle.getAttribute("aria-expanded")) === "true" &&
+      (await page.locator(".overview-panel .fact-row").count()) === 1,
+  );
+
   /* ---- Transferts de ressources (V5 : récap seul, échelle ressources) -- */
   await page.waitForSelector(".transfers-panel", { timeout: 15000 });
   check(
@@ -291,6 +310,27 @@ try {
   await statTabs.filter({ hasText: "Defeated" }).click();
   await page.waitForSelector(".player-stats-defeated", { timeout: 5000 });
   check("onglet Defeated : vaincues + perdues", (await page.locator(".player-stats-groups-title").count()) === 2);
+  // V C : la FAUNE (oies/cerfs/alligators…) a sa section dédiée — 1 357
+  // animaux tués sur cette fixture 8v8, ouverte → tuiles avec icônes jeu.
+  const faunaToggle = page.locator('.player-stats-defeated .player-stats-group[data-group="fauna"] .player-stats-group-toggle');
+  await faunaToggle.first().waitFor({ state: "visible", timeout: 5000 });
+  check("onglet Defeated : section Faune présente (animaux tués)", (await faunaToggle.count()) === 2);
+  await faunaToggle.first().click();
+  await page.waitForSelector('.player-stats-defeated .player-stats-group[data-group="fauna"] .player-stats-unit-tile', { timeout: 5000 });
+  check(
+    "section Faune ouverte → tuiles animaux (icônes jeu)",
+    (await page.locator('.player-stats-defeated .player-stats-group[data-group="fauna"] .player-stats-unit-tile').count()) >= 1,
+  );
+  // V C : onglet Buildings → sous-catégories façon ws-stats.
+  await statTabs.filter({ hasText: "Buildings" }).click();
+  await page.waitForSelector(".player-stats-group", { timeout: 5000 });
+  const buildingGroups = await page
+    .locator(".player-stats .player-stats-group")
+    .evaluateAll((els) => els.map((el) => el.dataset.group ?? ""));
+  check(
+    "onglet Buildings : sous-catégories éco/population/défense/militaire (ws-stats)",
+    ["eco", "population", "defense", "military"].every((g) => buildingGroups.includes(g)),
+  );
   await statTabs.filter({ hasText: "Research" }).click();
   await page.waitForSelector(".player-stats-research", { timeout: 5000 });
   check("onglet Research : lignes avec horloge m:ss",

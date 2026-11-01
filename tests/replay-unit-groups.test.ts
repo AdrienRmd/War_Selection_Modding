@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { unitGroupOf, groupUnitCounts, UNIT_GROUP_ORDER } from "@/lib/replay/unit-groups";
+import {
+  buildingSubgroupOf,
+  groupBuildingCounts,
+  unitGroupOf,
+  groupUnitCounts,
+  UNIT_GROUP_ORDER,
+  BUILDING_SUBGROUP_ORDER,
+} from "@/lib/replay/unit-groups";
 import { unitsIndex } from "@/lib/units";
 
 /* Classificateur de groupes d'unités — règles déterministes sur le dataset
@@ -17,6 +24,46 @@ describe("unit-groups — classification du dataset réel", () => {
     expect(unitGroupOf("WarSelection/4/aero/military")).toBe("air");
     expect(unitGroupOf("WarSelection/2/a/boat_archer")).toBe("fleet");
     expect(unitGroupOf("WarSelection/1/king")).toBe("other"); // sans arme
+  });
+
+  it("faune (V C 02/11) : animaux du dataset → groupe « fauna »", () => {
+    // Tag officiel « Wild animal » (unitTag#33) ou chemin animals/*.
+    expect(unitGroupOf("WarSelection/animals/goose")).toBe("fauna"); // volaille
+    expect(unitGroupOf("WarSelection/animals/alligator")).toBe("fauna");
+    expect(unitGroupOf("WarSelection/animals/boar/male")).toBe("fauna");
+    expect(unitGroupOf("WarSelection/animals/tiger/male")).toBe("fauna");
+    expect(unitGroupOf("WarSelection/animals/deer")).toBe("fauna");
+    // Le roi / décoration / helpers restent dans « other ».
+    expect(unitGroupOf("WarSelection/1/king")).toBe("other");
+    expect(unitGroupOf("WarSelection/decor/dragon")).toBe("other");
+  });
+
+  it("sous-catégories de bâtiments (V C) : façon ws-stats", () => {
+    expect(buildingSubgroupOf("WarSelection/1/depot")).toBe("eco"); // entrepôt
+    expect(buildingSubgroupOf("WarSelection/2/a/poultry_yard")).toBe("eco"); // basse-cour
+    expect(buildingSubgroupOf("WarSelection/1/house")).toBe("population");
+    expect(buildingSubgroupOf("WarSelection/1/townhall")).toBe("population");
+    expect(buildingSubgroupOf("WarSelection/1/tower")).toBe("defense"); // tour
+    expect(buildingSubgroupOf("WarSelection/2/a/wall_big")).toBe("defense"); // mur
+    expect(buildingSubgroupOf("WarSelection/2/a/shooting_range")).toBe("military");
+    expect(buildingSubgroupOf("WarSelection/1/barracks")).toBe("military");
+    expect(buildingSubgroupOf("WarSelection/1/temple")).toBe("research"); // temple
+    expect(buildingSubgroupOf("WarSelection/1/wonder")).toBe("other"); // merveille
+    // Ordre d'affichage complet.
+    expect(BUILDING_SUBGROUP_ORDER).toEqual(["eco", "population", "defense", "military", "research", "other"]);
+  });
+
+  it("groupBuildingCounts : regroupement trié par sous-catégorie", () => {
+    const grouped = groupBuildingCounts([
+      ["WarSelection/1/depot", 5],
+      ["WarSelection/1/house", 10],
+      ["WarSelection/1/tower", 3],
+      ["WarSelection/1/house", 2], // doublon fusionné
+    ]);
+    expect(grouped.get("eco")).toEqual([{ gameId: "WarSelection/1/depot", count: 5 }]);
+    expect(grouped.get("population")).toEqual([{ gameId: "WarSelection/1/house", count: 12 }]);
+    expect(grouped.get("defense")).toEqual([{ gameId: "WarSelection/1/tower", count: 3 }]);
+    expect(grouped.has("military")).toBe(false);
   });
 
   it("blindés : les véhicules terrestres de combat (tag Heavy vehicle)", () => {
@@ -42,6 +89,7 @@ describe("unit-groups — classification du dataset réel", () => {
       "fleet",
       "melee",
       "ranged",
+      "fauna",
       "other",
     ]);
     for (const u of unitsIndex.units) {

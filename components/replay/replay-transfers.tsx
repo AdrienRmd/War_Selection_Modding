@@ -12,6 +12,8 @@
  *  Données : lib/replay/transfers.ts (inférence documentée — les replays ne
  *  contiennent pas d'événements de transfert directs). Section omise
  *  proprement si aucune transaction n'est détectée. */
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { useBilingual, useI18n } from "@/components/i18n";
 import type { Player } from "@/lib/replay/structure";
 import { TRANSFER_AGE_BUCKETS, type Generosity, type TransfersAnalysis } from "@/lib/replay/transfers";
@@ -40,16 +42,28 @@ export function TransfersPanel({
 }) {
   const l = useBilingual();
   const { locale } = useI18n();
+  const [open, setOpen] = useState(true);
   const fmt = (resources: number) => compactNumber(resources, locale);
   const nameOf = (id: number) => players[id]?.nickname ?? `#${id}`;
 
   return (
-    <section className="panel transfers-panel" aria-label={l("资源转赠", "Resource transfers")}>
+    <section className="panel transfers-panel rp-section" aria-label={l("资源转赠", "Resource transfers")}>
+      <button
+        type="button"
+        className="rp-section-toggle"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <img className="icon icon-md" src="/icons/coins.png" alt="" aria-hidden="true" />
+        {l("资源转赠", "Resource transfers")}
+        <ChevronDown
+          className={`rp-section-chevron${open ? " rp-section-chevron-open" : ""}`}
+          aria-hidden="true"
+        />
+      </button>
+      {open ? (
+      <>
       <header className="transfers-heading">
-        <h2 className="heading-2 insight-heading">
-          <img className="icon icon-md" src="/icons/coins.png" alt="" aria-hidden="true" />
-          {l("资源转赠", "Resource transfers")}
-        </h2>
         <p className="label-text">
           {l(
             "回放不含直接的转账事件：以下金额由资源变动推断（同一 30 秒窗口内，接收方库存意外增加、且队友支出出现相应跳升），按接收方实测，单位为游戏资源；无法归到具体队友的变动不计入。",
@@ -105,6 +119,8 @@ export function TransfersPanel({
           </tbody>
         </table>
       </div>
+      </>
+      ) : null}
     </section>
   );
 }

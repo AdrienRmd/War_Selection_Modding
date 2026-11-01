@@ -21,7 +21,14 @@ import { Coins, Users, Skull, Home, FlaskConical, ChevronDown } from "lucide-rea
 import { useBilingual, useI18n } from "@/components/i18n";
 import { playerSeries } from "@/lib/replay/analysis";
 import type { Player, PlayerUnitStat, ReplayParseSuccess } from "@/lib/replay/structure";
-import { UNIT_GROUP_ORDER, groupUnitCounts, type UnitGroupId } from "@/lib/replay/unit-groups";
+import {
+  BUILDING_SUBGROUP_ORDER,
+  UNIT_GROUP_ORDER,
+  groupBuildingCounts,
+  groupUnitCounts,
+  type BuildingSubgroupId,
+  type UnitGroupId,
+} from "@/lib/replay/unit-groups";
 import {
   compactNumber,
   formatClock,
@@ -46,6 +53,19 @@ const GROUP_LABELS: Record<UnitGroupId, { zh: string; en: string }> = {
   vehicles: { zh: "装甲", en: "Vehicles" },
   air: { zh: "航空", en: "Aviation" },
   fleet: { zh: "舰船", en: "Fleet" },
+  fauna: { zh: "野生动物", en: "Wildlife" },
+  other: { zh: "其他", en: "Other" },
+};
+
+/** Sous-sections de l'onglet Buildings (V C 02/11) — même découpe que
+ *  ws-stats.pl : Eco / Population / Defense / Military / Research / Other
+ *  (classificateurs publics du dataset, cf. buildingSubgroupOf). */
+const BUILDING_SUBGROUP_LABELS: Record<BuildingSubgroupId, { zh: string; en: string }> = {
+  eco: { zh: "经济", en: "Eco" },
+  population: { zh: "人口", en: "Population" },
+  defense: { zh: "防御", en: "Defense" },
+  military: { zh: "军事", en: "Military" },
+  research: { zh: "研究", en: "Research" },
   other: { zh: "其他", en: "Other" },
 };
 
@@ -133,6 +153,11 @@ export function PlayerStatsTabs({
     [player],
   );
 
+  const buildingCounts = useMemo(
+    () => [...(createdGroups.get("buildings") ?? [])].map((u) => [u.gameId, u.count] as [string, number]),
+    [createdGroups],
+  );
+  const buildingSubgroups = useMemo(() => groupBuildingCounts(buildingCounts), [buildingCounts]);
   const hasBuildings = (createdGroups.get("buildings")?.length ?? 0) > 0;
   const visibleTabs = TABS.filter((t) => t.id !== "buildings" || hasBuildings);
 
@@ -208,17 +233,22 @@ export function PlayerStatsTabs({
       ) : null}
 
       {tab === "units" ? (
-        <UnitGroupSections groups={UNIT_GROUP_ORDER.filter((g) => createdGroups.has(g)).map((g) => [g, createdGroups.get(g)!] as const)} />
+        <UnitGroupSections
+          groups={UNIT_GROUP_ORDER.filter((g) => createdGroups.has(g)).map((g) => [g, createdGroups.get(g)!] as const)}
+          labels={GROUP_LABELS}
+        />
       ) : null}
 
       {tab === "defeated" ? (
         <div className="player-stats-defeated">
           <UnitGroupSections
             groups={UNIT_GROUP_ORDER.filter((g) => killedGroups.has(g)).map((g) => [g, killedGroups.get(g)!] as const)}
+            labels={GROUP_LABELS}
             title={l("歼灭的单位", "Units defeated")}
           />
           <UnitGroupSections
             groups={UNIT_GROUP_ORDER.filter((g) => lostGroups.has(g)).map((g) => [g, lostGroups.get(g)!] as const)}
+            labels={GROUP_LABELS}
             title={l("损失的单位", "Units lost")}
           />
         </div>
@@ -226,7 +256,10 @@ export function PlayerStatsTabs({
 
       {tab === "buildings" && hasBuildings ? (
         <UnitGroupSections
-          groups={[["buildings", createdGroups.get("buildings")!] as const]}
+          groups={BUILDING_SUBGROUP_ORDER.filter((g) => buildingSubgroups.has(g)).map(
+            (g) => [g, buildingSubgroups.get(g)!] as const,
+          )}
+          labels={BUILDING_SUBGROUP_LABELS}
         />
       ) : null}
 
@@ -275,20 +308,23 @@ export function PlayerStatsTabs({
   );
 }
 
-/** Sections repliables par catégorie — tuiles rendues seulement si ouvertes. */
+/** Sections repliables par catégorie — tuiles rendues seulement si ouvertes.
+ *  Générique sur la clé (groupe d'unités OU sous-catégorie de bâtiment). */
 function UnitGroupSections({
   groups,
+  labels,
   title,
 }: {
   groups: ReadonlyArray<
-    readonly [UnitGroupId, ReadonlyArray<{ gameId: string; count: number }>]
+    readonly [string, ReadonlyArray<{ gameId: string; count: number }>]
   >;
+  labels: Record<string, { zh: string; en: string }>;
   title?: string;
 }) {
   const l = useBilingual();
   const { locale } = useI18n();
-  const [open, setOpen] = useState<Set<UnitGroupId>>(new Set());
-  const toggle = (group: UnitGroupId) =>
+  const [open, setOpen] = useState<Set<string>>(new Set());
+  const toggle = (group: string) =>
     setOpen((prev) => {
       const next = new Set(prev);
       if (next.has(group)) next.delete(group);
@@ -302,6 +338,7 @@ function UnitGroupSections({
       {groups.map(([group, units]) => {
         const total = units.reduce((a, u) => a + u.count, 0);
         const isOpen = open.has(group);
+        const label = labels[group] ?? { zh: group, en: group };
         return (
           <div key={group} className="player-stats-group" data-group={group}>
             <button
@@ -311,7 +348,7 @@ function UnitGroupSections({
               onClick={() => toggle(group)}
             >
               <ChevronDown className={`player-stats-chevron${isOpen ? " player-stats-chevron-open" : ""}`} aria-hidden="true" />
-              <span>{l(GROUP_LABELS[group].zh, GROUP_LABELS[group].en)}</span>
+              <span>{l(label.zh, label.en)}</span>
               <span className="label-text player-stats-group-count">
                 {l("${types} 种 · ${total} 个", "${types} types · ${total} units")
                   .replace("${types}", String(units.length))
