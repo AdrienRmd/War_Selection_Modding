@@ -341,6 +341,25 @@ nav .nav-menu-trigger[aria-expanded="true"],
   left: auto;
   right: 0;
 }
+@media (max-width: 760px) {
+  /* Finitions 08/11 — le panneau « Mods » (dernier groupe du nav, ancré à
+     gauche de son déclencheur) débordait du viewport à 375/390 px (mesuré :
+     +95 px à 390). Le nav devient l'ancêtre positionné commun : chaque panneau
+     s'ancre à droite du nav (qui occupe toute la largeur ≤900 px) et reste
+     borné au viewport, quel que soit le groupe ouvert. */
+  .header nav {
+    position: relative;
+  }
+  .header nav .nav-menu {
+    position: static;
+  }
+  .nav-menu-panel,
+  .nav-menu-panel-end {
+    left: auto;
+    right: 12px;
+    max-width: calc(100vw - 24px);
+  }
+}
 .nav-menu-item {
   display: flex;
   align-items: center;

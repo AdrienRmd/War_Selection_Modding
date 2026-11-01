@@ -57,11 +57,13 @@ export function GameExplore({
   const researchesCount = meta?.counts?.researches ?? stats.researchesCount;
   const parameterNodes = meta?.counts?.treeFiles ?? stats.parameterNodes;
 
+  // État neutre tant que le manifeste n'a pas répondu (mission finitions
+  // 08/11) : aucun badge « lecture en cours » figé sur la vitrine, seulement
+  // version réelle ou erreur discrète.
+  const badgeState = metaFailed ? "error" : meta?.publishedAt ? "version" : "hidden";
   const badgeText = metaFailed
     ? t("数据版本暂时不可用")
-    : meta?.publishedAt
-      ? `${t("数据更新于")} ${formatExploreDate(meta.publishedAt, locale)}`
-      : t("正在读取数据版本…");
+    : `${t("数据更新于")} ${formatExploreDate(meta?.publishedAt ?? "", locale)}`;
 
   return (
     <section className="explore-section" aria-label={t("探索游戏数据")}>
@@ -70,12 +72,11 @@ export function GameExplore({
           <h2>{t("探索游戏数据")}</h2>
           <p className="caption">{t("单位、科技与参数档案同步自公开数据集，与游戏版本一致。")}</p>
         </div>
-        <span
-          className={meta || metaFailed ? "units-badge" : "units-badge units-badge-loading"}
-          data-badge="explore-updated"
-        >
-          {badgeText}
-        </span>
+        {badgeState !== "hidden" && (
+          <span className="units-badge" data-badge="explore-updated">
+            {badgeText}
+          </span>
+        )}
       </div>
       <div className="explore-grid">
         <Link href="/units" className="explore-card">

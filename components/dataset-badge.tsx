@@ -63,11 +63,25 @@ export function DatasetBadge({
   );
 }
 
+/** État du badge : NEUTRE tant qu'il n'y a rien à montrer (mission
+ *  finitions 08/11 — « Lecture de la version… » restait figé sur les pages
+ *  où le manifeste ne répond jamais). Le badge n'apparaît qu'avec une
+ *  version réelle ou une erreur discrète ; jamais en attente. */
+export function datasetBadgeState(
+  meta: Pick<DatasetMeta, "publishedAt"> | null,
+  failed: boolean,
+): "hidden" | "error" | "version" {
+  if (failed) return "error";
+  if (meta) return "version";
+  return "hidden";
+}
+
 /**
  * Badge complet « données mises à jour <date>，共 <N> <noun> » des pages de
- * dataset : trois états (échec / version / lecture en cours). Le compte est
- * calculé par la page (manifeste si présent, sinon repli embarqué) et `noun`
- * termine la clé template i18n (« 个单位 », « 项研究 », « 个参数节点 »).
+ * dataset : deux états rendus (échec / version) — l'attente n'affiche RIEN
+ * (état neutre, cf. datasetBadgeState). Le compte est calculé par la page
+ * (manifeste si présent, sinon repli embarqué) et `noun` termine la clé
+ * template i18n (« 个单位 », « 项研究 », « 个参数节点 »).
  */
 export function UpdatedDatasetBadge({
   testId,
@@ -85,21 +99,17 @@ export function UpdatedDatasetBadge({
 }) {
   const { locale, t } = useI18n();
   const l = useBilingual();
-  if (failed)
+  const state = datasetBadgeState(meta, failed);
+  if (state === "hidden") return null;
+  if (state === "error")
     return (
       <DatasetBadge testId={testId}>
         {l("数据版本暂时不可用", "Dataset version unavailable")}
       </DatasetBadge>
     );
-  if (meta)
-    return (
-      <DatasetBadge testId={testId}>
-        {t(`数据更新于 ${formatPublishedDate(meta.publishedAt ?? "", locale)}，共 ${count} ${noun}`)}
-      </DatasetBadge>
-    );
   return (
-    <DatasetBadge testId={testId} loading>
-      {l("正在读取数据版本…", "Reading dataset version…")}
+    <DatasetBadge testId={testId}>
+      {t(`数据更新于 ${formatPublishedDate(meta?.publishedAt ?? "", locale)}，共 ${count} ${noun}`)}
     </DatasetBadge>
   );
 }

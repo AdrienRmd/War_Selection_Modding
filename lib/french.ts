@@ -2009,6 +2009,7 @@ export const french: Record<string, string> = {
   使用条款: "Conditions d'utilisation",
   源代码: "Code source",
   "War Selection 官方网站": "War Selection (site officiel)",
+  "Discord 社区": "Discord communautaire",
   联系我们: "Nous contacter",
   相关文档: "Documents liés",
   "最后更新于 ${date}": "Mise à jour le ${date}",

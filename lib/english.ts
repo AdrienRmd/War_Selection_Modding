@@ -1974,6 +1974,7 @@ export const english: Record<string, string> = {
   使用条款: "Terms of use",
   源代码: "Source code",
   "War Selection 官方网站": "War Selection (official site)",
+  "Discord 社区": "Community Discord",
   联系我们: "Contact us",
   相关文档: "Related documents",
   "最后更新于 ${date}": "Last updated on ${date}",

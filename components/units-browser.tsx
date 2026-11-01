@@ -53,6 +53,8 @@ export function UnitsBrowser({
     initialUnitId && index.units.some((u) => u.id === initialUnitId) ? initialUnitId : null,
   );
   // Badge SB6 : version du dataset publiée (publishedAt + compte), jamais en dur.
+  // État neutre tant que le manifeste n'a pas répondu (mission finitions
+  // 08/11) : aucun badge « lecture en cours » figé, seulement version ou erreur.
   const { meta, failed } = useDatasetMeta();
 
   const unitsById = useMemo(() => {

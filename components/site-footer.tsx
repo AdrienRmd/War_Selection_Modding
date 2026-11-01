@@ -78,6 +78,15 @@ export function SiteFooter() {
               </a>
             </li>
             <li>
+              <a
+                href="https://discord.gg/6u4fnNB"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <T text="Discord 社区" /> <ArrowUpRight size={13} />
+              </a>
+            </li>
+            <li>
               <a href="mailto:adrien.remond@protonmail.com">
                 <T text="联系我们" />
               </a>

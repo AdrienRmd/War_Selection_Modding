@@ -1637,16 +1637,24 @@ code {
   align-items: center;
   gap: 6px;
   color: #b9c2ba;
+  /* Finitions 08/11 : soulignement discret permanent (les liens du footer
+     étaient invisibles comme liens — aucun indice cliquable) + accent ambré
+     au survol, cohérent avec .site-footer a:hover ci-dessous. */
+  text-decoration: underline;
+  text-decoration-color: rgb(185 194 186 / 0.38);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
   /* Zone tactile ≥ 44 px sans épaissir le footer : le padding étend la
      cible, le margin négatif compense exactement le décalage visuel (le
      texte reste à l'identique, la boîte gagne 22 px de haut et 16 px de
      large). Vérifié capture 375 px — footer-375.png. */
   padding: 11px 8px;
   margin: -11px -8px;
-  transition: color 0.2s;
+  transition: color 0.2s, text-decoration-color 0.2s;
 }
 .site-footer a:hover {
   color: var(--primary);
+  text-decoration-color: var(--primary);
 }
 .site-footer-bottom {
   max-width: 1510px;
