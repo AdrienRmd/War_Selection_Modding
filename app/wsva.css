@@ -909,3 +909,35 @@
 .rp .transfer-cert-likely{color:var(--text-muted)}
 .rp .transfers-panel .table-scroll+.table-scroll{margin-top:var(--space-2)}
 .rp .transfers-direction{color:var(--text-muted)}
+/* ============================================================
+   Player statistics (V4 wsstats-detail) — onglets du détail
+   joueur (Resources/Units/Defeated/Buildings/Research, icônes
+   lucide), cartes denses, sections repliables par catégorie,
+   tuiles unité icône+nom+nombre (structure ws-stats.pl).
+   ============================================================ */
+.rp .player-stats{gap:var(--space-3);display:grid}
+.rp .player-stats-tabs{flex-wrap:wrap}
+.rp .player-stats-tab-icon{width:14px;height:14px;flex:none}
+.rp .player-stats-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:var(--space-2)}
+.rp .player-stats-tile{border:1px solid var(--edge);border-radius:var(--radius-tile);background:var(--panel-raised);padding:var(--space-2) var(--space-3);gap:var(--space-1);display:grid}
+.rp .player-stats-tile-head{align-items:center;gap:var(--space-2);color:var(--text-muted);font-size:var(--text-small);font-weight:600;display:flex}
+.rp .player-stats-tile-rows{gap:2px;display:grid}
+.rp .player-stats-tile-row{justify-content:space-between;align-items:baseline;gap:var(--space-3);display:flex}
+.rp .player-stats-tile-value{font-size:20px;font-weight:600;color:var(--text-primary)}
+.rp .player-stats-groups{gap:var(--space-2);display:grid}
+.rp .player-stats-groups-title{font-size:var(--text-h3);font-weight:600;color:var(--text-primary);margin:0}
+.rp .player-stats-group{border:1px solid var(--edge);border-radius:var(--radius-tile);overflow:hidden}
+.rp .player-stats-group-toggle{width:100%;justify-content:flex-start;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);font:inherit;font-weight:600;color:var(--text-default);cursor:pointer;background:var(--panel-raised);border:0;display:flex}
+.rp .player-stats-group-toggle:hover{background:var(--row-hover)}
+.rp .player-stats-group-toggle:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+.rp .player-stats-chevron{width:16px;height:16px;flex:none;transition:transform var(--collapse-open-ms) var(--ease-out);color:var(--text-muted)}
+.rp .player-stats-chevron-open{transform:rotate(0deg)}
+.rp .player-stats-chevron:not(.player-stats-chevron-open){transform:rotate(-90deg)}
+.rp .player-stats-group-count{margin-left:auto;white-space:nowrap}
+.rp .player-stats-unit-grid{padding:var(--space-2);gap:var(--space-2);background:var(--panel-inset);grid-template-columns:repeat(auto-fill,minmax(150px,1fr));display:grid}
+.rp .player-stats-unit-tile{align-items:center;gap:var(--space-2);padding:var(--space-1) var(--space-2);border:1px solid var(--edge);border-radius:var(--radius-chip);background:var(--panel-raised);display:flex}
+.rp .player-stats-unit-icon{width:28px;height:28px;object-fit:contain;flex:none;background:#0006;border-radius:4px}
+.rp .player-stats-unit-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;font-size:var(--text-small)}
+.rp .player-stats-unit-count{margin-left:auto;min-width:2.5ch;text-align:right;flex:none}
+.rp .player-stats-defeated{gap:var(--space-4);display:grid}
+.rp .player-stats-research .research-image{width:22px;height:22px;object-fit:contain;background:#0006;border-radius:4px}

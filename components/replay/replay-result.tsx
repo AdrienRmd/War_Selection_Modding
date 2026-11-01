@@ -16,6 +16,7 @@ import type { PlayerImpact, ReplayAnalysis, Side, TeamImpact } from "@/lib/repla
 import { playerSeries } from "@/lib/replay/analysis";
 import type { TransfersAnalysis } from "@/lib/replay/transfers";
 import { TransfersPanel } from "./replay-transfers";
+import { PlayerStatsTabs } from "./player-stats-tabs";
 import type { Player, ReplayParseResult } from "@/lib/replay/structure";
 import {
   MEDAL_META,
@@ -324,6 +325,7 @@ export function ReplayResult({
               medals={medals}
               locale={locale}
               labels={{ team: teamLabel(team.side) }}
+              data={data}
             />
           ))}
         </div>
@@ -445,11 +447,13 @@ function TeamPanel({
   medals,
   locale,
   labels,
+  data,
 }: {
   team: TeamImpact;
   medals: MedalAward[];
   locale: string;
   labels: { team: string };
+  data: Extract<ReplayParseResult, { error: 0 }>;
 }) {
   const l = useBilingual();
   const [open, setOpen] = useState<Set<number>>(new Set());
@@ -522,6 +526,7 @@ function TeamPanel({
               impact={pi}
               medals={medalsOfPlayer(medals, pi.player.nickname)}
               locale={locale}
+              data={data}
               expanded={open.has(pi.player.id)}
               onToggle={() =>
                 setOpen((prev) => {
@@ -545,12 +550,14 @@ function TeamRow({
   locale,
   expanded,
   onToggle,
+  data,
 }: {
   impact: PlayerImpact;
   medals: MedalAward[];
   locale: string;
   expanded: boolean;
   onToggle: () => void;
+  data: Extract<ReplayParseResult, { error: 0 }>;
 }) {
   const l = useBilingual();
   const p = impact.player;
@@ -752,6 +759,7 @@ function TeamRow({
                   </span>
                 ) : null}
               </div>
+              <PlayerStatsTabs result={data} player={p} />
             </div>
           </td>
         </tr>

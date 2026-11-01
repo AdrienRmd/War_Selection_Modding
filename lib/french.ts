@@ -1,6 +1,20 @@
 // Traductions françaises de l'interface et des archives. Les clés canoniques restent inchangées.
 export const french: Record<string, string> = {
 
+  // Player statistics — onglets du détail joueur.
+  玩家统计: "Statistiques du joueur",
+  近战: "Mêlée",
+  远程: "Distance",
+  装甲: "Blindés",
+  已采集: "Récolté",
+  现有储备: "Stock actuel",
+  储备峰值: "Pic de stock",
+  完成时间: "Terminée à",
+  歼灭的单位: "Unités vaincues",
+  损失的单位: "Unités perdues",
+  "${types} 种 · ${total} 个": "${types} types · ${total} unités",
+  "本局没有完成研究。": "Aucune recherche terminée dans cette partie.",
+
   // Transferts de ressources (sections « Sent by » / « Transactions »).
   资源转赠: "Transferts de ressources",
   "回放数据不含直接的转账事件：以下捐赠由资源变动推断（同一 30 秒窗口内，接收方库存意外增加、给出方支出同步放大），金额按接收方实测。":
