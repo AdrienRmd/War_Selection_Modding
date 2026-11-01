@@ -229,6 +229,99 @@ result = result.replace(
   "--page-image:none",
 );
 
+// 7. EXTENSIONS manuelles historiques (V2 verdict « archivé », V4
+//    transferts + onglets Player statistics) — point backlog de la revue
+//    précédente : ces blocs vivaient en fin de app/wsva.css SANS être dans
+//    le générateur (une régénération les effaçait). Ils sont désormais
+//    intégrés ICI : toute extension future du canvas .rp se fait dans ce
+//    bloc, jamais à la main dans app/wsva.css.
+const extensions = `
+/* ============================================================
+   Field Archive (V2) — verdict « archivé » : cadre à coins cornés,
+   filigrane emblème et cachet incliné. Scopé .rp (pages résultat et
+   profil), harmonisé aux teintes bronze/or du canvas — contrastes et
+   graphes wsva inchangés.
+   ============================================================ */
+.rp .verdict-archive{position:relative;display:block;padding:var(--space-4) var(--space-4) var(--space-3);border:1px solid var(--edge);border-radius:var(--radius-panel);background:url("/atlas-emblem-watermark.png") right -14px bottom -14px/140px no-repeat,var(--panel-glass);padding-right:118px}
+.rp .verdict-archive::before,.rp .verdict-archive::after{content:"";position:absolute;width:20px;height:20px;border:2px solid var(--accent-bronze);opacity:.65;pointer-events:none}
+.rp .verdict-archive::before{top:8px;left:8px;border-right:0;border-bottom:0;border-top-left-radius:6px}
+.rp .verdict-archive::after{right:8px;bottom:8px;border-left:0;border-top:0;border-bottom-right-radius:6px}
+.rp .archive-cachet{position:absolute;top:12px;right:14px;transform:rotate(-6deg);padding:3px 9px;border:1.5px solid var(--accent-bronze);border-radius:4px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;white-space:nowrap;color:var(--gold);background:rgb(194 122 62 / .08)}
+.rp .verdict-archive + .label-text{margin-top:var(--space-3)}
+@media (width<=640px){.rp .verdict-archive{padding:var(--space-3) var(--space-3) var(--space-2);padding-right:var(--space-3)}.rp .archive-cachet{position:static;display:inline-flex;margin-top:var(--space-2);transform:rotate(-3deg)}}
+/* ============================================================
+   Transferts de ressources (V4 wsstats-detail) — sections
+   « Sent by » / « Transactions » de la page résultat : tableaux
+   denses façon ws-stats.pl, badges discrets, classes .rp du
+   design-system wsva. Colonne 2+ alignée à droite (les valeurs
+   par âge précèdent Total/Generosity ou suivent From).
+   ============================================================ */
+.rp .transfers-panel{gap:var(--space-3);display:grid}
+.rp .transfers-heading{gap:var(--space-1);display:grid}
+.rp .transfers-heading .label-text{margin:0}
+.rp .transfers-table th:nth-child(n+2),.rp .transfers-table td:nth-child(n+2){text-align:right}
+.rp .transfers-table .cell-left,.rp .transfers-table td.cell-left{text-align:left}
+.rp .table-caption{caption-side:top;text-align:left;padding:0 0 var(--space-2);font-weight:600;color:var(--text-primary)}
+.rp .cell-mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.rp .cell-strong{font-weight:600;color:var(--text-primary)}
+.rp .transfer-badge{font-size:11px;font-weight:600}
+.rp .transfer-gen-veryGenerous{border-color:var(--gold);color:var(--gold)}
+.rp .transfer-gen-fair{border-color:var(--silver);color:var(--silver)}
+.rp .transfer-gen-small{color:var(--text-muted)}
+.rp .transfer-cert-veryLikely{border-color:#4cc9f080;color:var(--highlight)}
+.rp .transfer-cert-likely{color:var(--text-muted)}
+.rp .transfers-panel .table-scroll+.table-scroll{margin-top:var(--space-2)}
+.rp .transfers-direction{color:var(--text-muted)}
+/* ============================================================
+   Player statistics (V4 wsstats-detail) — onglets du détail
+   joueur (Resources/Units/Defeated/Buildings/Research, icônes
+   lucide), cartes denses, sections repliables par catégorie,
+   tuiles unité icône+nom+nombre (structure ws-stats.pl).
+   ============================================================ */
+.rp .player-stats{gap:var(--space-3);display:grid}
+.rp .player-stats-tabs{flex-wrap:wrap}
+.rp .player-stats-tab-icon{width:14px;height:14px;flex:none}
+.rp .player-stats-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:var(--space-2)}
+.rp .player-stats-tile{border:1px solid var(--edge);border-radius:var(--radius-tile);background:var(--panel-raised);padding:var(--space-2) var(--space-3);gap:var(--space-1);display:grid}
+.rp .player-stats-tile-head{align-items:center;gap:var(--space-2);color:var(--text-muted);font-size:var(--text-small);font-weight:600;display:flex}
+.rp .player-stats-tile-rows{gap:2px;display:grid}
+.rp .player-stats-tile-row{justify-content:space-between;align-items:baseline;gap:var(--space-3);display:flex}
+.rp .player-stats-tile-value{font-size:20px;font-weight:600;color:var(--text-primary)}
+.rp .player-stats-groups{gap:var(--space-2);display:grid}
+.rp .player-stats-groups-title{font-size:var(--text-h3);font-weight:600;color:var(--text-primary);margin:0}
+.rp .player-stats-group{border:1px solid var(--edge);border-radius:var(--radius-tile);overflow:hidden}
+.rp .player-stats-group-toggle{width:100%;justify-content:flex-start;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);font:inherit;font-weight:600;color:var(--text-default);cursor:pointer;background:var(--panel-raised);border:0;display:flex}
+.rp .player-stats-group-toggle:hover{background:var(--row-hover)}
+.rp .player-stats-group-toggle:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+.rp .player-stats-chevron{width:16px;height:16px;flex:none;transition:transform var(--collapse-open-ms) var(--ease-out);color:var(--text-muted)}
+.rp .player-stats-chevron-open{transform:rotate(0deg)}
+.rp .player-stats-chevron:not(.player-stats-chevron-open){transform:rotate(-90deg)}
+.rp .player-stats-group-count{margin-left:auto;white-space:nowrap}
+.rp .player-stats-unit-grid{padding:var(--space-2);gap:var(--space-2);background:var(--panel-inset);grid-template-columns:repeat(auto-fill,minmax(150px,1fr));display:grid}
+.rp .player-stats-unit-tile{align-items:center;gap:var(--space-2);padding:var(--space-1) var(--space-2);border:1px solid var(--edge);border-radius:var(--radius-chip);background:var(--panel-raised);display:flex}
+.rp .player-stats-unit-icon{width:28px;height:28px;object-fit:contain;flex:none;background:#0006;border-radius:4px}
+.rp .player-stats-unit-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;font-size:var(--text-small)}
+.rp .player-stats-unit-count{margin-left:auto;min-width:2.5ch;text-align:right;flex:none}
+.rp .player-stats-defeated{gap:var(--space-4);display:grid}
+.rp .player-stats-research .research-image{width:22px;height:22px;object-fit:contain;background:#0006;border-radius:4px}
+`;
+
+// 8. Override « Field Archive » (V B 02/11) : encre et dégradé de page du
+//    canvas .rp réchaudés en olive/sépia NUIT assortis à l'enveloppe ATLAS
+//    (--background #101413) — remplace le sépia V3 (#181209→#0c0a07 sur
+//    encre #0d0b08, vendor : #0a0a0a→#000). Panneaux, textes et courbes
+//    wsva inchangés ; contrastes re-mesurés ≥ 4.5:1
+//    (cf. ~/War-Selection/validation/design/voletB-contrastes.txt).
+result += extensions;
+result += `
+/* Override Field Archive (VB 02/11) — injecté par scripts/scope-wsva-css.mjs,
+ * NE PAS ÉDITER À LA MAIN : régénérer via le script. */
+.rp{
+  --ink:#0e100d;
+  --page-gradient:linear-gradient(180deg,#151810 0%,#0a0c09 100%);
+}
+`;
+
 const header = `/* AUTO-GÉNÉRÉ par scripts/scope-wsva-css.mjs — NE PAS ÉDITER À LA MAIN.
  * Design-system wsva (vendor/wsva-design-system.css, malticNL) scopé sous
  * .rp pour les pages /replay (résultat) et /player/[name].

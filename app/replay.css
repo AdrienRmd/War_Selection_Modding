@@ -1,21 +1,28 @@
-/* Page /replay — habillage clair « wsva » (warselection.vercel.app) :
-   fond clair, cartes blanches, typographie dépouillée. Scopé à la page
-   replay (main.replay-page + .replay-wsva) ; le reste du site ATLAS garde
-   son thème sombre. Les variables sont redéfinies localement. */
+/* Page /replay — habillage « Field Archive » sombre (V B 02/11) : la page
+   passe du clair wsva (#f6f4ef) au thème sombre olive/sépia nuit du site,
+   assorti à l'enveloppe ATLAS ; le canvas résultat .rp (wsva.css) garde
+   ses panneaux sombres, réchaudés en olive nuit par le générateur
+   scope-wsva-css.mjs. Scopé à la page replay (main.replay-page +
+   .replay-wsva) ; le reste du site ATLAS reste inchangé. */
 
 .replay-page {
-  /* Thème clair local (variables ATLAS réassignées). */
-  --background: #f6f4ef;
-  --foreground: #26292b;
-  --card: #ffffff;
-  --card-foreground: #26292b;
-  --muted: #f0ede6;
-  --muted-foreground: #6b7280;
-  --border: #e5e1d8;
-  --primary: #2f6b52;
-  --primary-foreground: #ffffff;
-  --accent: #edf3ef;
-  --destructive: #b3402f;
+  /* Thème Field Archive local (variables ATLAS réassignées — mêmes valeurs
+   * que :root du site, la page replay rejoint l'enveloppe sombre). */
+  --background: #101413;
+  --foreground: #eeeae1;
+  --card: #1a201e;
+  --card-foreground: #eeeae1;
+  --card-raised: #1e2523;
+  --muted: #222926;
+  --muted-foreground: #a8b2a8;
+  --border: #343d38;
+  --border-soft: #2b332f;
+  --primary: #f0b264;
+  --primary-strong: #e09a44;
+  --primary-foreground: #151815;
+  --accent: #303830;
+  --destructive: #ee8e7c;
+  --success: #8fbf7a;
   background: var(--background);
   color: var(--foreground);
 }
@@ -35,8 +42,7 @@
   margin: 34px auto 10px;
   padding: 0 16px;
 }
-/* Marque ATLAS : raccroche la page claire à la charte du site sans perdre
-   son caractère « wsva » (thème clair + vert conservés). */
+/* Marque ATLAS : ambre signature sur fond sombre. */
 .rp-hero-mark {
   display: inline-flex;
   align-items: center;
@@ -44,13 +50,13 @@
   margin: 0 0 18px;
   font-size: 12px;
   letter-spacing: 3px;
-  color: #2f6b52;
+  color: var(--primary);
 }
 .rp-hero-mark img {
   border-radius: 8px;
   box-shadow:
-    0 1px 3px rgb(38 41 43 / 0.18),
-    0 0 0 1px rgb(47 107 82 / 0.2);
+    0 1px 3px rgb(6 9 8 / 0.5),
+    0 0 0 1px rgb(240 178 100 / 0.25);
 }
 .rp-hero h1 {
   font-size: clamp(26px, 5vw, 40px);
@@ -71,7 +77,7 @@
 .rp-form .search-input {
   flex: 1 1 300px;
   min-width: 0;
-  background: #fff;
+  background: var(--card-raised);
   border: 1px solid var(--border);
   color: var(--foreground);
   border-radius: 10px;
@@ -80,11 +86,11 @@
   font-size: 16px; /* anti-zoom iOS */
 }
 .rp-form .search-input svg {
-  color: #9aa0a6;
+  color: var(--muted-foreground);
 }
 .rp-submit-main {
-  background: #26292b;
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-foreground);
   border: none;
   border-radius: 10px;
   padding: 0 22px;
@@ -95,7 +101,7 @@
   flex: none;
 }
 .rp-submit-main:hover {
-  background: #3a3f42;
+  background: var(--primary-strong);
 }
 .rp-submit-main:disabled {
   opacity: 0.6;
@@ -103,7 +109,7 @@
 }
 .rp-hero-note {
   font-size: 12.5px;
-  color: #9aa0a6;
+  color: var(--muted-foreground);
   margin-top: 10px;
 }
 
@@ -122,9 +128,9 @@
   font-size: 14px;
 }
 .rp-status.rp-error {
-  border-color: #e2b3aa;
+  border-color: rgb(238 142 124 / 0.45);
   color: var(--destructive);
-  background: #fdf6f4;
+  background: #241a19;
 }
 
 /* ---------------------------------------------------------------- */
@@ -192,7 +198,7 @@
 
 /* — Widget « Ces données sont-elles exactes ? » (Replay phase 2, B4) :
    3 votes discrets sous le résultat, cibles tactiles ≥ 44 px, agrégat
-   barré après vote. Thème clair scopé à .replay-page comme le reste. */
+   barré après vote. Thème Field Archive sombre scopé à .replay-page. */
 .rp-feedback {
   margin: 26px auto 6px;
   padding: 18px 20px;
@@ -229,12 +235,12 @@
     background 0.15s;
 }
 .rp-feedback-btn:hover {
-  border-color: #94a39a;
+  border-color: #5a665c;
 }
 .rp-feedback-btn[aria-pressed="true"] {
-  border-color: #2f6b46;
-  background: #e8f3ec;
-  color: #1e4a31;
+  border-color: #3f5c46;
+  background: #223124;
+  color: #a9d5b4;
 }
 .rp-feedback-btn:disabled {
   opacity: 0.55;
@@ -259,10 +265,10 @@
   color: var(--muted-foreground);
 }
 .rp-feedback-count.accurate {
-  color: #1e6b3f;
+  color: var(--success);
 }
 .rp-feedback-count.issues {
-  color: #a33c2e;
+  color: var(--destructive);
 }
 .rp-feedback-share {
   margin-left: auto;
@@ -347,8 +353,8 @@
     background 0.15s;
 }
 .rp-recent-code:hover {
-  border-color: #94a39a;
-  background: #fbfaf7;
+  border-color: #5a665c;
+  background: var(--muted);
 }
 .rp-recent-code:focus-visible {
   outline: 2px solid var(--primary);
@@ -356,7 +362,7 @@
 }
 .rp-recent-sep {
   /* Puce médiane : « code · 6v6 · MVP » — exclue de la sélection du code. */
-  color: #b3ada0;
+  color: #8b948c;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -367,9 +373,9 @@
   padding: 2px 9px;
   font-size: 12px;
   font-weight: 600;
-  color: #1e4a31;
-  background: #e8f3ec;
-  border: 1px solid #bcd8c6;
+  color: #a9d5b4;
+  background: #223124;
+  border: 1px solid #3f5c46;
   border-radius: 999px;
   white-space: nowrap;
 }
