@@ -10,7 +10,6 @@
  *    - bascule en : noms EN visibles (Warehouse) — la locale marche bien ;
  *    - bascule zh : nom zh visible (仓库).
  *  Usage : node scripts/test-workbench-i18n-e2e.mjs [origin] */
-import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
 const origin = process.argv[2] || "http://localhost:5173";

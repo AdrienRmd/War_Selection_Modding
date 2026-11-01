@@ -805,3 +805,19 @@ tr.rp-row:hover {
   color: var(--muted-foreground);
   white-space: nowrap;
 }
+
+/* ------------------------------------------------------------------ */
+/* V2 wsva (01/11) — compléments d'accessibilité tactile sur le design
+   wsva scopé (.rp) : le chevron dépliant visuel fait 16 px chez wsva ;
+   on l'entoure d'un padding transparent (cible 40 px, recommandation
+   iOS/WCAG) sans décaler la mise en page (marge négative équivalente). */
+.rp table.team-table .chevron-button {
+  padding: 12px;
+  margin: -12px;
+}
+/* Cible tactile des puces de métriques (wsva ~27 px visuels) portée à ~38 px
+ * par padding vertical — écart visuel minime, confort mobile réel. */
+.rp .timeline-header .chip {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}

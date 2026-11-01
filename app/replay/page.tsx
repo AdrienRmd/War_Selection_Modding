@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/page-metadata";
 import { AtlasHeader, AtlasFooter } from "@/components/atlas-shell";
 import { ReplayPortal } from "@/components/replay/replay-portal";
+import "../wsva.css"; // Design-system wsva scopé .rp (page résultat, V2 01/11)
 
 export const dynamic = "force-dynamic";
 

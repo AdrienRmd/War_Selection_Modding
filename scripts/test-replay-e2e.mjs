@@ -131,31 +131,46 @@ try {
 
   await page.fill(".rp-form input", "rep-Jd894wx6so9");
   await page.click(".rp-submit-main");
-  await page.waitForSelector(".rp-verdict", { timeout: 30000 });
-  const verdict = (await page.textContent(".rp-verdict")) ?? "";
+  await page.waitForSelector(".rp .heading-1", { timeout: 30000 });
+  const verdict = (await page.textContent(".rp .heading-1")) ?? "";
   check("verdict Red wins by elimination", verdict.includes("wins by elimination") && verdict.includes("8v8"));
-  check("bandeau durée 55:56", (await page.textContent(".rp-banner"))?.includes("55:56"));
-  check("bandeau région Europe", (await page.textContent(".rp-banner"))?.includes("Europe"));
-  check("bandeau code nu Jd894wx6so9", (await page.textContent(".rp-banner"))?.includes("Jd894wx6so9"));
-  const events = await page.locator(".rp-event").count();
+  check("scope .rp présent (design-system wsva)", (await page.locator(".rp.page-backdrop").count()) === 1);
+  check("bandeau durée 55:56", (await page.textContent(".overview-panel"))?.includes("55:56"));
+  check("bandeau région Europe", (await page.textContent(".overview-panel"))?.includes("Europe"));
+  check("bandeau code nu Jd894wx6so9", (await page.textContent(".overview-panel"))?.includes("Jd894wx6so9"));
+  check("faits avec icônes (stopwatch)", (await page.locator('.overview-panel .fact img[src="/icons/stopwatch.png"]').count()) === 1);
+  const events = await page.locator(".turning-point").count();
   check("événements décisifs ≥ 5", events >= 5);
-  check("événement merveille dbat", (await page.textContent(".rp-events"))?.includes("Built by dbat"));
-  check("abandon détecté (left the game)", (await page.textContent(".rp-events"))?.includes("left the game"));
-  check("power balance SVG", (await page.locator(".rp-power, .rp-card svg").count()) >= 1);
-  const tables = page.locator("table.rp-table");
+  check("événement merveille dbat", (await page.textContent(".turning-list"))?.includes("Built by dbat"));
+  check("abandon détecté (left the game)", (await page.textContent(".turning-list"))?.includes("left the game"));
+  check("icône crâne sur événements", (await page.locator('.turning-list img[src="/icons/skull.png"]').count()) >= 1);
+  check("power balance SVG", (await page.locator(".chart-frame svg").count()) >= 1);
+  const tables = page.locator("table.team-table");
   check("2 tables d'équipe", (await tables.count()) === 2);
-  check("8 lignes par équipe", (await page.locator("table.rp-table tbody tr").count()) === 16);
-  check("en-têtes exacts", ((await page.textContent("table.rp-table thead")) ?? "").includes("Manpower killed"));
-  check("impact Vzgo en tête", (await page.textContent("table.rp-table tbody tr td:nth-child(3)"))?.includes("Vzgo"));
-  check("MMR moyen 91", (await page.textContent(".rp-team-head"))?.includes("Average MMR 91"));
+  check("16 lignes principales (8 par équipe)", (await page.locator("tr.team-table-main-row").count()) === 16);
+  check("en-têtes exacts", ((await page.textContent("table.team-table thead")) ?? "").includes("Manpower"));
+  check("impact Vzgo en tête", (await page.textContent("tr.team-table-main-row td:nth-child(3)"))?.includes("Vzgo"));
+  check("MMR moyen 91", (await page.textContent(".team-panel-header"))?.includes("Average MMR 91"));
+  check("lien joueur → /player/", (await page.locator('a.name-link[href^="/player/"]').count()) >= 15);
+  check("médailles affichées (lignes d'équipe)", (await page.locator(".player-medals img").count()) >= 1);
+  check("icônes ressources jeu (food/wood/iron)", (await page.locator('td img[src*="/resource/"]').count()) >= 30);
 
-  // Modale joueur (détail conservé).
-  await page.click("table.rp-table tbody tr");
-  await page.waitForSelector(".units-detail");
-  check("modale joueur s'ouvre", (await page.textContent(".units-detail"))?.length > 0);
-  await page.click(".units-close");
-  await page.waitForSelector(".units-detail", { state: "detached" });
-  check("modale joueur se ferme", true);
+  // Ligne dépliable : détail inline (une ligne AVEC médailles — dbat, MVP).
+  const medalRow = page.locator("tbody.team-table-row-toggle:has(.player-medals img) .chevron-button").first();
+  await medalRow.click();
+  await page.waitForSelector("tr.player-detail-row");
+  check("détail de ligne s'ouvre (inline)", (await page.locator("tr.player-detail-row").count()) === 1);
+  check("détail : carte médaille", (await page.locator("tr.player-detail-row .medal-card").count()) >= 1);
+  check("détail : nom de médaille traduit", ((await page.textContent("tr.player-detail-row")) ?? "").length > 10);
+  await medalRow.click();
+  await page.waitForSelector("tr.player-detail-row", { state: "detached" });
+  check("détail de ligne se referme", true);
+
+  // Puce de métrique : bascule Impact → Kills (timeline).
+  await page.click('.chip-group .chip:has-text("Kills") >> nth=0');
+  await page.waitForTimeout(150);
+  check("puces de métriques présentes (9)", (await page.locator(".timeline-header .chip").count()) === 9);
+  await page.click('.timeline-header .chip >> nth=0'); // retour Impact
 
   // Menu Archives (header) ouvre toujours.
   await page.click("button[aria-label='Archives'], [aria-label='档案'] >> visible=true").catch(() => {});
@@ -181,10 +196,17 @@ try {
   await frContext.addCookies([{ name: "atlas_locale", value: "fr", url: origin }]);
   const frPage = await frContext.newPage();
   await frPage.goto(origin + "/replay?code=rep-Jd894wx6so9");
-  await frPage.waitForSelector(".rp-verdict", { timeout: 30000 });
-  const frVerdict = (await frPage.textContent(".rp-verdict")) ?? "";
+  await frPage.waitForSelector(".rp .heading-1", { timeout: 30000 });
+  const frVerdict = (await frPage.textContent(".rp .heading-1")) ?? "";
   check("verdict FR l'emporte par élimination", frVerdict.includes("l'emporte par élimination"));
-  check("événements FR", ((await frPage.textContent(".rp-card")) ?? "").includes("Événements décisifs"));
+  check("événements FR", ((await frPage.textContent(".overview-panel")) ?? "").includes("Événements décisifs"));
+  const frMedalAlt = (await frPage.getAttribute(".team-grid .player-medals img", "alt")) ?? "";
+  check(
+    "médailles FR (alt traduit)",
+    ["Première lame", "Déserteur", "Champion de la guerre", "Maître de la monnaie", "Contrôle total", "Le Fantôme", "Le Fermier", "Chair à canon", "Dernier rempart", "Premier à tomber"].some((n) =>
+      frMedalAlt.includes(n),
+    ),
+  );
   await frContext.close();
 
   /* ---- Soumission bout-en-bout (cookie dev local, non-admin) -------- */
@@ -204,7 +226,7 @@ try {
     await subPage.fill(".rp-form input", "E2eSubmit1A");
     await subPage.click(".rp-submit-main");
     try {
-      await subPage.waitForSelector(".rp-verdict", { timeout: 6000 });
+      await subPage.waitForSelector(".rp .heading-1", { timeout: 6000 });
       submitted = true;
     } catch {
       /* hydratation pas encore prête : nouvel essai */
@@ -216,8 +238,30 @@ try {
   /* ---- Widget feedback signé : vote, changement d'avis, agrégat --- */
   await subPage.waitForSelector(".rp-feedback-btn", { timeout: 15000 });
   check("session active : 3 boutons de vote", (await subPage.locator(".rp-feedback-btn").count()) === 3);
-  await subPage.click('.rp-feedback-btn[data-vote="accurate"]');
-  await subPage.waitForSelector('.rp-feedback-btn[aria-pressed="true"]', { timeout: 15000 });
+  // Attendre le GET initial du widget (preuve d'hydratation) avant de cliquer :
+  // un clic pré-hydratation est perdu silencieusement (harness robuste).
+  try {
+    await subPage.waitForResponse((r) => r.url().includes("/api/replay/feedback") && r.request().method() === "GET", { timeout: 8000 });
+  } catch {
+    /* GET déjà consommé avant l'armement du listener : le retry du clic
+       ci-dessous couvre le cas restant (clic pré-hydratation perdu). */
+  }
+  // Vote déjà « accurate » d'un run précédent (persisté en D1) ? On repasse
+  // par « issues » d'abord pour que le vote « accurate » soit un vrai
+  // changement (POST réel + message de remerciement) — déterministe.
+  if (await subPage.locator('.rp-feedback-btn[data-vote="accurate"][aria-pressed="true"]').count()) {
+    await subPage.click('.rp-feedback-btn[data-vote="issues"]');
+    await subPage.waitForSelector('.rp-feedback-btn[data-vote="issues"][aria-pressed="true"]', { timeout: 15000 });
+  }
+  for (let voteAttempt = 0; voteAttempt < 3; voteAttempt++) {
+    await subPage.click('.rp-feedback-btn[data-vote="accurate"]');
+    try {
+      await subPage.waitForSelector('.rp-feedback-btn[data-vote="accurate"][aria-pressed="true"]', { timeout: 5000 });
+      break;
+    } catch {
+      /* retry : clic perdu pendant la réhydratation du widget */
+    }
+  }
   check(
     "vote « accurate » enregistré (aria-pressed)",
     (await subPage.getAttribute('.rp-feedback-btn[aria-pressed="true"]', "data-vote")) === "accurate",
@@ -268,19 +312,22 @@ try {
   await mobile.addCookies([{ name: "atlas_locale", value: "en", url: origin }]);
   const mPage = await mobile.newPage();
   await mPage.goto(origin + "/replay?code=rep-Jd894wx6so9");
-  await mPage.waitForSelector(".rp-verdict", { timeout: 30000 });
+  await mPage.waitForSelector(".rp .heading-1", { timeout: 30000 });
   const scrollW = await mPage.evaluate(() => document.scrollingElement.scrollWidth);
   check("375 px sans débordement horizontal", scrollW <= 376);
   const touch = await mPage.evaluate(() => {
-    const btn = document.querySelector(".rp-open");
+    const btn = document.querySelector(".chevron-button");
     const main = document.querySelector(".rp-submit-main");
+    const chip = document.querySelector(".timeline-header .chip");
     const h = (el) => (el ? Math.max(el.getBoundingClientRect().height, 0) : 0);
-    return { open: h(btn), main: h(main) };
+    return { open: h(btn), main: h(main), chip: h(chip) };
   });
   check("cible tactile bouton principal ≥ 44 px", touch.main >= 44);
-  check("bouton joueur ≥ 34 px (zone ligne ≥ 44)", touch.open >= 34);
-  const rows = mPage.locator("table.rp-table tbody tr");
+  check("cible tactile chevron ligne ≥ 34 px (zone ligne ≥ 44)", touch.open >= 34);
+  check("cible tactile puce de métrique ≥ 36 px", touch.chip >= 36);
+  const rows = mPage.locator("tr.team-table-main-row");
   check("tables scrollables en mobile", (await rows.count()) === 16);
+  check("scroll horizontal table natif (table-scroll)", (await mPage.locator(".table-scroll").count()) >= 2);
   await mobile.close();
   await context.close();
 } finally {

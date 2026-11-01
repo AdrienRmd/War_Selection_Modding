@@ -11,9 +11,8 @@ import { buildReplayAnalysis, type ReplayAnalysis } from "@/lib/replay/analysis"
 import { buildReplayDigest } from "@/lib/replay/digest";
 import { ReplayInfoParser } from "@/lib/replay/parser";
 import { getGameContext, loadLegacyUnitIds, parseReplayCode } from "@/lib/replay";
-import { isReplaySuccess, type Player, type ReplayParseResult } from "@/lib/replay/structure";
+import { isReplaySuccess, type ReplayParseResult } from "@/lib/replay/structure";
 import { ReplayResult } from "./replay-result";
-import { PlayerDetail } from "./player-detail";
 import { ReplayFeedbackWidget } from "./replay-feedback";
 
 interface LoadedReplay {
@@ -45,7 +44,6 @@ export function ReplayPortal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<LoadedReplay | null>(null);
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [recent, setRecent] = useState<RecentReplay[] | null>(null);
   const [submitState, setSubmitState] = useState<"idle" | "sending" | "ok" | "exists" | "error">(
     "idle",
@@ -71,7 +69,6 @@ export function ReplayPortal({
       const cached = replayCache.get(normalized);
       if (cached) {
         setData(cached);
-        setSelectedPlayer(null);
         return;
       }
       setLoading(true);
@@ -155,7 +152,6 @@ export function ReplayPortal({
         }
         replayCache.set(normalized, loaded);
         setData(loaded);
-        setSelectedPlayer(null);
         if (scroll) {
           window.history.replaceState(null, "", `/replay?code=${encodeURIComponent(normalized)}`);
           resultAnchor.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -309,11 +305,6 @@ export function ReplayPortal({
             data={success.result as Extract<ReplayParseResult, { error: 0 }>}
             analysis={success.analysis!}
             isLegacy={success.isLegacy}
-            onOpenPlayer={(playerId) =>
-              setSelectedPlayer(
-                (success.result.players ?? []).find((p) => p.id === playerId) ?? null,
-              )
-            }
           />
           <div className="rp-share">
             {signedIn ? (
@@ -357,10 +348,6 @@ export function ReplayPortal({
             />
           </div>
         </>
-      ) : null}
-
-      {selectedPlayer ? (
-        <PlayerDetail player={selectedPlayer} onClose={() => setSelectedPlayer(null)} />
       ) : null}
 
       {recent && recent.length > 0 ? (

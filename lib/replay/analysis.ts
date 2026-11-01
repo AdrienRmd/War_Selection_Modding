@@ -66,7 +66,7 @@ function teamMultiRow(result: ReplayParseSuccess, name: string, side: number): n
 
 /** Série scalaire d'un joueur (index 0 = t0 ; les joueurs morts tôt ont des
  *  séries plus courtes — alignement temporel préservé par construction). */
-function playerSeries(result: ReplayParseSuccess, name: string, player: Player): number[] | null {
+export function playerSeries(result: ReplayParseSuccess, name: string, player: Player): number[] | null {
   const c = container(result, name);
   const group = c?.datasetGroups.find((g) => g.dataGroupIdentifier === "players");
   if (!group) return null;

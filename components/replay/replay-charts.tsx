@@ -2,24 +2,30 @@
 /** Graphiques SVG de la page résultat /replay — aire empilée power + courbe
  *  win chance, aires empilées par joueur et par phase (early/mid/late), et
  *  duel d'équipes. Rendu vectoriel pur (aucune dépendance, responsive via
- *  viewBox), couleurs et libellés fournis par le parent. */
+ *  viewBox), couleurs et libellés fournis par le parent.
+ *
+ *  V2 (01/11, refonte wsva) : couleurs via les variables du design-system
+ *  scopé .rp (var(--team-blue) #4895ef, var(--team-red) #f72585, grilles
+ *  #ffffff12/#ffffff40) — les graphiques ne s'affichent QUE dans le scope
+ *  .rp (page résultat). */
 import type { ReplayAnalysis } from "@/lib/replay/analysis";
 
-export const TEAM_BLUE = "#3f7fbf";
-export const TEAM_RED = "#d1524a";
+export const TEAM_BLUE = "#4895ef"; // var(--team-blue) wsva
+export const TEAM_RED = "#f72585"; // var(--team-red) wsva
 
-/** Palette catégorielle (équipes ≤ 10 joueurs), pastel lisible sur blanc. */
+/** Palette catégorielle (équipes ≤ 10 joueurs), tons wsva lisibles sur fond
+ *  sombre (highlight #4cc9f0, gold, rust, violet late-medieval…). */
 export const PLAYER_COLORS = [
-  "#3f7fbf",
-  "#d1524a",
-  "#e8a33d",
-  "#4f9d69",
-  "#8f6bc4",
-  "#4bb3c4",
-  "#d17fb0",
-  "#7a8a4d",
-  "#b05f3d",
-  "#5f6f8f",
+  "#4cc9f0",
+  "#f72585",
+  "#ffd04d",
+  "#7aa874",
+  "#9b7fd1",
+  "#4895ef",
+  "#d9825a",
+  "#7f9bb5",
+  "#cd7f32",
+  "#a4a4ae",
 ];
 
 function formatClock(ms: number): string {
@@ -29,8 +35,8 @@ function formatClock(ms: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-const GRID = "#e8e5de";
-const TEXT = "#6b7280";
+const GRID = "#ffffff12"; // .graph-grid wsva
+const TEXT = "#a4a4ae"; // var(--text-muted)
 
 interface Frame {
   width: number;
@@ -80,7 +86,7 @@ function ChartFrameSvg({
       aria-label={ariaLabel}
     >
       {yGrid(frame).map((y, i) => (
-        <line key={i} x1={frame.padL} x2={frame.width - frame.padR} y1={y} y2={y} stroke={GRID} strokeWidth={1} />
+        <line key={i} x1={frame.padL} x2={frame.width - frame.padR} y1={y} y2={y} stroke={GRID} strokeWidth={1} className="graph-grid" />
       ))}
       {[0, 25, 50, 75, 100].map((p, i) => (
         <text
@@ -144,11 +150,11 @@ export function PowerBalanceChart({
       <polyline
         points={winChanceBlue.map((w, i) => `${x(i)},${y(w)}`).join(" ")}
         fill="none"
-        stroke="#3d443d"
+        stroke="#a4a4ae"
         strokeWidth={1.6}
         strokeDasharray="5 4"
       />
-      <line x1={frame.padL} x2={frame.width - frame.padR} y1={y(0.5)} y2={y(0.5)} stroke="#c9c4b8" strokeWidth={1} />
+      <line x1={frame.padL} x2={frame.width - frame.padR} y1={y(0.5)} y2={y(0.5)} stroke="#ffffff40" strokeWidth={1} className="graph-axis" />
     </ChartFrameSvg>
   );
 }
@@ -189,11 +195,11 @@ function StageMarks(p: StageMarksProps) {
         y={top}
         width={Math.max(0, p.frame.width - p.frame.padR - x(cleanupIdx))}
         height={bottom - top}
-        fill="#d8d4cb"
-        opacity={0.55}
+        fill="#ffffff14"
+        opacity={0.6}
       />
       {[e, m].map((i, k) => (
-        <line key={k} x1={x(i)} x2={x(i)} y1={top} y2={bottom} stroke="#b3ada0" strokeWidth={1} strokeDasharray="3 3" />
+        <line key={k} x1={x(i)} x2={x(i)} y1={top} y2={bottom} stroke="#ffffff40" strokeWidth={1} strokeDasharray="3 3" className="graph-grid" />
       ))}
       {p.stages.decidedMs !== undefined && (
         <line
@@ -201,7 +207,7 @@ function StageMarks(p: StageMarksProps) {
           x2={x(Math.round(p.stages.decidedMs / p.periodMs))}
           y1={top}
           y2={bottom}
-          stroke="#3d443d"
+          stroke="#a4a4ae"
           strokeWidth={1.4}
         />
       )}
@@ -227,7 +233,7 @@ function StageMarks(p: StageMarksProps) {
         y={top + 10}
         textAnchor={p.stages.decidedMs !== undefined ? "start" : "end"}
         fontSize={10}
-        fill="#3d443d"
+        fill="#a4a4ae"
       >
         {p.decidedLabel}
       </text>
