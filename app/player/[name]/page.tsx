@@ -13,11 +13,30 @@ export async function generateMetadata({
   params: Promise<{ name: string }>;
 }): Promise<Metadata> {
   const { name } = await params;
+  const locale = await requestLocale();
   const trimmed = decodeURIComponent(name).slice(0, 40);
+  const base = await pageMetadata("players");
+  // OG riche quand le profil existe (points/parties), discret sinon — et
+  // indexation réservée aux profils avec données (V4).
+  const profile = await playerProfile(trimmed, locale);
+  if (!profile.found) {
+    return {
+      ...base,
+      title: `${trimmed} | WS ATLAS`,
+      robots: { index: false, follow: true },
+    };
+  }
+  const view = profile.views.find((v) => v.key === "all") ?? profile.views[0];
   return {
-    ...pageMetadata("players"),
-    title: `${trimmed} | WS ATLAS`,
-    robots: { index: false, follow: true }, // V4 : autorisé quand la page a des données
+    ...base,
+    title: `${trimmed} · ${view.points} pts | WS ATLAS`,
+    description: `${trimmed} — ${view.games} games, ${view.winRatePct}% win rate, ${view.points} points, median impact ${view.medianImpactPct ?? "–"}%.`,
+    openGraph: {
+      ...base.openGraph,
+      title: `${trimmed} · Player profile | WS ATLAS`,
+      description: `${view.games} games · ${view.winRatePct}% wins · ${view.points} points`,
+    },
+    robots: { index: true, follow: true },
   };
 }
 
