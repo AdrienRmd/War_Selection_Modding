@@ -1773,6 +1773,10 @@ export const english: Record<string, string> = {
     "In War Selection, open the matching entry: map sharing for maps, mod loading for mods.",
   "粘贴代码并确认，开一局私房测试。": "Paste the code, confirm, and start a private match to try it.",
   "自己做一张？简单工坊 — 三步导出": "Build your own? Simple workbench — 3-step export",
+  "更正/下架地图 ${code}": "Map correction/removal — ${code}",
+  "地图码：${code}\n名称：${name}\n请说明需要更正或下架的原因：":
+    "Map code: ${code}\nName: ${name}\nPlease describe what should be corrected or removed:",
+  "报告 / 申请更正或下架": "Report / request a correction or removal",
   "排序方式": "Sort order",
   "最新收录": "Recently added",
   "名称 A→Z": "Name A→Z",

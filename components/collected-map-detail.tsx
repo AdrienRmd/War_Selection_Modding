@@ -151,6 +151,29 @@ export function CollectedMapDetail({ map: m, admin }: { map: CollectedMap; admin
           </p>
         )}
       </section>
+      {/* Finitions 01/11, chantier 8 — procédure correction/retrait pour les
+          auteurs (MVP mailto assumé : pas de système de tickets en base dans
+          ce lot). Sujet et corps pré-remplis avec le code et le nom affiché. */}
+      <p className="map-author-rights">
+        <a
+          className="text-link"
+          href={`mailto:adrien.remond@protonmail.com?subject=${encodeURIComponent(
+            l("更正/下架地图 ${code}", "Map correction/removal — ${code}").replaceAll(
+              "${code}",
+              m.map_code,
+            ),
+          )}&body=${encodeURIComponent(
+            l(
+              "地图码：${code}\n名称：${name}\n请说明需要更正或下架的原因：",
+              "Map code: ${code}\nName: ${name}\nPlease describe what should be corrected or removed:",
+            )
+              .replaceAll("${code}", m.map_code)
+              .replaceAll("${name}", title),
+          )}`}
+        >
+          {l("报告 / 申请更正或下架", "Report / request a correction or removal")}
+        </a>
+      </p>
     </>
   );
 }

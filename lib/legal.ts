@@ -18,7 +18,7 @@ export const legalDocs: Record<LegalDocKey, Record<Locale, LegalDoc>> = {
   legal: {
     zh: {
       title: "法律声明",
-      updated: "2026-09-23",
+      updated: "2026-11-01",
       intro: "本页面说明 WS ATLAS 的编辑者、托管方以及网站内容的权属与致谢规则。",
       sections: [
         {
@@ -54,6 +54,15 @@ export const legalDocs: Record<LegalDocKey, Record<Locale, LegalDoc>> = {
           ],
         },
         {
+          heading: "创作者权利",
+          paragraphs: [
+            "地图收藏与 Mod 档案来自公开的社区记录（原帖、整理后的 Google 文档与 Discord 频道），每条档案标注来源与作者。",
+            "如果你是某张地图或某个 Mod 的作者，认为档案有误或希望下架，请发邮件到 adrien.remond@protonmail.com，或在对应档案页使用「报告 / 申请更正或下架」链接。",
+            "更正与下架请求会在收到后 7 天内处理；如你同意，可以保留条目并修正署名与描述。",
+            "本站不靠这些内容营利：没有广告、没有付费下载，也不虚构数据。",
+          ],
+        },
+        {
           heading: "致谢",
           paragraphs: [
             "斯大林格勒档案与社区收藏中的地图由其作者提供，图片与说明在作者授权下使用；收藏条目逐条标注作者与来源。",
@@ -65,7 +74,7 @@ export const legalDocs: Record<LegalDocKey, Record<Locale, LegalDoc>> = {
     },
     en: {
       title: "Legal notice",
-      updated: "2026-09-23",
+      updated: "2026-11-01",
       intro:
         "This page identifies the publisher of WS ATLAS, its host, and the ownership and credit rules that apply to the site's content.",
       sections: [
@@ -104,6 +113,15 @@ export const legalDocs: Record<LegalDocKey, Record<Locale, LegalDoc>> = {
           ],
         },
         {
+          heading: "Creators' rights",
+          paragraphs: [
+            "The map collection and mod library come from public community records (original posts, a curated Google document and a Discord channel); every entry credits its source and author.",
+            "If you authored a map or mod and believe an entry is inaccurate, or you want it removed, email adrien.remond@protonmail.com or use the “Report / request a correction or removal” link on the archive page.",
+            "Correction and takedown requests are processed within 7 days; with your agreement the entry can stay with corrected credit and description.",
+            "This site does not monetize this content: no ads, no paid downloads, no fabricated figures.",
+          ],
+        },
+        {
           heading: "Credits",
           paragraphs: [
             "Maps in the Stalingrad archive and the community collection are provided by their authors, with images and descriptions used under their authorization; each collection entry credits its author and source.",
@@ -115,7 +133,7 @@ export const legalDocs: Record<LegalDocKey, Record<Locale, LegalDoc>> = {
     },
     fr: {
       title: "Mentions légales",
-      updated: "2026-09-23",
+      updated: "2026-11-01",
       intro:
         "Cette page présente l'éditeur de WS ATLAS, son hébergeur, ainsi que les règles de propriété et de crédits applicables aux contenus du site.",
       sections: [
@@ -151,6 +169,15 @@ export const legalDocs: Record<LegalDocKey, Record<Locale, LegalDoc>> = {
             "Les contenus communautaires (cartes, mods, descriptions et comptes rendus de tests) appartiennent à leurs auteurs ; les pages d'archive mentionnent la source et créditent les auteurs.",
             "Une partie des illustrations de l'archive est générée par IA (signalée par les mentions artwork-notes sur les pages concernées) ; elles servent uniquement d'habillage éditorial.",
             "Le code source du site est public sur GitHub (dépôt AustinLiu5567/ws-lab, branche experiments) et proposé selon la licence indiquée dans le dépôt.",
+          ],
+        },
+        {
+          heading: "Droits des créateurs",
+          paragraphs: [
+            "La collection de cartes et la bibliothèque de mods proviennent de relevés communautaires publics (posts d'origine, document Google structuré et canal Discord) ; chaque fiche crédite sa source et son auteur.",
+            "Si vous êtes l'auteur d'une carte ou d'un mod et qu'une fiche est inexacte ou que vous souhaitez son retrait, écrivez à adrien.remond@protonmail.com ou utilisez le lien « Signaler / demander une correction ou un retrait » sur la fiche.",
+            "Les demandes de correction et de retrait sont traitées sous 7 jours ; avec votre accord, la fiche peut être conservée avec un crédit et une description corrigés.",
+            "Ce site ne monétise pas ces contenus : ni publicité, ni téléchargement payant, ni chiffres fabriqués.",
           ],
         },
         {

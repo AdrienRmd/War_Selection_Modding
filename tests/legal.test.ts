@@ -18,7 +18,7 @@ describe("structure des documents légaux", () => {
   });
 
   it("compte le même nombre de sections par locale pour chaque document", () => {
-    expect(legalDocs.legal.zh.sections).toHaveLength(6);
+    expect(legalDocs.legal.zh.sections).toHaveLength(7);
     expect(legalDocs.privacy.zh.sections).toHaveLength(8);
     expect(legalDocs.terms.zh.sections).toHaveLength(8);
     for (const key of docKeys) {
@@ -73,6 +73,23 @@ describe("invariants éditoriaux", () => {
       expect(text).toContain("atlas_session");
       expect(text).toContain("atlas_locale");
       expect(text).toContain("PBKDF2");
+    }
+  });
+
+  it("décrit les droits des créateurs (correction/retrait) dans chaque locale des mentions légales", () => {
+    const headings: Record<Locale, string> = {
+      zh: "创作者权利",
+      en: "Creators' rights",
+      fr: "Droits des créateurs",
+    };
+    for (const locale of locales) {
+      const doc = legalDocs.legal[locale];
+      const section = doc.sections.find((s) => s.heading === headings[locale]);
+      expect(section, `${locale} : section « ${headings[locale]} »`).toBeTruthy();
+      const text = section?.paragraphs.join("\n") ?? "";
+      expect(text).toContain("adrien.remond@protonmail.com");
+      expect(/7\s*(天|days|jours)/.test(text)).toBe(true); // délai de traitement annoncé
+      expect(/营利|monetize|monétise/.test(text)).toBe(true); // aucune monétisation
     }
   });
 

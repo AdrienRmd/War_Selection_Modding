@@ -432,3 +432,11 @@
   margin: -10px 0 14px;
   font-size: 12.5px;
 }
+
+/* Finitions 01/11, chantier 8 — lien discret correction/retrait pour les
+   auteurs de cartes (mailto pré-rempli), en pied de fiche. */
+.map-author-rights {
+  margin: 26px 0 8px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}

@@ -1805,6 +1805,10 @@ export const french: Record<string, string> = {
   "粘贴代码并确认，开一局私房测试。":
     "Collez le code, validez, et lancez une partie privée pour tester.",
   "自己做一张？简单工坊 — 三步导出": "Créez le vôtre ? Atelier simple — export en 3 étapes",
+  "更正/下架地图 ${code}": "Correction/retrait de carte — ${code}",
+  "地图码：${code}\n名称：${name}\n请说明需要更正或下架的原因：":
+    "Code de carte : ${code}\nNom : ${name}\nVeuillez décrire ce qui doit être corrigé ou retiré :",
+  "报告 / 申请更正或下架": "Signaler / demander une correction ou un retrait",
   "排序方式": "Ordre de tri",
   "最新收录": "Récemment ajoutées",
   "名称 A→Z": "Nom A→Z",
