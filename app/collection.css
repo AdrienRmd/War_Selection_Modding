@@ -424,3 +424,11 @@
 .collection-preview img {
   display: block;
 }
+
+/* Finitions 08/11 — mention discrète du tri « Récemment ajoutées » :
+   collected_at est uniforme (date d'import), le tri repose donc sur l'ordre
+   d'import ; la mention l'assume en une ligne sobre sous la barre d'outils. */
+.collection-sort-note {
+  margin: -10px 0 14px;
+  font-size: 12.5px;
+}

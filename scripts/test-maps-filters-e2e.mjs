@@ -99,6 +99,83 @@ check(
   Number((await counter.innerText()).match(/\d+/)?.[0] ?? 0) === initialCount,
 );
 
+// — Tri du listing (finitions 08/11, chantier 5) —
+const sortSelect = page.locator("select[aria-label='Ordre de tri']");
+await sortSelect.waitFor({ state: "visible", timeout: 10000 });
+check("tri : défaut = Récemment ajoutées (ordre d'import)", (await sortSelect.inputValue()) === "recent");
+check(
+  "tri : mention discrète « ordre d'import » affichée sur le défaut",
+  (await page.locator(".collection-sort-note").innerText()).includes("ordre d'import"),
+);
+
+// Vérité terrain : ordre d'import = source_order décroissant sur les seeds
+// fusionnés (D1 local vide — même logique que lib/collection.ts).
+const { readFileSync } = await import("node:fs");
+const base = JSON.parse(
+  readFileSync(new URL("../lib/collection-seeds.json", import.meta.url)),
+  "utf8",
+);
+const discord = JSON.parse(
+  readFileSync(new URL("../lib/discord-map-seeds.json", import.meta.url)),
+  "utf8",
+);
+const byCode = new globalThis.Map(base.map((m) => [m.map_code, m]));
+for (const inc of discord) {
+  const cur = byCode.get(inc.map_code);
+  if (!cur) byCode.set(inc.map_code, inc);
+  else {
+    const merged = { ...inc, ...cur };
+    if (!merged.players) merged.players = inc.players;
+    byCode.set(inc.map_code, merged);
+  }
+}
+const listed = [...byCode.values()].filter((m) => m.visibility !== "hidden");
+const newest = listed.reduce((a, b) => (b.source_order > a.source_order ? b : a));
+const firstHref = await page.locator(".collection-card h3 a").first().getAttribute("href");
+check(
+  "tri défaut : 1ʳᵉ carte = import le plus récent (source_order max)",
+  firstHref === `/maps/${newest.id}`,
+  `(attendu ${newest.id}, source_order ${newest.source_order})`,
+);
+
+// A→Z : les 5 premiers titres triés ascendants (locale fr), ordre changé.
+const hrefsBefore = await page.locator(".collection-card h3 a").evaluateAll((els) =>
+  els.slice(0, 5).map((el) => el.getAttribute("href")),
+);
+await sortSelect.selectOption("az");
+await page.waitForTimeout(300);
+const titles = await page.locator(".collection-card h3 a").allTextContents();
+const first5 = titles.slice(0, 5).map((s) => s.trim());
+const sorted5 = [...first5].sort((a, b) => a.localeCompare(b, "fr", { numeric: true }));
+check("tri A→Z : 5 premiers titres ascendants", JSON.stringify(first5) === JSON.stringify(sorted5),
+  `(${first5.join(" | ")})`);
+const hrefsAfter = await page.locator(".collection-card h3 a").evaluateAll((els) =>
+  els.slice(0, 5).map((el) => el.getAttribute("href")),
+);
+check("tri A→Z : l'ordre a réellement changé", JSON.stringify(hrefsBefore) !== JSON.stringify(hrefsAfter));
+check("tri A→Z : mention d'import retirée", (await page.locator(".collection-sort-note").count()) === 0);
+
+// Persistance localStorage (leçon 16) + réinitialisation propre.
+check(
+  "tri : préférence persistée (localStorage)",
+  (await page.evaluate(() => window.localStorage.getItem("atlas.maps.sort"))) === "az",
+);
+await page.reload({ waitUntil: "networkidle" });
+await page.waitForTimeout(400);
+const sortSelect2 = page.locator("select[aria-label='Ordre de tri']");
+await sortSelect2.waitFor({ state: "visible", timeout: 10000 });
+check("tri : préférence restaurée après rechargement", (await sortSelect2.inputValue()) === "az");
+await sortSelect2.selectOption("recent");
+await page.waitForTimeout(150);
+
+// « Les plus jouées » : DONNÉE INEXISTANTE côté source — jamais proposée.
+const sortOptions = await sortSelect2.locator("option").allTextContents();
+check(
+  "tri : aucune option de popularité inventée (pas de stats par carte côté jeu)",
+  !sortOptions.some((o) => /jou[ée]|play(ed|s)|popul/i.test(o)),
+  JSON.stringify(sortOptions),
+);
+
 await page.close();
 await browser.close();
 console.log(`\nOK — ${report.length} contrôles e2e filtre Joueurs NvN`);

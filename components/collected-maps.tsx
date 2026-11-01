@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "@/components/site-link";
 import { T, useBilingual, useI18n } from "@/components/i18n";
 import { Input } from "@/components/ui/input";
@@ -53,7 +53,31 @@ export function CollectedMaps({
   const [query, setQuery] = useState(""),
     [filter, setFilter] = useState("all"),
     [playerFilter, setPlayerFilter] = useState("all"),
+    // Tri du listing (finitions 08/11) : « recent » (défaut) = ordre d'import
+    // décroissant — collected_at est uniforme (2026-09-22, date d'import), ce
+    // n'est PAS un signal de fraîcheur par carte ; la mention discrète sous la
+    // barre l'assume. Persisté en localStorage (leçon 16), lu APRÈS montage
+    // pour éviter tout écart d'hydratation SSR/client.
+    [sort, setSort] = useState<"recent" | "az" | "tested">("recent"),
     [limit, setLimit] = useState(12);
+  // Préférence de tri persistée (leçon 16) : lue APRÈS l'hydratation via
+  // callback asynchrone — jamais pendant le rendu initial (le HTML serveur
+  // rend toujours le tri par défaut « recent », aucun écart d'hydratation).
+  useEffect(() => {
+    const saved = window.localStorage.getItem("atlas.maps.sort");
+    const apply = window.setTimeout(() => {
+      if (saved === "az" || saved === "tested" || saved === "recent") setSort(saved);
+    }, 0);
+    return () => window.clearTimeout(apply);
+  }, []);
+  const applySort = (value: "recent" | "az" | "tested") => {
+    setSort(value);
+    try {
+      window.localStorage.setItem("atlas.maps.sort", value);
+    } catch {
+      /* stockage indisponible (navigation privée) : tri non persisté */
+    }
+  };
   // Filtre « Joueurs : NvN » (finitions 08/11) — construit sur les formats
   // RÉELS des données servies : champ players, N = players/2 équipes quand il
   // est pair. Les cartes sans nombre (et les comptes impairs — équipes
@@ -103,6 +127,28 @@ export function CollectedMaps({
         filter === m.category) &&
       playerMatch(m),
   );
+  // Tri appliquée au rendu (finitions 08/11) : récent = ordre d'import
+  // décroissant (source_order) ; A→Z = locale du visiteur sur le titre
+  // affiché (repli sur le code de partage si la fiche n'a pas de nom) ;
+  // testées d'abord = tout statut ≠ « 待实测 » avant les non testées,
+  // à statut égal par ordre d'import décroissant.
+  const sortedMatches = (() => {
+    const list = [...matches];
+    if (sort === "az") {
+      const coll = locale === "zh" ? "zh-Hans-CN" : locale;
+      const titleOf = (m: CollectedMap) => (en ? m.title_en || m.title : m.title) || m.map_code;
+      list.sort((a, b) => titleOf(a).localeCompare(titleOf(b), coll, { numeric: true }));
+    } else if (sort === "tested") {
+      list.sort(
+        (a, b) =>
+          Number(a.test_status === "untested") - Number(b.test_status === "untested") ||
+          b.source_order - a.source_order,
+      );
+    } else {
+      list.sort((a, b) => b.source_order - a.source_order);
+    }
+    return list;
+  })();
   return (
     <section id="collection" className="collection-section">
       <div className="section-head">
@@ -181,14 +227,31 @@ export function CollectedMaps({
             </option>
           )}
         </select>
+        <select
+          aria-label={l("排序方式", "Sort order")}
+          value={sort}
+          onChange={(e) => {
+            applySort(e.target.value as "recent" | "az" | "tested");
+            setLimit(12);
+          }}
+        >
+          <option value="recent">{l("最新收录", "Recently added")}</option>
+          <option value="az">{l("名称 A→Z", "Name A→Z")}</option>
+          <option value="tested">{l("已实测优先", "Tested first")}</option>
+        </select>
         <span aria-live="polite">
           {locale === "zh"
             ? `${matches.length} 个结果`
             : t(`${matches.length} results`)}
         </span>
       </div>
+      {sort === "recent" && (
+        <p className="caption collection-sort-note">
+          {l("按收录导入顺序展示。", "Shown by collection import order.")}
+        </p>
+      )}
       <div className="collection-grid">
-        {matches.slice(0, limit).map((m) => {
+        {sortedMatches.slice(0, limit).map((m) => {
           const title =
             (en && m.title_en ? m.title_en : m.title) || l("名称待补充", "Unidentified map");
           return (
