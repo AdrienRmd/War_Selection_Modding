@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LocaleProvider } from "@/components/i18n";
+import { UpdateBanner } from "@/components/update-banner";
 import { requestLocale } from "@/lib/page-metadata";
 import { localizePageMeta, pageRoutes } from "@/lib/page-titles";
 import "./globals.css";
@@ -47,7 +48,12 @@ export default async function RootLayout({
   return (
     <html lang={locale === "zh" ? "zh-CN" : locale}>
       <body className="antialiased">
-        <LocaleProvider initial={locale}>{children}</LocaleProvider>
+        <LocaleProvider initial={locale}>
+          {children}
+          {/* HOTFIX 31/10 : bandeau « nouvelle version disponible » — monté
+              dans le layout racine donc présent sur toutes les pages. */}
+          <UpdateBanner />
+        </LocaleProvider>
       </body>
     </html>
   );

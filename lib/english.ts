@@ -2173,6 +2173,7 @@ export const english: Record<string, string> = {
   "数据暂时无法加载，请重试。": "Data is temporarily unavailable, please retry.",
   正在加载单位数据: "Loading unit data",
   重新加载: "Reload",
+  "有新版本可用。": "A new version is available",
   "第一步：选择单位": "Step 1: choose a unit",
   "第二步：修改数值": "Step 2: change values",
   "第三步：导出": "Step 3: export",

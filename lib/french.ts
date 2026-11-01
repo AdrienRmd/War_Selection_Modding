@@ -2212,6 +2212,7 @@ export const french: Record<string, string> = {
   "数据暂时无法加载，请重试。": "Les données sont momentanément indisponibles, réessayez.",
   正在加载单位数据: "Chargement des données d'unités",
   重新加载: "Recharger",
+  "有新版本可用。": "Une nouvelle version est disponible",
   "第一步：选择单位": "Étape 1 : choisir une unité",
   "第二步：修改数值": "Étape 2 : modifier les valeurs",
   "第三步：导出": "Étape 3 : exporter",

@@ -713,3 +713,73 @@ h1 em {
     letter-spacing: 0;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   HOTFIX 31/10/2026 — bandeau « nouvelle version disponible »
+   (components/update-banner.tsx). Apparaît en bas de page, au-dessus de tout
+   (z-index > header 50 / barre cookie 70), quand /version.json sert un
+   buildId différent de celui du chargement initial. Discret : pilule sombre,
+   un message + un bouton. Jamais de rechargement forcé.
+--------------------------------------------------------------------------- */
+.update-banner {
+  position: fixed;
+  bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 24px);
+  padding: 8px 8px 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  font-size: 14px;
+  line-height: 1.3;
+  box-shadow: var(--shadow-lg);
+}
+.update-banner-reload {
+  /* Cible tactile ≥ 44 px (mobile-first, recommandation accessibilité iOS) */
+  min-height: 44px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.update-banner-reload:hover {
+  background: var(--primary-strong);
+}
+.update-banner-reload:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .update-banner {
+    animation: update-banner-in 240ms ease-out;
+  }
+}
+@keyframes update-banner-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .update-banner {
+    animation: none;
+  }
+}
