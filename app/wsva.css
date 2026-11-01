@@ -886,3 +886,26 @@
 .rp .archive-cachet{position:absolute;top:12px;right:14px;transform:rotate(-6deg);padding:3px 9px;border:1.5px solid var(--accent-bronze);border-radius:4px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;white-space:nowrap;color:var(--gold);background:rgb(194 122 62 / .08)}
 .rp .verdict-archive + .label-text{margin-top:var(--space-3)}
 @media (width<=640px){.rp .verdict-archive{padding:var(--space-3) var(--space-3) var(--space-2);padding-right:var(--space-3)}.rp .archive-cachet{position:static;display:inline-flex;margin-top:var(--space-2);transform:rotate(-3deg)}}
+/* ============================================================
+   Transferts de ressources (V4 wsstats-detail) — sections
+   « Sent by » / « Transactions » de la page résultat : tableaux
+   denses façon ws-stats.pl, badges discrets, classes .rp du
+   design-system wsva. Colonne 2+ alignée à droite (les valeurs
+   par âge précèdent Total/Generosity ou suivent From).
+   ============================================================ */
+.rp .transfers-panel{gap:var(--space-3);display:grid}
+.rp .transfers-heading{gap:var(--space-1);display:grid}
+.rp .transfers-heading .label-text{margin:0}
+.rp .transfers-table th:nth-child(n+2),.rp .transfers-table td:nth-child(n+2){text-align:right}
+.rp .transfers-table .cell-left,.rp .transfers-table td.cell-left{text-align:left}
+.rp .table-caption{caption-side:top;text-align:left;padding:0 0 var(--space-2);font-weight:600;color:var(--text-primary)}
+.rp .cell-mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.rp .cell-strong{font-weight:600;color:var(--text-primary)}
+.rp .transfer-badge{font-size:11px;font-weight:600}
+.rp .transfer-gen-veryGenerous{border-color:var(--gold);color:var(--gold)}
+.rp .transfer-gen-fair{border-color:var(--silver);color:var(--silver)}
+.rp .transfer-gen-small{color:var(--text-muted)}
+.rp .transfer-cert-veryLikely{border-color:#4cc9f080;color:var(--highlight)}
+.rp .transfer-cert-likely{color:var(--text-muted)}
+.rp .transfers-panel .table-scroll+.table-scroll{margin-top:var(--space-2)}
+.rp .transfers-direction{color:var(--text-muted)}

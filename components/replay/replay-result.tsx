@@ -14,6 +14,8 @@ import Link from "@/components/site-link";
 import { useBilingual, useI18n } from "@/components/i18n";
 import type { PlayerImpact, ReplayAnalysis, Side, TeamImpact } from "@/lib/replay/analysis";
 import { playerSeries } from "@/lib/replay/analysis";
+import type { TransfersAnalysis } from "@/lib/replay/transfers";
+import { TransfersPanel } from "./replay-transfers";
 import type { Player, ReplayParseResult } from "@/lib/replay/structure";
 import {
   MEDAL_META,
@@ -60,10 +62,12 @@ export function ReplayResult({
   data,
   analysis,
   isLegacy,
+  transfers,
 }: {
   data: Extract<ReplayParseResult, { error: 0 }>;
   analysis: ReplayAnalysis;
   isLegacy: boolean;
+  transfers: TransfersAnalysis | null;
 }) {
   const { locale } = useI18n();
   const l = useBilingual();
@@ -323,6 +327,10 @@ export function ReplayResult({
             />
           ))}
         </div>
+
+        {/* Transferts de ressources entre alliés (inférence documentée) —
+            section omise si aucune transaction détectée. */}
+        {transfers ? <TransfersPanel transfers={transfers} players={data.players} /> : null}
 
         {/* Timeline à métriques + phases. */}
         {analysis.stages && analysis.power ? (

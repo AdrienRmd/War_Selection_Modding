@@ -1,5 +1,39 @@
 // Source-backed English UI and archived-content translations. Canonical data keys stay unchanged.
 export const english: Record<string, string> = {
+
+  // Transferts de ressources (sections « Sent by » / « Transactions »).
+  资源转赠: "Resource transfers",
+  "回放数据不含直接的转账事件：以下捐赠由资源变动推断（同一 30 秒窗口内，接收方库存意外增加、给出方支出同步放大），金额按接收方实测。":
+    "Replays carry no direct transfer events: donations below are inferred from resource moves (within one 30 s window, an unexplained stock gain on the receiver matched by a spending spike on a teammate); amounts are measured on the receiver side.",
+  "按玩家统计（共送出 ${n} 笔）": "Sent by (${n} transactions)",
+  石器: "Stone",
+  青铜: "Bronze",
+  "铁器（含中世纪）": "Iron (incl. Medieval)",
+  工业一期: "Industrial 1",
+  工业二期: "Industrial 2",
+  总计: "Total",
+  慷慨度: "Generosity",
+  慷慨大方: "Very generous",
+  一般: "Fair",
+  少量: "Small",
+  "按总送出量评定": "Graded by total resources sent",
+  "交易记录（${n}）": "Transactions (${n})",
+  时间: "Time",
+  来自: "From",
+  数量: "Amount",
+  方向: "Direction",
+  去向: "To",
+  确定性: "Certainty",
+  极有可能: "Very likely",
+  有可能: "Likely",
+  "依据：给出方同期支出覆盖捐赠的程度与相对优势":
+    "Based on: how much of the donation the teammate's same-window spending covers, and by how much it dominates",
+  "食物转赠：${n}": "Food sent: ${n}",
+  "木材转赠：${n}": "Wood sent: ${n}",
+  "铁矿转赠：${n}": "Iron sent: ${n}",
+  食物: "Food",
+  木材: "Wood",
+  铁矿: "Iron",
   "换个名称或类型试试，或清除筛选查看全部研究。":
     "Try another name or type, or clear the filters to see every research.",
 

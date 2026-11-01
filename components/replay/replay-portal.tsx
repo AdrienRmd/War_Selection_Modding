@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Clock, Search, Send, TriangleAlert } from "lucide-react";
 import { useBilingual, useI18n } from "@/components/i18n";
 import { buildReplayAnalysis, type ReplayAnalysis } from "@/lib/replay/analysis";
+import { analyzeTransfers, type TransfersAnalysis } from "@/lib/replay/transfers";
 import { buildReplayDigest } from "@/lib/replay/digest";
 import { ReplayInfoParser } from "@/lib/replay/parser";
 import { getGameContext, loadLegacyUnitIds, parseReplayCode } from "@/lib/replay";
@@ -19,6 +20,8 @@ interface LoadedReplay {
   result: ReplayParseResult;
   analysis: ReplayAnalysis | null;
   isLegacy: boolean;
+  /** Transferts inférés entre alliés — null si aucune transaction. */
+  transfers: TransfersAnalysis | null;
 }
 
 interface RecentReplay {
@@ -172,6 +175,7 @@ export function ReplayPortal({
           result,
           analysis: buildReplayAnalysis(result),
           isLegacy,
+          transfers: analyzeTransfers(result),
         };
         if (replayCache.size >= 20) {
           replayCache.delete(replayCache.keys().next().value as string);
@@ -331,6 +335,7 @@ export function ReplayPortal({
             data={success.result as Extract<ReplayParseResult, { error: 0 }>}
             analysis={success.analysis!}
             isLegacy={success.isLegacy}
+            transfers={success.transfers}
           />
           <div className="rp-share">
             {signedIn ? (
