@@ -1,43 +1,21 @@
 "use client";
-/** Sections « transferts de ressources » de la page résultat — façon
- *  ws-stats.pl (tableaux denses, badges discrets), dans les classes .rp du
- *  design-system wsva. Deux blocs :
+/** Section « transferts de ressources » de la page résultat — façon
+ *  ws-stats.pl (tableau dense, badges discrets), dans les classes .rp du
+ *  design-system wsva. Récapitulatif « Sent by » seul depuis la v2 (02/11) :
+ *  la liste détaillée des transactions n'est plus affichée — l'inférence
+ *  reste calculée en lib (montants, certitudes) pour alimenter le récap.
  *  - « Sent by » : total envoyé par joueur et par âge du donneur (nos 5
  *    buckets réels Stone/Bronze/Iron/IR1/IR2 — le médiéval est fusionné
  *    dans Iron) + badge de générosité ;
- *  - « Transactions (N) » : heure, donneur, montant avec icône de ressource,
- *    direction →, receveur, certitude (Very likely / Likely).
+ *  Montants en RESSOURCES DU JEU (unités réelles — cf. v2 : les « M » de
+ *  la v1 étaient un artefact d'échelle ×1000).
  *  Données : lib/replay/transfers.ts (inférence documentée — les replays ne
  *  contiennent pas d'événements de transfert directs). Section omise
  *  proprement si aucune transaction n'est détectée. */
 import { useBilingual, useI18n } from "@/components/i18n";
 import type { Player } from "@/lib/replay/structure";
-import {
-  TRANSFER_AGE_BUCKETS,
-  type Generosity,
-  type TransfersAnalysis,
-  type TransferCertainty,
-} from "@/lib/replay/transfers";
-import { compactNumber, formatClock } from "@/lib/replay/wsva-view";
-
-const RESOURCE_ICON = [
-  "/wus-data/content/images/resource/0.png",
-  "/wus-data/content/images/resource/1.png",
-  "/wus-data/content/images/resource/2.png",
-] as const;
-
-const RESOURCE_TITLE = [
-  { zh: "食物", en: "Food" },
-  { zh: "木材", en: "Wood" },
-  { zh: "铁矿", en: "Iron" },
-] as const;
-
-/** Phrase de titre traduisible (modèle ${n}) pour le montant par ressource. */
-const AMOUNT_TITLE = [
-  { zh: "食物转赠：${n}", en: "Food sent: ${n}" },
-  { zh: "木材转赠：${n}", en: "Wood sent: ${n}" },
-  { zh: "铁矿转赠：${n}", en: "Iron sent: ${n}" },
-] as const;
+import { TRANSFER_AGE_BUCKETS, type Generosity, type TransfersAnalysis } from "@/lib/replay/transfers";
+import { compactNumber } from "@/lib/replay/wsva-view";
 
 const AGE_LABELS: Record<(typeof TRANSFER_AGE_BUCKETS)[number], { zh: string; en: string }> = {
   stone: { zh: "石器", en: "Stone" },
@@ -53,11 +31,6 @@ const GENEROSITY_LABELS: Record<Generosity, { zh: string; en: string }> = {
   small: { zh: "少量", en: "Small" },
 };
 
-const CERTAINTY_LABELS: Record<TransferCertainty, { zh: string; en: string }> = {
-  veryLikely: { zh: "极有可能", en: "Very likely" },
-  likely: { zh: "有可能", en: "Likely" },
-};
-
 export function TransfersPanel({
   transfers,
   players,
@@ -67,7 +40,7 @@ export function TransfersPanel({
 }) {
   const l = useBilingual();
   const { locale } = useI18n();
-  const fmt = (kUnits: number) => compactNumber(kUnits * 1000, locale);
+  const fmt = (resources: number) => compactNumber(resources, locale);
   const nameOf = (id: number) => players[id]?.nickname ?? `#${id}`;
 
   return (
@@ -79,8 +52,8 @@ export function TransfersPanel({
         </h2>
         <p className="label-text">
           {l(
-            "回放数据不含直接的转账事件：以下捐赠由资源变动推断（同一 30 秒窗口内，接收方库存意外增加、给出方支出同步放大），金额按接收方实测。",
-            "Replays carry no direct transfer events: donations below are inferred from resource moves (within one 30 s window, an unexplained stock gain on the receiver matched by a spending spike on a teammate); amounts are measured on the receiver side.",
+            "回放不含直接的转账事件：以下金额由资源变动推断（同一 30 秒窗口内，接收方库存意外增加、且队友支出出现相应跳升），按接收方实测，单位为游戏资源；无法归到具体队友的变动不计入。",
+            "Replays carry no direct transfer events: totals below are inferred from resource moves (within one 30 s window, an unexplained stock gain on the receiver matched by a spending jump on a teammate); amounts are measured on the receiver side, in game resources; moves that cannot be pinned to a teammate are excluded.",
           )}
         </p>
       </header>
@@ -125,71 +98,6 @@ export function TransfersPanel({
                       GENEROSITY_LABELS[row.generosity].zh,
                       GENEROSITY_LABELS[row.generosity].en,
                     )}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Transactions — liste chronologique. */}
-      <div className="table-scroll">
-        <table className="units-table transfers-table">
-          <caption className="table-caption">
-            {l("交易记录（${n}）", "Transactions (${n})").replace(
-              "${n}",
-              String(transfers.events.length),
-            )}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">{l("时间", "Time")}</th>
-              <th scope="col">{l("来自", "From")}</th>
-              <th scope="col" className="cell-number">
-                {l("数量", "Amount")}
-              </th>
-              <th scope="col" aria-label={l("方向", "Direction")}>→</th>
-              <th scope="col">{l("去向", "To")}</th>
-              <th scope="col">{l("确定性", "Certainty")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transfers.events.map((event, index) => (
-              <tr key={index}>
-                <td className="cell-nowrap cell-mono">{formatClock(event.timeMs)}</td>
-                <td className="cell-nowrap">{nameOf(event.fromPlayerId)}</td>
-                <td className="cell-number cell-strong">
-                  <span
-                    className="value-pairs"
-                    title={l(
-                      AMOUNT_TITLE[event.resourceIndex].zh,
-                      AMOUNT_TITLE[event.resourceIndex].en,
-                    ).replace("${n}", Math.round(event.amount * 1000).toLocaleString())}
-                  >
-                    <img
-                      className="icon icon-sm"
-                      src={RESOURCE_ICON[event.resourceIndex]}
-                      alt={l(
-                        RESOURCE_TITLE[event.resourceIndex].zh,
-                        RESOURCE_TITLE[event.resourceIndex].en,
-                      )}
-                      loading="lazy"
-                    />
-                    {fmt(event.amount)}
-                  </span>
-                </td>
-                <td aria-hidden="true">→</td>
-                <td className="cell-nowrap">{nameOf(event.toPlayerId)}</td>
-                <td>
-                  <span
-                    className={`tag transfer-badge transfer-cert-${event.certainty}`}
-                    title={l(
-                      "依据：给出方同期支出覆盖捐赠的程度与相对优势",
-                      "Based on: how much of the donation the teammate's same-window spending covers, and by how much it dominates",
-                    )}
-                  >
-                    {l(CERTAINTY_LABELS[event.certainty].zh, CERTAINTY_LABELS[event.certainty].en)}
                   </span>
                 </td>
               </tr>

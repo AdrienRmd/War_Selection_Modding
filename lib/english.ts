@@ -15,10 +15,11 @@ export const english: Record<string, string> = {
   "${types} 种 · ${total} 个": "${types} types · ${total} units",
   "本局没有完成研究。": "No research completed this game.",
 
-  // Transferts de ressources (sections « Sent by » / « Transactions »).
+  // Transferts de ressources (récapitulatif « Sent by » — v2 : la liste
+  // détaillée des transactions n'est plus affichée).
   资源转赠: "Resource transfers",
-  "回放数据不含直接的转账事件：以下捐赠由资源变动推断（同一 30 秒窗口内，接收方库存意外增加、给出方支出同步放大），金额按接收方实测。":
-    "Replays carry no direct transfer events: donations below are inferred from resource moves (within one 30 s window, an unexplained stock gain on the receiver matched by a spending spike on a teammate); amounts are measured on the receiver side.",
+  "回放不含直接的转账事件：以下金额由资源变动推断（同一 30 秒窗口内，接收方库存意外增加、且队友支出出现相应跳升），按接收方实测，单位为游戏资源；无法归到具体队友的变动不计入。":
+    "Replays carry no direct transfer events: totals below are inferred from resource moves (within one 30 s window, an unexplained stock gain on the receiver matched by a spending jump on a teammate); amounts are measured on the receiver side, in game resources; moves that cannot be pinned to a teammate are excluded.",
   "按玩家统计（共送出 ${n} 笔）": "Sent by (${n} transactions)",
   石器: "Stone",
   青铜: "Bronze",
@@ -31,20 +32,6 @@ export const english: Record<string, string> = {
   一般: "Fair",
   少量: "Small",
   "按总送出量评定": "Graded by total resources sent",
-  "交易记录（${n}）": "Transactions (${n})",
-  时间: "Time",
-  来自: "From",
-  数量: "Amount",
-  方向: "Direction",
-  去向: "To",
-  确定性: "Certainty",
-  极有可能: "Very likely",
-  有可能: "Likely",
-  "依据：给出方同期支出覆盖捐赠的程度与相对优势":
-    "Based on: how much of the donation the teammate's same-window spending covers, and by how much it dominates",
-  "食物转赠：${n}": "Food sent: ${n}",
-  "木材转赠：${n}": "Wood sent: ${n}",
-  "铁矿转赠：${n}": "Iron sent: ${n}",
   食物: "Food",
   木材: "Wood",
   铁矿: "Iron",

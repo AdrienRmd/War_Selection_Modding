@@ -15,10 +15,11 @@ export const french: Record<string, string> = {
   "${types} 种 · ${total} 个": "${types} types · ${total} unités",
   "本局没有完成研究。": "Aucune recherche terminée dans cette partie.",
 
-  // Transferts de ressources (sections « Sent by » / « Transactions »).
+  // Transferts de ressources (récapitulatif « Envoyés par joueur » — v2 :
+  // la liste détaillée des transactions n'est plus affichée).
   资源转赠: "Transferts de ressources",
-  "回放数据不含直接的转账事件：以下捐赠由资源变动推断（同一 30 秒窗口内，接收方库存意外增加、给出方支出同步放大），金额按接收方实测。":
-    "Les replays ne contiennent pas d'événements de transfert directs : les dons ci-dessous sont inférés des mouvements de ressources (sur une même fenêtre de 30 s, un gain de stock inexpliqué chez le receveur coïncide avec un pic de dépenses chez un coéquipier) ; les montants sont mesurés côté receveur.",
+  "回放不含直接的转账事件：以下金额由资源变动推断（同一 30 秒窗口内，接收方库存意外增加、且队友支出出现相应跳升），按接收方实测，单位为游戏资源；无法归到具体队友的变动不计入。":
+    "Les replays ne contiennent pas d'événements de transfert directs : les totaux ci-dessous sont inférés des mouvements de ressources (sur une même fenêtre de 30 s, un gain de stock inexpliqué chez le receveur coïncide avec un saut de dépenses chez un coéquipier) ; les montants sont mesurés côté receveur, en ressources du jeu ; les mouvements qu'on ne peut rattacher à aucun coéquipier sont exclus.",
   "按玩家统计（共送出 ${n} 笔）": "Envoyés par joueur (${n} transactions)",
   石器: "Pierre",
   青铜: "Bronze",
@@ -31,20 +32,6 @@ export const french: Record<string, string> = {
   一般: "Correct",
   少量: "Modique",
   "按总送出量评定": "Noté selon le total de ressources envoyées",
-  "交易记录（${n}）": "Transactions (${n})",
-  时间: "Heure",
-  来自: "De",
-  数量: "Montant",
-  方向: "Direction",
-  去向: "À",
-  确定性: "Certitude",
-  极有可能: "Très probable",
-  有可能: "Probable",
-  "依据：给出方同期支出覆盖捐赠的程度与相对优势":
-    "Critères : part du don couverte par les dépenses du coéquipier sur la même fenêtre, et avance sur les autres coéquipiers",
-  "食物转赠：${n}": "Nourriture envoyée : ${n}",
-  "木材转赠：${n}": "Bois envoyé : ${n}",
-  "铁矿转赠：${n}": "Fer envoyé : ${n}",
   食物: "Nourriture",
   木材: "Bois",
   铁矿: "Fer",

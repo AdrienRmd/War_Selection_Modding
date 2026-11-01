@@ -14,7 +14,11 @@ import {
   generosityOf,
   transferAgeBucket,
   MIN_TRANSFER,
-  ATTRIBUTION_MIN,
+  ATTRIBUTION_COVER,
+  ATTRIBUTION_JUMP,
+  BASELINE_WINDOWS,
+  GENEROUS_THRESHOLD,
+  FAIR_THRESHOLD,
 } from "@/lib/replay/transfers";
 
 /* ------------------------------------------------------------------ */
@@ -51,7 +55,10 @@ function fakeTeams(teamA: number[], teamB: number[]): Team[] {
   return [mk(0, teamA), mk(1, teamB)];
 }
 
-/** Conteneur multi-lignes avec une série par joueur (3 lignes). */
+/** Conteneur multi-lignes avec une série par joueur (3 lignes) — FIDÈLE
+ *  au conteneur réel : TimeLineMultiRowDataset démarre SANS point initial
+ *  (values = [] par ligne, cf. dataset.ts) : l'index 0 du conteneur est la
+ *  1re période et la boucle j≥1 de l'algorithme l'ignore (baseline). */
 function multiRowContainer(
   prefix: string,
   rowsByPlayer: number[][][],
@@ -75,11 +82,13 @@ function multiRowContainer(
   return container;
 }
 
-/** Revenu moteur arbitraire (10 k) par période — stable pour tous les tests.
- *  Déduit cumul récolté / stock courant d'une série de resSpent souhaitée :
- *  now_j = now_{j−1} + revenu − spent_j (reconstruction inverse du calcul
- *  réel resSpent = Δcumul − Δstock). */
-const SYNTH_INCOME = 10;
+/** Revenu moteur arbitraire (ressources/période) — échelle RÉELLE du jeu
+ *  v2 (ressources, plus de « k-unités »). La reconstruction part de la
+ *  baseline [0,0,0] du conteneur réel (index 0 ignoré par l'algorithme)
+ *  et déduit cumul récolté / stock courant de la série de resSpent
+ *  souhaitée : maintenant_j = maintenant_{j−1} + revenu − spent_j — les
+ *  deltas reconstruits par l'algorithme redonnent EXACTEMENT spent_j. */
+const SYNTH_INCOME = 300;
 
 function spentToCollectedNow(spentByPlayer: number[][][]): {
   collected: number[][][];
@@ -92,10 +101,14 @@ function spentToCollectedNow(spentByPlayer: number[][][]): {
     const col: number[][] = [[], [], []];
     const stk: number[][] = [[], [], []];
     let c = [0, 0, 0];
-    let s = [100, 100, 100]; // stock initial (période 0, ignorée par l'algo)
+    let s = [0, 0, 0]; // baseline du conteneur réel (index 0)
     for (let j = 0; j < spent.length; j++) {
       c = [c[0] + SYNTH_INCOME, c[1] + SYNTH_INCOME, c[2] + SYNTH_INCOME];
-      s = [s[0] + SYNTH_INCOME - spent[j][0], s[1] + SYNTH_INCOME - spent[j][1], s[2] + SYNTH_INCOME - spent[j][2]];
+      s = [
+        s[0] + SYNTH_INCOME - spent[j][0],
+        s[1] + SYNTH_INCOME - spent[j][1],
+        s[2] + SYNTH_INCOME - spent[j][2],
+      ];
       for (let k = 0; k < 3; k++) {
         col[k].push(c[k]);
         stk[k].push(s[k]);
@@ -148,13 +161,14 @@ function fakeReplay(
 /* ------------------------------------------------------------------ */
 
 describe("transferts — inférence sur replay synthétique", () => {
-  it("détecte un don simple : receveur −spent, donneur +spent, même tranche", () => {
-    // P0 donne 10k de nourriture à P1 pendant la tranche 2 (t=60 s).
-    // P0 : dépense 12 (10 du don + 2 d'entraînement) ; P1 : gain 10.
+  it("détecte un don simple : receveur −spent, donneur +spent (saute au-dessus de sa baseline)", () => {
+    // P0 donne 500 de nourriture à P1 pendant la tranche 2 (j=2).
+    // P0 : dépense 600 (100 d'entraînement + 500 du don, baseline 0) ;
+    // P1 : gain 500 ; P2 : dépense courante 100 (jump faible).
     const spent = [
-      [[0, 0, 0], [0, 0, 0], [12, 0, 0]], // P0
-      [[0, 0, 0], [0, 0, 0], [-10, 0, 0]], // P1
-      [[0, 0, 0], [0, 0, 0], [3, 0, 0]], // P2 (2e coéquipier, faible)
+      [[0, 0, 0], [0, 0, 0], [600, 0, 0]], // P0
+      [[0, 0, 0], [0, 0, 0], [-500, 0, 0]], // P1
+      [[0, 0, 0], [0, 0, 0], [100, 0, 0]], // P2 (2e coéquipier, faible)
     ];
     const replay = fakeReplay(fakePlayers(4), fakeTeams([0, 1, 2], [3]), spent);
     const result = analyzeTransfers(replay);
@@ -163,42 +177,81 @@ describe("transferts — inférence sur replay synthétique", () => {
     const e = result!.events[0];
     expect(e.fromPlayerId).toBe(0);
     expect(e.toPlayerId).toBe(1);
-    expect(e.amount).toBeCloseTo(10, 6);
+    expect(e.amount).toBeCloseTo(500, 6);
     expect(e.resourceIndex).toBe(0);
-    expect(e.certainty).toBe("veryLikely"); // 12 ≥ 0.9×10 et 12 ≥ 2×3
-    expect(e.donorSpend).toBeCloseTo(12, 6);
-    expect(e.timeMs).toBe(3 * period); // tranche j=2 → (j+1)×T
+    // spend 600 ≥ 0.9×500, jump 600 ≥ 0.9×500 et ≥ 2×jump(100)
+    expect(e.certainty).toBe("veryLikely");
+    expect(e.donorSpend).toBeCloseTo(600, 6);
+    expect(e.donorJump).toBeCloseTo(600, 6);
+    expect(e.timeMs).toBe(3 * period); // spent[2] → rows j=1 → (j+2)×T
+    expect(result!.rejectedByGuard).toBe(0);
   });
 
-  it("downgrade en « likely » quand un 2e coéquipier dépense presque autant", () => {
+  it("downgrade en « likely » quand un 2e coéquipier saute presque autant", () => {
     const spent = [
-      [[0, 0, 0], [0, 0, 0], [12, 0, 0]], // P0 donneur pressenti
-      [[0, 0, 0], [0, 0, 0], [-10, 0, 0]], // P1 receveur
-      [[0, 0, 0], [0, 0, 0], [7, 0, 0]], // P2 dépense presque autant → pas dominant
+      [[0, 0, 0], [0, 0, 0], [600, 0, 0]], // P0 donneur pressenti (jump 600)
+      [[0, 0, 0], [0, 0, 0], [-500, 0, 0]], // P1 receveur
+      [[0, 0, 0], [0, 0, 0], [350, 0, 0]], // P2 jump 350 : 600 < 2×350 → pas dominant
     ];
     const replay = fakeReplay(fakePlayers(4), fakeTeams([0, 1, 2], [3]), spent);
     const result = analyzeReplayEvents(replay);
-    expect(result[0].certainty).toBe("likely"); // 12 ≥ 2×7 = faux
+    expect(result[0].certainty).toBe("likely");
   });
 
   it("ignore les micro-gains sous MIN_TRANSFER (remboursements d'annulation)", () => {
     const spent = [
-      [[0, 0, 0], [0, 0, 0], [1, 0, 0]],
+      [[0, 0, 0], [0, 0, 0], [100, 0, 0]],
       [[0, 0, 0], [0, 0, 0], [-0.5, 0, 0]],
-      [[0, 0, 0], [0, 0, 0], [1, 0, 0]],
+      [[0, 0, 0], [0, 0, 0], [100, 0, 0]],
     ];
     const replay = fakeReplay(fakePlayers(4), fakeTeams([0, 1, 2], [3]), spent);
     expect(analyzeTransfers(replay)).toBeNull();
   });
 
-  it("n'attribue pas si aucun coéquipier ne dépense assez (ATTRIBUTION_MIN)", () => {
+  it("n'attribue pas si la dépense du coéquipier ne couvre pas le gain (couverture physique)", () => {
+    // gain 500 ; P0 dépense 400 < ATTRIBUTION_COVER×500 = 450 → rejet.
     const spent = [
-      [[0, 0, 0], [0, 0, 0], [0.4, 0, 0]], // dépense 0.4 < 0.5 × gain 10
-      [[0, 0, 0], [0, 0, 0], [-10, 0, 0]],
-      [[0, 0, 0], [0, 0, 0], [0.3, 0, 0]],
+      [[0, 0, 0], [0, 0, 0], [400, 0, 0]],
+      [[0, 0, 0], [0, 0, 0], [-500, 0, 0]],
+      [[0, 0, 0], [0, 0, 0], [300, 0, 0]],
     ];
     const replay = fakeReplay(fakePlayers(4), fakeTeams([0, 1, 2], [3]), spent);
     expect(analyzeTransfers(replay)).toBeNull();
+  });
+
+  it("n'attribue pas si la dépense est massive mais ROUTINIÈRE (pas de saut)", () => {
+    // Faux positif d'attribution v1 : un gros producteur qui dépense
+    // 600 à CHAQUE fenêtre ne « saute » pas quand P1 reçoit 500 — la v2
+    // ne crédite que les sauts (baseline = médiane des fenêtres voisines).
+    const bigRoutine = [600, 600, 600, 600, 600];
+    const spent = [
+      bigRoutine.map((v) => [v, 0, 0]), // P0 producteur (jump = 0 partout)
+      [0, 0, 0, -500, 0].map((v) => [v, 0, 0]), // P1 receveur (j=3)
+      [0, 0, 0, 0, 0].map((v) => [v, 0, 0]),
+    ];
+    const replay = fakeReplay(fakePlayers(4), fakeTeams([0, 1, 2], [3]), spent);
+    expect(analyzeTransfers(replay)).toBeNull();
+  });
+
+  it("GARDE-FOU : un don plus gros que le stock+revenu du donneur est rejeté et compté", () => {
+    // Cas pathologique façon v1 (« 18,8 M ») : équipe A — P1 gagne 5 000
+    // d'un coup ; P0 saute à 6 000 (couvre et domine) mais son stock en
+    // début de fenêtre + revenu = 600 + 300 = 900 < 5 000 → rejet.
+    // Équipe B — don légitime P3 → P4 (500) conservé.
+    const spent = [
+      [[0, 0, 0], [0, 0, 0], [6000, 0, 0]], // P0 : dépense 6 000 mais stock max 900
+      [[0, 0, 0], [0, 0, 0], [-5000, 0, 0]], // P1 : gain 5 000 « impossible »
+      [[0, 0, 0], [0, 0, 0], [0, 0, 0]], // P2
+      [[0, 0, 0], [0, 0, 0], [600, 0, 0]], // P3 : don légitime (jump 600)
+      [[0, 0, 0], [0, 0, 0], [-500, 0, 0]], // P4 : receveur légitime
+    ];
+    const replay = fakeReplay(fakePlayers(5), fakeTeams([0, 1, 2], [3, 4]), spent);
+    const result = analyzeTransfers(replay);
+    expect(result).not.toBeNull();
+    expect(result!.events.length).toBe(1); // seul le don plausible P3→P4 reste
+    expect(result!.events[0].fromPlayerId).toBe(3);
+    expect(result!.events[0].toPlayerId).toBe(4);
+    expect(result!.rejectedByGuard).toBe(1);
   });
 
   it("joueur mort (série courte) exclu des donneurs pressentis", () => {
@@ -206,8 +259,8 @@ describe("transferts — inférence sur replay synthétique", () => {
     // tranche 2 : seul P2 (vivant) peut être donneur.
     const spent = [
       [[0, 0, 0], [0, 0, 0]], // P0 : mort après t=30 s
-      [[0, 0, 0], [0, 0, 0], [-10, 0, 0]], // P1 receveur
-      [[0, 0, 0], [0, 0, 0], [11, 0, 0]], // P2 donneur
+      [[0, 0, 0], [0, 0, 0], [-500, 0, 0]], // P1 receveur
+      [[0, 0, 0], [0, 0, 0], [600, 0, 0]], // P2 donneur
     ];
     const replay = fakeReplay(fakePlayers(4), fakeTeams([0, 1, 2], [3]), spent);
     const result = analyzeReplayEvents(replay);
@@ -218,8 +271,8 @@ describe("transferts — inférence sur replay synthétique", () => {
   it("un don d'un coéquipier vers un joueur de l'AUTRE équipe est exclu", () => {
     // Même signal, mais P0/P2 équipe A, P1 équipe B : aucune transaction.
     const spent = [
-      [[0, 0, 0], [0, 0, 0], [12, 0, 0]],
-      [[0, 0, 0], [0, 0, 0], [-10, 0, 0]],
+      [[0, 0, 0], [0, 0, 0], [600, 0, 0]],
+      [[0, 0, 0], [0, 0, 0], [-500, 0, 0]],
       [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
     ];
     const replay = fakeReplay(fakePlayers(4), fakeTeams([0, 2], [1, 3]), spent);
@@ -228,8 +281,8 @@ describe("transferts — inférence sur replay synthétique", () => {
 
   it("FFA (équipes de 1) : aucune transaction possible", () => {
     const spent = [
-      [[0, 0, 0], [12, 0, 0]],
-      [[0, 0, 0], [-10, 0, 0]],
+      [[0, 0, 0], [600, 0, 0]],
+      [[0, 0, 0], [-500, 0, 0]],
     ];
     const replay = fakeReplay(fakePlayers(2), fakeTeams([0], [1]), spent);
     expect(analyzeTransfers(replay)).toBeNull();
@@ -237,29 +290,29 @@ describe("transferts — inférence sur replay synthétique", () => {
 
   it("agrège par donneur et par âge du donneur, badge de générosité", () => {
     // P0 donne 2 fois (bois puis fer), à des âges différents :
-    // tranche 2 (t=90 s, âge Bronze : recherche 3 prise à t=30 s),
-    // tranche 4 (t=150 s, âge Iron : recherche 1 prise à t=120 s).
+    // fenêtre j=0 (t=60 s, âge Bronze : recherche 3 prise à t=30 s),
+    // fenêtre j=2 (t=120 s, âge Iron : recherche 1 prise à t=90 s).
     const spent = [
       [
         [0, 0, 0],
-        [0, 40, 0], // donne 40 de bois pendant l'âge Bronze
+        [0, 450, 0], // donne 400 de bois (+50 de production) — âge Bronze
         [0, 0, 0],
-        [0, 0, 90], // donne 90 de fer pendant l'âge Iron
+        [0, 0, 950], // donne 900 de fer (+50) — âge Iron
       ],
       [
         [0, 0, 0],
-        [0, -40, 0],
+        [0, -400, 0],
         [0, 0, 0],
-        [0, 0, -90],
+        [0, 0, -900],
       ],
       [
         [0, 0, 0],
-        [0, 1, 0],
+        [0, 60, 0],
         [0, 0, 0],
-        [0, 0, 1],
+        [0, 0, 60],
       ],
     ];
-    const researches = new Map([[0, [{ id: 3, takenTime: 30_000 }, { id: 1, takenTime: 120_000 }]]]);
+    const researches = new Map([[0, [{ id: 3, takenTime: 30_000 }, { id: 1, takenTime: 90_000 }]]]);
     const replay = fakeReplay(fakePlayers(4), fakeTeams([0, 1, 2], [3]), spent, researches);
     const result = analyzeTransfers(replay);
     expect(result).not.toBeNull();
@@ -267,12 +320,12 @@ describe("transferts — inférence sur replay synthétique", () => {
     expect(result!.sentBy.length).toBe(1);
     const row = result!.sentBy[0];
     expect(row.playerId).toBe(0);
-    expect(row.byAge.bronze).toBeCloseTo(40, 6);
-    expect(row.byAge.iron).toBeCloseTo(90, 6);
+    expect(row.byAge.bronze).toBeCloseTo(400, 6);
+    expect(row.byAge.iron).toBeCloseTo(900, 6);
     expect(row.byAge.stone).toBe(0);
-    expect(row.total).toBeCloseTo(130, 6);
-    expect(row.generosity).toBe("small"); // 130 k < 500 k
-    // Certitudes : 40 ≥ 0.9×40 ✓ mais 40 ≥ 2×1 ✓ → veryLikely.
+    expect(row.total).toBeCloseTo(1300, 6);
+    expect(row.generosity).toBe("fair"); // 1 000 ≤ 1 300 < 10 000
+    // Certitudes : jump = dépense (baseline 0) ≥ 0.9×gain et ≥ 2×60.
     expect(result!.events.every((e) => e.certainty === "veryLikely")).toBe(true);
   });
 
@@ -286,18 +339,22 @@ describe("transferts — inférence sur replay synthétique", () => {
     expect(transferAgeBucket(6)).toBe("ir2");
   });
 
-  it("badges de générosité : seuils documentés 5 M / 500 k", () => {
-    expect(generosityOf(6000)).toBe("veryGenerous");
-    expect(generosityOf(5000)).toBe("veryGenerous");
-    expect(generosityOf(4999.99)).toBe("fair");
-    expect(generosityOf(500)).toBe("fair");
-    expect(generosityOf(499)).toBe("small");
+  it("badges de générosité : seuils v2 en ressources (10 000 / 1 000)", () => {
+    expect(generosityOf(11000)).toBe("veryGenerous");
+    expect(generosityOf(GENEROUS_THRESHOLD)).toBe("veryGenerous");
+    expect(generosityOf(9999.99)).toBe("fair");
+    expect(generosityOf(FAIR_THRESHOLD)).toBe("fair");
+    expect(generosityOf(999)).toBe("small");
     expect(generosityOf(0)).toBe("small");
   });
 
-  it("constantes : seuils stables (documentés dans le rapport)", () => {
-    expect(MIN_TRANSFER).toBe(2);
-    expect(ATTRIBUTION_MIN).toBe(0.5);
+  it("constantes v2 : seuils stables (documentés dans le rapport)", () => {
+    expect(MIN_TRANSFER).toBe(150); // aligné ws-stats (min transaction 150)
+    expect(ATTRIBUTION_COVER).toBe(0.9);
+    expect(ATTRIBUTION_JUMP).toBe(0.8);
+    expect(BASELINE_WINDOWS).toBe(3);
+    expect(GENEROUS_THRESHOLD).toBe(10000);
+    expect(FAIR_THRESHOLD).toBe(1000);
   });
 });
 
@@ -308,7 +365,7 @@ function analyzeReplayEvents(replay: ReplayParseSuccess) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Tests sur fixtures réelles — preuves de calibration                 */
+/* Tests sur fixtures réelles — preuves d'échelle et de calibration     */
 /* ------------------------------------------------------------------ */
 
 const REPLAYS_DIR = "/home/ubuntu/War-Selection/datasets/replays";
@@ -335,7 +392,7 @@ function loadReal(): Loaded[] {
   return out;
 }
 
-describe("transferts — fixtures réelles wsva (calibration du 01/11)", () => {
+describe("transferts — fixtures réelles wsva (réétalonnage v2 du 02/11)", () => {
   const loaded = loadReal();
   const byCode = (code: string) => loaded.find((l) => l.code === code);
 
@@ -343,41 +400,68 @@ describe("transferts — fixtures réelles wsva (calibration du 01/11)", () => {
     expect(loaded.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("8v8 Jd894wx6so9 : 55 transactions, top donneur ≈ 57,0 M (joueur 6)", () => {
+  it("8v8 Jd894wx6so9 : 40 transactions, top Vzgo (p6) ≈ 56,0 k", () => {
     const m = byCode("Jd894wx6so9");
     expect(m).toBeDefined();
     if (!m) return;
-    expect(m.transfers.events.length).toBe(55);
+    expect(m.transfers.events.length).toBe(40);
+    expect(m.transfers.rejectedByGuard).toBe(0); // données saines : le garde-fou ne tire pas
     const top = m.transfers.sentBy[0];
-    expect(top.playerId).toBe(6);
-    expect(top.total).toBeGreaterThan(56_000);
-    expect(top.total).toBeLessThan(58_000);
+    expect(top.playerId).toBe(6); // Vzgo
+    expect(top.total).toBeGreaterThan(55_000);
+    expect(top.total).toBeLessThan(57_000);
     expect(top.generosity).toBe("veryGenerous");
   });
 
-  it("7v7 HkvVncU3mq9 : 72 transactions, top donneur p13 ≈ 72,4 M, très IR2", () => {
+  it("7v7 HkvVncU3mq9 : 51 transactions, top kooooonono (p13) ≈ 70,9 k très IR2", () => {
     const m = byCode("HkvVncU3mq9");
     expect(m).toBeDefined();
     if (!m) return;
-    expect(m.transfers.events.length).toBe(72);
+    expect(m.transfers.events.length).toBe(51);
     const top = m.transfers.sentBy[0];
     expect(top.playerId).toBe(13);
-    expect(top.total).toBeGreaterThan(72_000);
-    expect(top.byAge.ir2).toBeGreaterThan(68_000);
+    expect(top.total).toBeGreaterThan(70_000);
+    expect(top.byAge.ir2).toBeGreaterThan(66_000);
   });
 
-  it("6v6 vjaltkPV6C6 : 70 transactions, totaux bornés (plausibilité)", () => {
+  it("6v6 vjaltkPV6C6 : 36 transactions, totaux bornés (plausibilité)", () => {
     const m = byCode("vjaltkPV6C6");
     expect(m).toBeDefined();
     if (!m) return;
-    expect(m.transfers.events.length).toBe(70);
-    expect(m.transfers.sentBy[0].total).toBeGreaterThan(36_000);
-    expect(m.transfers.sentBy[0].total).toBeLessThan(37_000);
+    expect(m.transfers.events.length).toBe(36);
+    expect(m.transfers.sentBy[0].total).toBeGreaterThan(35_000);
+    expect(m.transfers.sentBy[0].total).toBeLessThan(36_000);
     // Toutes les transactions : montant ≥ seuil, donneur ≠ receveur.
     for (const e of m.transfers.events) {
-      expect(e.amount).toBeGreaterThanOrEqual(2);
+      expect(e.amount).toBeGreaterThanOrEqual(150);
       expect(e.fromPlayerId).not.toBe(e.toPlayerId);
       expect(["veryLikely", "likely"]).toContain(e.certainty);
+    }
+  });
+
+  it("ÉCHELLE v2 : montants en unités de jeu — max < 19 k (la v1 affichait 70,9 M)", () => {
+    // Preuve d'échelle : brut replay en millièmes (100 000 → 100), les
+    // conteneurs tiennent des ressources réelles après ÷1000 de
+    // calcResourceMetrics ; la v1 multipliait ×1000 à l'affichage.
+    for (const { transfers } of loaded) {
+      for (const e of transfers.events) {
+        expect(e.amount).toBeLessThan(19_000);
+        expect(e.amount).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("GARDE-FOU structurel vérifié sur fixtures : montants couverts par dépense et saut", () => {
+    // Sur des données saines le garde-fou ne rejette rien (0 artefact) ;
+    // invariants : chaque montant est couvert par la dépense brute du
+    // donneur (on ne donne pas plus qu'on ne dépense) et par son saut de
+    // dépense (ATTRIBUTION_JUMP du gain).
+    for (const { transfers } of loaded) {
+      expect(transfers.rejectedByGuard).toBe(0);
+      for (const e of transfers.events) {
+        expect(e.donorSpend).toBeGreaterThanOrEqual(ATTRIBUTION_COVER * e.amount - 1e-6);
+        expect(e.donorJump).toBeGreaterThanOrEqual(ATTRIBUTION_JUMP * e.amount - 1e-6);
+      }
     }
   });
 
@@ -394,23 +478,25 @@ describe("transferts — fixtures réelles wsva (calibration du 01/11)", () => {
     }
   });
 
-  it("preuve ciblée : gros don vérifié manuellement sur HkvVncU3mq9 (p10 ← p12, 14,1 M de nourriture)", () => {
+  it("preuve ciblée : gros don vérifié manuellement sur HkvVncU3mq9 (p3 ← p2, 18,9 k de bois)", () => {
     const m = byCode("HkvVncU3mq9");
     expect(m).toBeDefined();
     if (!m) return;
-    // Vérifié sur le dump brut (période 93) : réception fac12 +14,1 M de
-    // nourriture (stock 0,57 M → 17,9 M) pendant que fac14 dépense 13,3 M
-    // (donneur retenu, devant fac15 qui dépense aussi 11,5 M — d'où la
-    // certitude « likely » et non « very likely », dominance < 2×).
+    // Vérifié sur le dump brut (période 114) : réception Rinne (p3)
+    // +18 875 de bois pendant que nuttawat (p2) dépense 23 648 (jump
+    // +23 544 au-dessus de sa baseline ~100) — « very likely ». C'est le
+    // montant que la v1 affichait « 18,9 M » : en unités réelles v2 il
+    // vaut 18 875 ressources.
     const big = m.transfers.events
-      .filter((e) => e.toPlayerId === 10 && e.resourceIndex === 0)
+      .filter((e) => e.toPlayerId === 3 && e.resourceIndex === 1)
       .sort((a, b) => b.amount - a.amount)[0];
     expect(big).toBeDefined();
     if (!big) return;
-    expect(big.fromPlayerId).toBe(12);
-    expect(big.amount).toBeGreaterThan(14_000);
-    expect(big.amount).toBeLessThan(14_100);
-    expect(big.timeMs).toBe(94 * 30000); // (j+2)×T, raw period 93
-    expect(big.certainty).toBe("likely");
+    expect(big.fromPlayerId).toBe(2);
+    expect(big.amount).toBeGreaterThan(18_870);
+    expect(big.amount).toBeLessThan(18_880);
+    expect(big.timeMs).toBe(115 * 30000); // rows[j=113] → (j+2)×T
+    expect(big.certainty).toBe("veryLikely");
+    expect(big.donorSpend).toBeGreaterThan(23_600);
   });
 });

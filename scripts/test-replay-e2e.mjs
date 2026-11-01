@@ -227,37 +227,21 @@ try {
   check("médailles affichées (lignes d'équipe)", (await page.locator(".player-medals img").count()) >= 1);
   check("icônes ressources jeu (food/wood/iron)", (await page.locator('td img[src*="/resource/"]').count()) >= 30);
 
-  /* ---- Transferts de ressources (V4) ---------------------------- */
+  /* ---- Transferts de ressources (V5 : récap seul, échelle ressources) -- */
   await page.waitForSelector(".transfers-panel", { timeout: 15000 });
   check(
-    "section transferts : caption « Sent by (55 transactions) »",
-    /Sent by \(55 transactions\)/.test((await page.locator(".transfers-table").first().textContent()) ?? ""),
+    "section transferts : caption « Sent by (40 transactions) »",
+    /Sent by \(40 transactions\)/.test((await page.locator(".transfers-table").first().textContent()) ?? ""),
   );
   check(
-    "section transferts : « Transactions (55) »",
-    /Transactions \(55\)/.test((await page.locator(".transfers-table").nth(1).textContent()) ?? ""),
+    "V5 : liste détaillée « Transactions » ABSENTE (récap seul)",
+    (await page.locator(".transfers-table").count()) === 1 &&
+      !/Transactions \(\d+\)/.test((await page.locator(".transfers-panel").textContent()) ?? ""),
   );
   check("badge Very generous présent", (await page.locator(".transfer-gen-veryGenerous").count()) >= 1);
-  check("certitudes Very likely + Likely affichées",
-    (await page.locator(".transfer-cert-veryLikely").count()) >= 1 &&
-    (await page.locator(".transfer-cert-likely").count()) >= 1);
-  check("flèches direction → dans les transactions",
-    (await page.locator(".transfers-table td").filter({ hasText: "→" }).count()) >= 50);
-  await page.waitForFunction(
-    () =>
-      Array.from(document.querySelectorAll(".transfers-panel img"))
-        .filter((i) => i.src.includes("/resource/"))
-        .every((i) => i.complete),
-    undefined,
-    { timeout: 10000 },
-  );
   check(
-    "icônes de ressource des transactions chargées (non cassées)",
-    await page.evaluate(() =>
-      Array.from(document.querySelectorAll(".transfers-panel img"))
-        .filter((i) => i.src.includes("/resource/"))
-        .every((i) => i.complete && i.naturalWidth > 0),
-    ),
+    "échelle v2 : total top donneur ≈ 56K ressources (plus de « M »)",
+    /56K|56\s?k|56,0\s?k/i.test((await page.locator(".transfers-table td.cell-strong").first().textContent()) ?? ""),
   );
 
   // Ligne dépliable : détail inline (une ligne AVEC médailles — dbat, MVP).
