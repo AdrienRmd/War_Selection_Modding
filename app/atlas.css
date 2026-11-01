@@ -862,8 +862,14 @@ button.account-link:disabled {
   align-items: center;
   gap: 10px;
   color: var(--primary);
+  /* Field Archive V3 : petites capitales espacées, tirets cadres de part
+     et d'autre (le libellé est déjà en capitales latines ; no-op sur zh). */
+  font-size: 12px;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
 }
-.page-title .eyebrow::before {
+.page-title .eyebrow::before,
+.page-title .eyebrow::after {
   content: "";
   width: 26px;
   height: 2px;
@@ -1570,8 +1576,12 @@ code {
 }
 .site-footer {
   border-top: 1px solid var(--border-soft);
+  /* Field Archive V3 : liseré ambré en tête de pied de page (symétrie du
+     filet d'en-tête) sur un voile olive-nuit très sombre. */
+  box-shadow: inset 0 1px 0 rgb(240 178 100 / 0.14);
   background:
-    radial-gradient(70% 120% at 12% 0%, rgb(240 178 100 / 0.045), transparent 55%), #141918;
+    radial-gradient(70% 120% at 12% 0%, rgb(240 178 100 / 0.045), transparent 55%),
+    linear-gradient(180deg, rgb(38 44 30 / 0.35), transparent 42%), #141918;
   padding: 0 4.5%;
   font-size: 14px;
   color: #b9c2ba;
@@ -2399,7 +2409,9 @@ code {
 .ladder-table thead th {
   position: sticky;
   top: 0;
-  background: var(--card-raised);
+  /* Field Archive V3 : lavage olive « carte d'état-major » sur l'en-tête
+     (texte muted-foreground sur fond sombre — contraste inchangé). */
+  background: color-mix(in srgb, var(--atlas-olive-deep) 55%, var(--card-raised));
   font-size: 12px;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -2410,7 +2422,7 @@ code {
   border-bottom: 0;
 }
 .ladder-table tbody tr:hover {
-  background: color-mix(in srgb, var(--accent) 45%, var(--card));
+  background: color-mix(in srgb, var(--atlas-olive) 32%, var(--card));
 }
 .ladder-table td.num,
 .ladder-table th.num {
@@ -2441,14 +2453,17 @@ code {
 tr.top-1 .rank-badge {
   background: var(--gradient-primary);
   color: var(--primary-foreground);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--atlas-olive) 75%, transparent);
 }
 tr.top-2 .rank-badge {
   background: color-mix(in srgb, var(--foreground) 72%, var(--muted));
   color: var(--background);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--atlas-olive) 60%, transparent);
 }
 tr.top-3 .rank-badge {
   background: color-mix(in srgb, var(--primary-strong) 45%, var(--muted));
   color: var(--foreground);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--atlas-olive) 45%, transparent);
 }
 .ladder-empty {
   text-align: center;

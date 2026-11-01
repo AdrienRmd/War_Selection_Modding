@@ -16,7 +16,7 @@ export async function AtlasHeader() {
           <img className="atlas-emblem" src="/atlas-emblem-96.png" alt="" width={44} height={44} />
           <span>
             WS <b>ATLAS</b>
-            <small>WAR SELECTION · COMMUNITY</small>
+            <small>WAR SELECTION · FIELD ARCHIVE</small>
           </span>
         </Link>
         <AtlasNav />
