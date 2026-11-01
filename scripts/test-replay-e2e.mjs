@@ -363,6 +363,64 @@ try {
   check("puces de métriques présentes (9)", (await page.locator(".timeline-header .chip").count()) === 9);
   await page.click('.timeline-header .chip >> nth=0'); // retour Impact
 
+  /* ---- Refonte « charts sombres » (03/11) — légende, info-bulle, largeur */
+  const stageSvgs = page.locator("figure.rp-stage svg.rp-chart");
+  check("3 graphiques de phases rendus", (await stageSvgs.count()) === 3);
+  const svgBox = await stageSvgs.first().boundingBox();
+  check("graphe de phase pleine largeur (≥ 600 px, pas 150)", !!svgBox && svgBox.width >= 600);
+  // Légende interactive : décocher PAR NOM retire SA série et estompe SON chip.
+  const legend = page.locator("figure.rp-stage").first().locator(".rp-legend-chip");
+  const chipCount = await legend.count();
+  check("légende joueur : un chip par joueur (8)", chipCount === 8);
+  const chipNames = await legend.allTextContents();
+  const pathsIn = () => page.locator("figure.rp-stage").first().locator("svg path").count();
+  const pathsBefore = await pathsIn();
+  const victim1 = chipNames[1].trim();
+  const victim2 = chipNames[6].trim();
+  check("chips distincts par nom", victim1 !== victim2 && victim1.length > 0);
+  await legend.filter({ hasText: victim1 }).first().click();
+  check(
+    `décocher « ${victim1} » : SON chip estompé (aria-pressed=false)`,
+    (await legend.filter({ hasText: victim1 }).first().getAttribute("aria-pressed")) === "false",
+  );
+  check(
+    `décocher « ${victim1} » : SA série quitte le graphe (-1 aire)`,
+    (await pathsIn()) === pathsBefore - 1,
+  );
+  check(
+    "les AUTRES chips restent actifs (pas de décalage d’état)",
+    (await legend.filter({ hasText: victim2 }).first().getAttribute("aria-pressed")) === "true",
+  );
+  // 2e joueur, ordre différent — le bug signalé (« ça met sur un autre »)
+  // ne doit pas se reproduire : assertion sur le NOM, jamais la position.
+  await legend.filter({ hasText: victim2 }).first().click();
+  check(
+    `décocher « ${victim2} » : 2 aires retirées au total`,
+    (await pathsIn()) === pathsBefore - 2,
+  );
+  const strike = await legend
+    .filter({ hasText: victim1 })
+    .first()
+    .evaluate((el) => getComputedStyle(el).textDecorationLine);
+  check("chip décoché : AUCUN barré (text-decoration)", strike === "none");
+  await legend.filter({ hasText: victim1 }).first().click();
+  await legend.filter({ hasText: victim2 }).first().click();
+  check("recocher : toutes les aires reviennent", (await pathsIn()) === pathsBefore);
+  // Info-bulle au survol : joueur + part + horloge.
+  const tip = page.locator(".rp-chart-tip");
+  const box = await stageSvgs.first().boundingBox();
+  if (box) await page.mouse.move(box.x + box.width * 0.6, box.y + box.height * 0.55);
+  await tip.first().waitFor({ state: "visible", timeout: 5000 });
+  check(
+    "info-bulle survol : nom + part %",
+    /%/.test((await tip.first().textContent()) ?? "") && (await tip.first().textContent() ?? "").length > 6,
+  );
+  // Ligne « Partie décidée » + pastille présentes (libellé traduit).
+  check(
+    "pastille « Game decided » sur le graphe",
+    ((await page.locator("figure.rp-stage").first().textContent()) ?? "").includes("Game decided"),
+  );
+
   // Menu Archives (header) ouvre toujours.
   await page.click("button[aria-label='Archives'], [aria-label='档案'] >> visible=true").catch(() => {});
   const archiveOpened =
@@ -523,6 +581,11 @@ try {
   check("cible tactile bouton principal ≥ 44 px", touch.main >= 44);
   check("cible tactile chevron ligne ≥ 34 px (zone ligne ≥ 44)", touch.open >= 34);
   check("cible tactile puce de métrique ≥ 36 px", touch.chip >= 36);
+  const mStageSvg = await mPage.locator("figure.rp-stage svg.rp-chart").first().boundingBox();
+  check(
+    "375 px : graphe de phase pleine largeur (≥ 250 px, rendu 1:1 lisible)",
+    !!mStageSvg && mStageSvg.width >= 250,
+  );
   const rows = mPage.locator("tr.team-table-main-row");
   check("tables scrollables en mobile", (await rows.count()) === 16);
   check("scroll horizontal table natif (table-scroll)", (await mPage.locator(".table-scroll").count()) >= 2);

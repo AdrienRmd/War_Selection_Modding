@@ -967,6 +967,48 @@
 /* Tables denses : filets fins entre lignes (units-table des onglets). */
 .rp .units-table td,.rp .units-table th{border-bottom:1px solid var(--edge)}
 .rp .units-table tbody tr:last-child td{border-bottom:0}
+/* ============================================================
+   Charts sombres (refonte 03/11) — lisibilité des graphiques replay/
+   profil sur le canvas Field Archive (#101413) :
+   . les SVG .rp-chart remplissent leur conteneur (l'ancienne grille
+     .timeline-chart-row 150px+1fr, pensée « label + chart » wsva,
+     enfermait nos figures seules dans la colonne de 150 px) ;
+   . légende interactive .rp-legend : chip estompé (opacité .45,
+     pastille vidée) SANS text-decoration:line-through — neutralise
+     aussi la règle vendor dormante .chart-legend-item (barré) ;
+   . info-bulle .rp-chart-tip (HTML superposé, non mise à l'échelle) ;
+   . courbe de points profil : encre/grille réhaussées (.graph-*).
+   Palette et dégradés : components/replay/chart-theme.ts.
+   ============================================================ */
+.rp .timeline-chart-row{grid-template-columns:minmax(0,1fr)}
+.rp .chart-frame{height:auto}
+.rp .rp-chart{display:block;width:100%;height:auto;cursor:crosshair;touch-action:pan-y}
+.rp .rp-chart-wrap{position:relative;min-width:0}
+.rp .rp-stage{margin:0;min-width:0}
+.rp .rp-stage-caption{margin-top:6px;color:var(--text-muted);font-size:12px;line-height:1.45}
+.rp .rp-legend{flex-wrap:wrap;gap:4px 8px;margin-top:10px;min-width:0;display:flex}
+.rp .rp-legend-chip{align-items:center;gap:6px;max-width:160px;min-width:0;padding:3px 10px;border:1px solid var(--edge);border-radius:999px;background:var(--panel-raised);color:var(--text-default);font:inherit;font-size:12px;cursor:pointer;display:inline-flex;transition:opacity .16s var(--ease-out),border-color .16s var(--ease-out)}
+.rp .rp-legend-chip:hover,.rp .rp-legend-chip:focus-visible{border-color:var(--edge-strong);outline:2px solid var(--focus-ring);outline-offset:1px}
+.rp .rp-legend-chip[aria-pressed="false"]{opacity:.45}
+.rp .rp-legend-chip[aria-pressed="false"]:hover,.rp .rp-legend-chip[aria-pressed="false"]:focus-visible{opacity:.8}
+.rp .rp-legend-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.rp .rp-legend-swatch{width:11px;height:11px;border-radius:3px;flex:none;border:1.5px solid #ffffff38}
+.rp .rp-legend-chip[aria-pressed="false"] .rp-legend-swatch{background:0 0!important;border-color:currentColor}
+.rp .rp-chart-tip{transform:translate(-50%,calc(-100% - 10px));pointer-events:none;background:#1d221cf2;border:1px solid #ffffff2e;border-radius:8px;padding:5px 10px;font-size:12px;color:#eef1e8;box-shadow:0 6px 18px #000a;white-space:nowrap;z-index:6;display:grid;gap:2px;position:absolute}
+.rp .rp-chart-tip strong{color:#fff;font-variant-numeric:tabular-nums}
+.rp .rp-chart-tip-swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+.rp .rp-chart-tip-clock{color:#aab3a0;font-variant-numeric:tabular-nums}
+/* Vendor dormant : décoché = estompé, JAMAIS barré (retour utilisateur). */
+.rp .chart-legend-item:has(.player-checkbox:not(:checked)) .player-chip{text-decoration:none;opacity:.45}
+.rp .chart-legend-item:has(.player-checkbox:not(:checked)):hover .player-chip,.rp .chart-legend-item:has(.player-checkbox:not(:checked)):focus-within .player-chip{opacity:.8}
+/* Courbe de points profil : grille/encre réhaussées pour le fond sombre. */
+.rp .points-panel .points-chart svg{min-width:0}
+.rp .graph-grid{stroke:#ffffff1a}
+.rp .graph-axis{stroke:#ffffff3d}
+.rp .graph-label{fill:#c8cfbf;font-size:12px}
+.rp .graph-line{fill:none;stroke:#ffd166;stroke-width:2.4px;stroke-linejoin:round}
+.rp .graph-dot{fill:#14161a;stroke:#ffd166;stroke-width:1.8px;cursor:pointer;transition:r .16s var(--ease-out)}
+.rp .graph-dot:hover{r:5.5}
 
 /* Override Field Archive (VB 02/11) — injecté par scripts/scope-wsva-css.mjs,
  * NE PAS ÉDITER À LA MAIN : régénérer via le script. */

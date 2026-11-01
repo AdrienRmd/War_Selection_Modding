@@ -39,6 +39,7 @@ import {
   TEAM_BLUE,
   TEAM_RED,
 } from "./replay-charts";
+import { playerSeriesId } from "./chart-theme";
 
 const MODE_LABELS: Record<string, { zh: string; en: string }> = {
   replayMatchTypeFFA: { zh: "混战", en: "Free for all" },
@@ -314,7 +315,11 @@ export function ReplayResult({
                   power={analysis.power}
                   winChanceBlue={analysis.winChanceBlue}
                   durationMs={match.duration}
-                  labels={{ blue: teamLabel(0), red: teamLabel(1) }}
+                  labels={{
+                    blue: teamLabel(0),
+                    red: teamLabel(1),
+                    winChance: l("胜率", "Win chance"),
+                  }}
                 />
               </div>
             </div>
@@ -394,6 +399,7 @@ export function ReplayResult({
                       caption={l("两队积分占比", "Share of each team's points")}
                       stageLabels={stageLabels}
                       decidedLabel={l("对局已定", "Game decided")}
+                      labels={{ blue: teamLabel(0), red: teamLabel(1) }}
                     />
                   </div>
                 </section>
@@ -830,6 +836,7 @@ function TimelineTeam({
   const series = useMemo(() => {
     const meta = TIMELINE_METRICS.find((m) => m.key === metric)!;
     return team.players.map((p, i) => ({
+      id: playerSeriesId(p.player.nickname, i),
       name: p.player.nickname,
       color: PLAYER_COLORS[i % PLAYER_COLORS.length],
       rate: meta.impact

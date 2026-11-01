@@ -12,6 +12,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "@/components/site-link";
 import { useBilingual, useI18n } from "@/components/i18n";
+import { useElementWidth } from "./replay-charts";
 import type { PlayerProfile, PeriodView } from "@/lib/player-profile";
 import { MEDAL_META, type MedalKey } from "@/lib/replay/medals";
 import {
@@ -463,80 +464,96 @@ function PointsChart({
 }) {
   const l = useBilingual();
   const steps = view.pointsCurve;
-  if (steps.length === 0) return null;
-  const W = 720;
-  const H = 240;
-  const padL = 44;
-  const padR = 16;
-  const padT = 18;
+  const [wrapRef, width] = useElementWidth<HTMLDivElement>();  if (steps.length === 0) return null;
+  /* Rendu 1:1 (viewBox = largeur mesurée) : textes à taille réelle,
+   * mode compact ≤ 520 px (2 graduations, marges réduites) — 375 px
+   * sans collision ni défilement. */
+  const W = Math.max(320, Math.round(width || 720));
+  const compact = W < 520;
+  const H = compact ? 205 : 250;
+  const padL = compact ? 44 : 52;
+  const padR = 14;
+  const padT = 16;
   const padB = 30;
-  const maxY = Math.max(...steps.map((s) => s.cumulative), 10);
+  const rawMax = Math.max(...steps.map((s) => s.cumulative), 10);
+  /* Axe Y en valeurs RONDES (pas naturel 1/2/5 × 10^k). */
+  const pow = 10 ** Math.floor(Math.log10(rawMax || 1));
+  const nice = [1, 2, 5, 10].map((k) => k * pow).find((v) => v >= rawMax) ?? 10 * pow;
+  const yTicks = compact ? [0, nice] : [0, nice / 2, nice];
+  const maxY = nice;
   const x = (i: number) =>
     steps.length === 1 ? padL : padL + (i / (steps.length - 1)) * (W - padL - padR);
   const y = (v: number) => padT + (1 - v / maxY) * (H - padT - padB);
   const pts = steps.map((s, i) => `${x(i)},${y(s.cumulative)}`).join(" ");
-  const gridValues = [0, 0.5, 1].map((r) => Math.round(maxY * r));
+  /* Échantillonnage des dates : ~5 (2 en compact), première et dernière
+   * toujours présentes, pas de collision. */
+  const every = Math.max(1, Math.ceil(steps.length / (compact ? 2 : 5)));
+  const dateTicks = steps.filter((_, i) => i % every === 0 || i === steps.length - 1);
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      role="img"
-      aria-label={l("积分曲线", "Points curve")}
-      style={{ width: "100%", height: "auto", display: "block" }}
-    >
-      {gridValues.map((v, i) => (
-        <g key={v}>
-          <line
-            x1={padL}
-            x2={W - padR}
-            y1={y(v)}
-            y2={y(v)}
-            stroke="#ffffff12"
-            className={i === 0 ? "graph-axis" : "graph-grid"}
-          />
-          <text x={padL - 8} y={y(v) + 4} textAnchor="end" className="graph-label">
-            {v}
-          </text>
-        </g>
-      ))}
-      {steps.map((s, i) =>
-        i % Math.max(1, Math.ceil(steps.length / 5)) === 0 || i === steps.length - 1 ? (
+    <div className="points-chart" ref={wrapRef}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label={l("\u79ef\u5206\u66f2\u7ebf", "Points curve")}
+        style={{ width: "100%", height: "auto", display: "block" }}
+      >
+        <defs>
+          <linearGradient id="rp-points-fade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ffd166" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#ffd166" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {yTicks.map((v, i) => (
+          <g key={v}>
+            <line
+              x1={padL}
+              x2={W - padR}
+              y1={y(v)}
+              y2={y(v)}
+              className={i === 0 ? "graph-axis" : "graph-grid"}
+            />
+            <text x={padL - 8} y={y(v) + 4} textAnchor="end" className="graph-label">
+              {v}
+            </text>
+          </g>
+        ))}
+        {dateTicks.map((s) => (
           <text
             key={s.code}
-            x={x(i)}
+            x={x(steps.indexOf(s))}
             y={H - 10}
-            textAnchor={i === 0 ? "start" : i === steps.length - 1 ? "end" : "middle"}
+            textAnchor={
+              s === dateTicks[0] ? "start" : s === dateTicks[dateTicks.length - 1] ? "end" : "middle"
+            }
             className="graph-label"
           >
             {dateFmt.format(new Date(s.at))}
           </text>
-        ) : null,
-      )}
-      <polygon
-        points={`${x(0)},${y(0)} ${pts} ${x(steps.length - 1)},${y(0)}`}
-        fill="url(#rp-points-fade)"
-      />
-      <defs>
-        <linearGradient id="rp-points-fade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffd04d" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#ffd04d" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polyline points={pts} className="graph-line" />
-      {steps.map((s, i) => (
-        <a
-          key={s.code}
-          href={`/replay?code=${encodeURIComponent(s.code)}`}
-          aria-label={l("${d}：第 ${n} 场后 ${p} 分。打开回放。", "${d}: ${p} points after game ${n}. Open the replay.")
-            .replace("${d}", dateFmt.format(new Date(s.at)))
-            .replace("${n}", String(i + 1))
-            .replace("${p}", String(s.cumulative))}
-        >
-          <circle cx={x(i)} cy={y(s.cumulative)} r={4} className="graph-dot" />
-        </a>
-      ))}
-    </svg>
+        ))}
+        <polygon
+          points={`${x(0)},${y(0)} ${pts} ${x(steps.length - 1)},${y(0)}`}
+          fill="url(#rp-points-fade)"
+        />
+        <polyline points={pts} className="graph-line" />
+        {steps.map((s, i) => (
+          <a
+            key={s.code}
+            href={`/replay?code=${encodeURIComponent(s.code)}`}
+            aria-label={l("${d}\uff1a\u7b2c ${n} \u573a\u540e ${p} \u5206\u3002\u6253\u5f00\u56de\u653e\u3002", "${d}: ${p} points after game ${n}. Open the replay.")
+              .replace("${d}", dateFmt.format(new Date(s.at)))
+              .replace("${n}", String(i + 1))
+              .replace("${p}", String(s.cumulative))}
+          >
+            <circle cx={x(i)} cy={y(s.cumulative)} r={4} className="graph-dot">
+              <title>{`${dateFmt.format(new Date(s.at))} — ${s.cumulative}`}</title>
+            </circle>
+          </a>
+        ))}
+      </svg>
+    </div>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Libellés                                                            */
