@@ -456,3 +456,55 @@
     gap: 8px;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Finitions 08/11 — filtres compactés sur mobile : à ≤760 px, le « mur de
+   boutons » des barres d'outils /units et /researches (groupes d'unités,
+   familles et sous-familles de recherches) devient UNE ligne de chips
+   défilables horizontalement. Desktop (>760 px) inchangé : le mur se
+   déploie en flex-wrap comme avant. Vérifié 375 px —
+   test-units-filters-mobile.mjs (ligne unique ~48 px, scroll horizontal,
+   chip active tappable via elementFromPoint, aucun débordement vertical). */
+@media (max-width: 760px) {
+  .units-toolbar {
+    gap: 10px;
+  }
+  .units-search {
+    flex-basis: 100%;
+  }
+  .units-factions {
+    flex-basis: 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    /* Masque dégradé aux deux bords : indique la suite hors champ sans
+       couper la chip active (le dégradé ne porte que sur le conteneur). */
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 14px,
+      #000 calc(100% - 14px),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 14px,
+      #000 calc(100% - 14px),
+      transparent 100%
+    );
+  }
+  .units-factions::-webkit-scrollbar {
+    display: none;
+  }
+  .units-factions button {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    white-space: nowrap;
+    min-height: 44px;
+    padding: 7px 13px;
+  }
+}
