@@ -197,7 +197,7 @@ export function UnitsBrowser({
           onClick={() => setSelectedId(null)}
         >
           <div
-            className="units-detail"
+            className="units-detail archive-corners"
             role="dialog"
             aria-modal="true"
             aria-label={unitName(selected)}
@@ -217,6 +217,13 @@ export function UnitsBrowser({
                 <h3>{unitName(selected)}</h3>
                 <UnitSubtitle unit={selected} index={index} />
                 <code>{selected.id}</code>
+                {/* Field Archive V2 : tampon « DOSSIER N° » avec l'index
+                    réel de l'unité (numéro de tête de son identifiant). */}
+                {Number.parseInt(selected.id, 10) > 0 ? (
+                  <span className="archive-stamp">
+                    {t(`档案编号 ${Number.parseInt(selected.id, 10)}`)}
+                  </span>
+                ) : null}
               </div>
               <button type="button" className="units-close" onClick={() => setSelectedId(null)}>
                 <X size={16} />

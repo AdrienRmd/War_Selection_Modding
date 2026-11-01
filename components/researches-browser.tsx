@@ -253,7 +253,7 @@ export function ResearchesBrowser({
           onClick={() => setSelected(null)}
         >
           <div
-            className="units-detail"
+            className="units-detail archive-corners"
             role="dialog"
             aria-modal="true"
             aria-label={localizedResearchName(selected, locale)}
@@ -282,6 +282,9 @@ export function ResearchesBrowser({
                 <code>
                   {l("游戏编号", "Game ID")} #{selected.gameId}
                 </code>
+                {/* Field Archive V2 : tampon « DOSSIER N° » avec l'index
+                    réel de la recherche (gameId du jeu). */}
+                <span className="archive-stamp">{t(`档案编号 ${selected.gameId}`)}</span>
               </div>
               <button type="button" className="units-close" onClick={() => setSelected(null)}>
                 <X size={16} />

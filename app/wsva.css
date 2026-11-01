@@ -873,3 +873,16 @@
 .rp .impact-timeline-cut{left:var(--timeline-start);width:var(--timeline-rest)}
 .rp .impact-timeline-decided{left:var(--timeline-start)}
 @keyframes rp-tab-panel-in{0%{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ============================================================
+   Field Archive (V2) — verdict « archivé » : cadre à coins cornés,
+   filigrane emblème et cachet incliné. Scopé .rp (pages résultat et
+   profil), harmonisé aux teintes bronze/or du canvas — contrastes et
+   graphes wsva inchangés.
+   ============================================================ */
+.rp .verdict-archive{position:relative;display:block;padding:var(--space-4) var(--space-4) var(--space-3);border:1px solid var(--edge);border-radius:var(--radius-panel);background:url("/atlas-emblem-watermark.png") right -14px bottom -14px/140px no-repeat,var(--panel-glass);padding-right:118px}
+.rp .verdict-archive::before,.rp .verdict-archive::after{content:"";position:absolute;width:20px;height:20px;border:2px solid var(--accent-bronze);opacity:.65;pointer-events:none}
+.rp .verdict-archive::before{top:8px;left:8px;border-right:0;border-bottom:0;border-top-left-radius:6px}
+.rp .verdict-archive::after{right:8px;bottom:8px;border-left:0;border-top:0;border-bottom-right-radius:6px}
+.rp .archive-cachet{position:absolute;top:12px;right:14px;transform:rotate(-6deg);padding:3px 9px;border:1.5px solid var(--accent-bronze);border-radius:4px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;white-space:nowrap;color:var(--gold);background:rgb(194 122 62 / .08)}
+.rp .verdict-archive + .label-text{margin-top:var(--space-3)}
+@media (width<=640px){.rp .verdict-archive{padding:var(--space-3) var(--space-3) var(--space-2);padding-right:var(--space-3)}.rp .archive-cachet{position:static;display:inline-flex;margin-top:var(--space-2);transform:rotate(-3deg)}}

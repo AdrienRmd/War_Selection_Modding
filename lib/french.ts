@@ -4,6 +4,8 @@ export const french: Record<string, string> = {
     "Essayez un autre nom ou type, ou effacez les filtres pour voir toutes les recherches.",
 
   浏览单位档案: "Parcourir les unités",
+  "档案编号 ${n}": "Dossier N° ${n}",
+  "已归档 ✓": "Archivé ✓",
   "换个名称或 ID 试试，或清除筛选查看全部单位。":
     "Essayez un autre nom ou identifiant, ou effacez les filtres pour voir toutes les unités.",
   清除筛选: "Effacer les filtres",

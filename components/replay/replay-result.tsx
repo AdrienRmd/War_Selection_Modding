@@ -118,16 +118,21 @@ export function ReplayResult({
   return (
     <div className="rp page-backdrop">
       <main className="page">
-        <h1 className="heading-1">
-          {winner !== null ? (
-            <span className={winner === 0 ? "team-name-blue" : "team-name-red"}>
-              {teamLabel(winner)}
-            </span>
-          ) : null}{" "}
-          {winner !== null
-            ? verdict.replace(teamLabel(winner), "").trim().replace(/[·]/, "").trim()
-            : verdict}
-        </h1>
+        {/* Field Archive V2 : verdict encadré (coins cornés + filigrane)
+            et cachet « Archivé ✓ » façon tampon incliné. */}
+        <header className="verdict-archive">
+          <h1 className="heading-1">
+            {winner !== null ? (
+              <span className={winner === 0 ? "team-name-blue" : "team-name-red"}>
+                {teamLabel(winner)}
+              </span>
+            ) : null}{" "}
+            {winner !== null
+              ? verdict.replace(teamLabel(winner), "").trim().replace(/[·]/, "").trim()
+              : verdict}
+          </h1>
+          <span className="archive-cachet">{l("已归档 ✓", "Archived ✓")}</span>
+        </header>
 
         {isLegacy ? (
           <p className="label-text">

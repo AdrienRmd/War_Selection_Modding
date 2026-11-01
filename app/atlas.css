@@ -2601,3 +2601,76 @@ tr.top-3 .rank-badge {
     flex-direction: column;
   }
 }
+
+/* ============================================================
+   Field Archive (V2) — ornements d'archive, discrets et légers.
+   Tampon « DOSSIER N° », coins cornés, liseré ambre des titres
+   de sections, filigrane emblème (fiches, via units.css).
+   ============================================================ */
+/* Liseré ambre sous les titres de sections : barre dégradée de 46 px,
+   marge basse négative → aucun décalage de mise en page (la barre
+   s'inscrit dans l'interligne existant titre → légende). */
+.section-head h2::after {
+  content: "";
+  display: block;
+  width: 46px;
+  height: 2px;
+  margin: 10px 0 -12px;
+  border-radius: 2px;
+  background: var(--gradient-primary);
+  opacity: 0.85;
+}
+/* Tampon d'archive : petit cadre ambré incliné, petites capitales
+   espacées. Couleur sépia « papier » garantissant ≥ 4,5:1 sur --card. */
+.archive-stamp {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  margin-top: 10px;
+  padding: 3px 9px;
+  border: 1.5px solid rgb(240 178 100 / 0.5);
+  border-radius: var(--radius-xs);
+  transform: rotate(-2deg);
+  transform-origin: left center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--atlas-sepia);
+  background: rgb(240 178 100 / 0.07);
+}
+/* Coins cornés d'archive (crochets haut-gauche / bas-droite) sur les
+   cartes clés : fiche unité, fiche recherche (même classe units-detail). */
+.archive-corners {
+  position: relative;
+}
+.archive-corners::before,
+.archive-corners::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgb(240 178 100 / 0.45);
+  pointer-events: none;
+}
+.archive-corners::before {
+  top: 9px;
+  left: 9px;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: var(--radius-xs);
+}
+.archive-corners::after {
+  right: 9px;
+  bottom: 9px;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: var(--radius-xs);
+}
+/* Filigrane emblème ATLAS en fond de corps de fiche (PNG pré-baissé à
+   ~4,5 % — aucune couche d'opacité au rendu). */
+.units-fiche {
+  background: url("/atlas-emblem-watermark.png") right 10px bottom 10px / 132px no-repeat;
+}
