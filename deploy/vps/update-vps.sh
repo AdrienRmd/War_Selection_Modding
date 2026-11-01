@@ -16,15 +16,27 @@ else
   npm run install:ci
 fi
 
-# 2. Build production.
+# 2. HOTFIX 31/10 (onglets Safari périmés) : archiver l'arborescence
+#    _next/static du build ACTUELLEMENT déployé AVANT que `npm run build`
+#    ne réécrive dist (les chunks des builds précédents devaient rester
+#    servis aux onglets déjà ouverts — cf. deploy/vps/preserve-static-assets.sh).
+echo '[update-vps] archivage du static du build courant...'
+bash "$(pwd)/deploy/vps/preserve-static-assets.sh" "$(pwd)" archive-current
+
+# 3. Build production.
 echo '[update-vps] build...'
 npm run build
 
-# 3. Redemarrage du service (sudo NOPASSWD).
+# 4. HOTFIX 31/10 : refusionner les chunks des builds précédents dans le
+#    nouveau dist (rotation : 5 derniers buildIds). Idempotent + journalisé.
+echo '[update-vps] préservation des chunks des builds précédents...'
+bash "$(pwd)/deploy/vps/preserve-static-assets.sh" "$(pwd)" restore-previous
+
+# 5. Redemarrage du service (sudo NOPASSWD).
 echo '[update-vps] restart ws-atlas...'
 sudo systemctl restart ws-atlas
 
-# 4. Health check.
+# 6. Health check.
 sleep 10
 code=$(curl -fsS -o /dev/null -w '%{http_code}' http://127.0.0.1:8787/)
 echo "[update-vps] health check 127.0.0.1:8787 -> $code"
