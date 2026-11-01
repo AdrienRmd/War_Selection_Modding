@@ -83,8 +83,9 @@ export function playerSeries(result: ReplayParseSuccess, name: string, player: P
   return (ds.values as number[]).map((v) => (Number.isFinite(v) ? v : 0));
 }
 
-/** Série multi-lignes d'un joueur — SANS point initial : index j ↔ (j+1)·T. */
-function playerMultiRow(
+/** Série multi-lignes d'un joueur — SANS point initial : index j ↔ (j+1)·T.
+ *  Exportée pour lib/replay/transfers.ts (inférence de dons entre alliés). */
+export function playerMultiRow(
   result: ReplayParseSuccess,
   name: string,
   player: Player,
