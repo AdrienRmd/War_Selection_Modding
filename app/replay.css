@@ -292,6 +292,94 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
+/* V4 fix UX — « 5 replays récemment soumis » : le code vit dans sa
+   pilule monospace (sélectionnable), nettement détachée du badge de
+   mode. Bug réel : badge collé au code (« rep-XXX6v6 » recopié tel quel
+   → « Format de code invalide »). Scopé .rp-recent : l'usage du span
+   .rp-recent-mode dans la file de modération (.replay-mod-item, thème
+   sombre) n'est pas affecté. */
+.rp-recent {
+  max-width: 680px;
+  margin: 40px auto 24px;
+  padding: 0 16px;
+}
+.rp-recent h2 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+.rp-recent ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rp-recent li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+  min-width: 0; /* anti-débordement grid/flex mobile */
+}
+.rp-recent-code {
+  /* Pilule code : monospace, fond et bordure propres — sélectionnable
+     en un geste (user-select:text), distincte de tout ce qui l'entoure. */
+  font-family: ui-monospace, "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--foreground);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  min-height: 32px;
+  cursor: pointer;
+  user-select: text;
+  -webkit-user-select: text;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.rp-recent-code:hover {
+  border-color: #94a39a;
+  background: #fbfaf7;
+}
+.rp-recent-code:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.rp-recent-sep {
+  /* Puce médiane : « code · 6v6 · MVP » — exclue de la sélection du code. */
+  color: #b3ada0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.rp-recent .rp-recent-mode {
+  /* Badge mode : puce distincte, détachée du code (marge gauche franche). */
+  flex: none;
+  margin-left: 4px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e4a31;
+  background: #e8f3ec;
+  border: 1px solid #bcd8c6;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.rp-recent .rp-recent-author {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  min-width: 0;
+  overflow-wrap: break-word; /* noms longs : pas de débordement 360 px */
+}
+
 /* V2 wsva (01/11) — compléments d'accessibilité tactile sur le design
    wsva scopé (.rp) : le chevron dépliant visuel fait 16 px chez wsva ;
    on l'entoure d'un padding transparent (cible 40 px, recommandation

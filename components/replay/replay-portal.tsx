@@ -31,6 +31,30 @@ interface RecentReplay {
 /** Cache mémoire des replays analysés, par code (rafraîchi à la session). */
 const replayCache = new Map<string, LoadedReplay>();
 
+/** Suffixe de mode tel qu'affiché par le badge (« 6v6 », « 10v10 »). */
+const MODE_SUFFIX = /^\d{1,2}v\d{1,2}$/;
+/** Code de replay complet : « rep- » + 11 caractères, ou 11 caractères nus. */
+const FULL_REPLAY_CODE = /^(?:rep-)?[A-Za-z0-9]{11}$/;
+
+/** Heuristique de sauvetage (UI seule — parseReplayCode, la lib partagée,
+ *  reste stricte) : les visiteurs recopient parfois le badge de mode collé
+ *  au code de la liste « récemment soumis » (« rep-vjaltkPV6C66v6 » — le
+ *  vrai code est rep-vjaltkPV6C6, « 6v6 » est le mode). On retire un
+ *  suffixe « NvN » (3 à 5 caractères, espaces tolérés) UNIQUEMENT si ce qui
+ *  reste forme un code complet (rep-+11 = 14 caractères, ou 11 nus) : un
+ *  code valide fait exactement 11 caractères, il ne peut donc jamais être
+ *  amputé (le reste serait trop court) — y compris s'il se termine
+ *  littéralement par « 6v6 », cas ambigu documenté et préservé. */
+export function stripGluedModeSuffix(input: string): string {
+  const trimmed = input.trim();
+  for (const suffixLen of [5, 4, 3]) {
+    const tail = trimmed.slice(-suffixLen);
+    const head = trimmed.slice(0, -suffixLen).trimEnd();
+    if (MODE_SUFFIX.test(tail) && FULL_REPLAY_CODE.test(head)) return head;
+  }
+  return trimmed;
+}
+
 export function ReplayPortal({
   initialCode = "",
   signedIn = false,
@@ -52,7 +76,9 @@ export function ReplayPortal({
 
   const analyze = useCallback(
     async (rawInput: string, scroll = true) => {
-      const normalized = parseReplayCode(rawInput);
+      // Sauvetage du badge de mode collé (cf. stripGluedModeSuffix) avant la
+      // validation stricte — sinon « rep-XXX6v6 » est rejeté comme invalide.
+      const normalized = parseReplayCode(stripGluedModeSuffix(rawInput));
       if (!normalized) {
         setError(
           l(
@@ -363,6 +389,11 @@ export function ReplayPortal({
                 >
                   rep-{item.code}
                 </button>
+                {/* Séparateur médian : le badge de mode ne fait PAS partie du
+                    code — l'utilisateur qui recopie ne doit plus le coller. */}
+                <span className="rp-recent-sep" aria-hidden="true">
+                  ·
+                </span>
                 <span className="rp-recent-mode">
                   {item.teamSize > 0
                     ? `${item.teamSize}v${item.teamSize}`

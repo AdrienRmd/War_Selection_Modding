@@ -129,6 +129,61 @@ try {
   check("aide code sensible à la casse", ((await page.textContent(".rp-hero-help")) ?? "").includes("case-sensitive"));
   check("replays récents (mock API)", (await page.textContent(".rp-recent"))?.includes("rep-Jd894wx6so9"));
 
+  /* ---- Fix UX V4 : code récent distinct du badge de mode ---------- */
+  check(
+    "code récent : le mode n'est pas accolé au code (bouton = code seul)",
+    ((await page.textContent(".rp-recent-code")) ?? "").trim() === "rep-Jd894wx6so9",
+  );
+  check(
+    "badge de mode distinct (« 8v8 »)",
+    ((await page.textContent(".rp-recent .rp-recent-mode")) ?? "").trim() === "8v8",
+  );
+  const sep = await page.evaluate(() => {
+    const btn = document.querySelector(".rp-recent-code");
+    const mode = document.querySelector(".rp-recent .rp-recent-mode");
+    if (!btn || !mode) return null;
+    const b = btn.getBoundingClientRect();
+    const m = mode.getBoundingClientRect();
+    const cs = getComputedStyle(btn);
+    return {
+      gap: m.left - b.right,
+      pill: cs.backgroundColor !== "rgba(0, 0, 0, 0)",
+      select: cs.userSelect,
+    };
+  });
+  check(
+    "badge détaché du code (≥ 8 px), code en pilule sélectionnable",
+    !!sep && sep.gap >= 8 && sep.pill && sep.select === "text",
+  );
+  // Comportement conservé : le clic sur une carte récente analyse le code.
+  await page.click(".rp-recent-code");
+  await page.waitForSelector(".rp .heading-1", { timeout: 30000 });
+  check("clic carte récente analyse toujours", true);
+  // Sauvetage à la saisie : code + mode collé → code normalisé, pas d'erreur de format.
+  await page.fill(".rp-form input", "rep-Jd894wx6so98v8");
+  await page.click(".rp-submit-main");
+  // NB : pas de générique TS (querySelector<X>) dans les fns sérialisées —
+  // V8 le parse comme des comparaisons chaînées et la condition vaut
+  // silencieusement false (constaté : timeout waitForFunction).
+  await page.waitForFunction(
+    () => {
+      const input = document.querySelector(".rp-form input");
+      return input instanceof HTMLInputElement && input.value === "Jd894wx6so9";
+    },
+    undefined,
+    { timeout: 15000 },
+  );
+  check("suffixe de mode collé retiré à la saisie (input normalisé)", true);
+  // Contrôle négatif : code absent du mock + mode collé → erreur « n'existe
+  // pas » de l'API (le format a PASSÉ), pas « Format de code invalide ».
+  await page.fill(".rp-form input", "rep-HkvVncU3mq97v7");
+  await page.click(".rp-submit-main");
+  await page.waitForSelector(".rp-error", { timeout: 15000 });
+  check(
+    "code collé accepté par le format (erreur API replay introuvable, pas format invalide)",
+    ((await page.textContent(".rp-error")) ?? "").includes("Replay does not exist"),
+  );
+
   await page.fill(".rp-form input", "rep-Jd894wx6so9");
   await page.click(".rp-submit-main");
   await page.waitForSelector(".rp .heading-1", { timeout: 30000 });
@@ -315,6 +370,13 @@ try {
   await mPage.waitForSelector(".rp .heading-1", { timeout: 30000 });
   const scrollW = await mPage.evaluate(() => document.scrollingElement.scrollWidth);
   check("375 px sans débordement horizontal", scrollW <= 376);
+  const mSep = await mPage.evaluate(() => {
+    const btn = document.querySelector(".rp-recent-code");
+    const mode = document.querySelector(".rp-recent .rp-recent-mode");
+    if (!btn || !mode) return null;
+    return mode.getBoundingClientRect().left - btn.getBoundingClientRect().right;
+  });
+  check("375 px : badge mode détaché du code (≥ 8 px)", mSep !== null && mSep >= 8);
   const touch = await mPage.evaluate(() => {
     const btn = document.querySelector(".chevron-button");
     const main = document.querySelector(".rp-submit-main");
