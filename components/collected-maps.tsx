@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Map, Search, Copy, ArrowUpRight, Pencil, ClipboardList } from "lucide-react";
 import { collectionLabels, type CollectedMap } from "@/lib/collection";
+import { mapName, mapNote, mapSearchExtra } from "@/lib/collection-i18n";
 
 export function CopyMapCode({ code }: { code: string }) {
   const { locale, t } = useI18n();
@@ -47,13 +48,12 @@ export function CollectedMaps({
 }) {
   const { locale, t } = useI18n();
   const l = useBilingual();
-  const en = locale !== "zh";
   const label = (pair: readonly [string, string] | undefined) =>
     pair ? (locale === "zh" ? pair[0] : t(pair[1])) : "";
   const [query, setQuery] = useState(""),
     [filter, setFilter] = useState("all"),
     [playerFilter, setPlayerFilter] = useState("all"),
-    // Tri du listing (finitions 08/11) : « recent » (défaut) = ordre d'import
+    // Tri du listing (finitions 01/11) : « recent » (défaut) = ordre d'import
     // décroissant — collected_at est uniforme (2026-09-22, date d'import), ce
     // n'est PAS un signal de fraîcheur par carte ; la mention discrète sous la
     // barre l'assume. Persisté en localStorage (leçon 16), lu APRÈS montage
@@ -78,7 +78,7 @@ export function CollectedMaps({
       /* stockage indisponible (navigation privée) : tri non persisté */
     }
   };
-  // Filtre « Joueurs : NvN » (finitions 08/11) — construit sur les formats
+  // Filtre « Joueurs : NvN » (finitions 01/11) — construit sur les formats
   // RÉELS des données servies : champ players, N = players/2 équipes quand il
   // est pair. Les cartes sans nombre (et les comptes impairs — équipes
   // asymétriques, ex. 15) ne forment pas de groupe NvN et restent dans
@@ -116,6 +116,9 @@ export function CollectedMaps({
         m.mods,
         m.relation_note,
         m.relation_note_en,
+        // Recherche trilingue (chantier 4c) : le dictionnaire ajoute les
+        // noms/notes FR et les corrections EN au corpus cherchable.
+        mapSearchExtra(m),
       ]
         .join(" ")
         .toLowerCase()
@@ -127,7 +130,7 @@ export function CollectedMaps({
         filter === m.category) &&
       playerMatch(m),
   );
-  // Tri appliquée au rendu (finitions 08/11) : récent = ordre d'import
+  // Tri appliquée au rendu (finitions 01/11) : récent = ordre d'import
   // décroissant (source_order) ; A→Z = locale du visiteur sur le titre
   // affiché (repli sur le code de partage si la fiche n'a pas de nom) ;
   // testées d'abord = tout statut ≠ « 待实测 » avant les non testées,
@@ -136,7 +139,7 @@ export function CollectedMaps({
     const list = [...matches];
     if (sort === "az") {
       const coll = locale === "zh" ? "zh-Hans-CN" : locale;
-      const titleOf = (m: CollectedMap) => (en ? m.title_en || m.title : m.title) || m.map_code;
+      const titleOf = (m: CollectedMap) => mapName(m, locale);
       list.sort((a, b) => titleOf(a).localeCompare(titleOf(b), coll, { numeric: true }));
     } else if (sort === "tested") {
       list.sort(
@@ -252,8 +255,9 @@ export function CollectedMaps({
       )}
       <div className="collection-grid">
         {sortedMatches.slice(0, limit).map((m) => {
-          const title =
-            (en && m.title_en ? m.title_en : m.title) || l("名称待补充", "Unidentified map");
+          // Nom public trilingue (dictionnaire → données → défaut « Carte <code> »
+          // localisé) — plus jamais « Nom à compléter » en front public.
+          const title = mapName(m, locale);
           return (
             <article className="collection-card" key={m.id}>
               <Link
@@ -299,7 +303,7 @@ export function CollectedMaps({
                   </Link>
                 </h3>
                 <p>
-                  {(en ? m.summary_en || m.summary : m.summary) ||
+                  {mapNote(m, locale) ||
                     l(
                       "已收录地图码及现有预览，名称、作者与玩法等待补充。",
                       "Saved code and available preview only. Name, author and rules need confirmation.",

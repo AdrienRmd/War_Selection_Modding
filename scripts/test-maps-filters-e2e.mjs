@@ -176,6 +176,55 @@ check(
   JSON.stringify(sortOptions),
 );
 
+// — Fiches trilingues (finitions 01/11, chantier 4) —
+// Échantillon FR : titres sans CJK, sans « Carte non identifiée », recherche FR
+// et EN via le dictionnaire. (Re-localisation des contrôles après rechargement.)
+const playersSelect3 = page.locator("select[aria-label='Filtrer par nombre de joueurs']");
+await playersSelect3.selectOption({ index: 0 }); // Joueurs : tous
+await page.locator("select[aria-label='Ordre de tri']").selectOption("az");
+await page.waitForTimeout(300);
+await page.locator(".collection-card h3 a").first().waitFor();
+const sampleTitles = await page.locator(".collection-card h3 a").allTextContents();
+check(
+  "FR : aucun titre de carte avec caractères chinois résiduels (échantillon affiché)",
+  sampleTitles.every((t) => !/[\u4e00-\u9fff]/.test(t)),
+  `(${sampleTitles.length} titres)`,
+);
+check(
+  "FR : plus aucun « Carte non identifiée » en titre",
+  sampleTitles.every((t) => !/non identifi/i.test(t)),
+);
+// Défaut propre : filtre « Nom à compléter » (fiches sans nom) → tous « Carte <code> ».
+await page
+  .locator("select[aria-label='Filtrer les cartes sauvegardées']")
+  .selectOption("unknown");
+await page.waitForTimeout(300);
+const untitledTitles = await page.locator(".collection-card h3 a").allTextContents();
+check(
+  "FR : défaut propre « Carte <code> » présent sur les fiches sans nom",
+  untitledTitles.some((t) => /^Carte map-[0-9a-f]+$/.test(t.trim())) &&
+    untitledTitles.every((t) => !/non identifi/i.test(t)),
+  `(${untitledTitles.filter((t) => /^Carte map-/.test(t.trim())).length} « Carte <code> » sur ${untitledTitles.length})`,
+);
+await page
+  .locator("select[aria-label='Filtrer les cartes sauvegardées']")
+  .selectOption("all");
+// Recherche trilingue : FR (dictionnaire) et EN (données) → résultats.
+const searchBox = page.locator("input[aria-label='Rechercher des cartes sauvegardées']");
+await searchBox.fill("bataille de stalingrad");
+await page.waitForTimeout(300);
+let results = Number((await counter.innerText()).match(/\d+/)?.[0] ?? 0);
+let first = (await page.locator(".collection-card h3 a").first().innerText()).trim();
+check("recherche FR « bataille de stalingrad » → au moins 1 résultat", results >= 1, `(${results})`);
+check("recherche FR : 1ʳᵉ carte = Bataille de Stalingrad (dictionnaire)", /Bataille de Stalingrad/.test(first), `(${first})`);
+await searchBox.fill("westerplatte");
+await page.waitForTimeout(300);
+results = Number((await counter.innerText()).match(/\d+/)?.[0] ?? 0);
+first = (await page.locator(".collection-card h3 a").first().innerText()).trim();
+check("recherche EN « westerplatte » → 1 résultat, titre nettoyé", results === 1 && first === "Westerplatte", `(${first})`);
+await searchBox.fill("");
+await page.waitForTimeout(200);
+
 await page.close();
 await browser.close();
 console.log(`\nOK — ${report.length} contrôles e2e filtre Joueurs NvN`);

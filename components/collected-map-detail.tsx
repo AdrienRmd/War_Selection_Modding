@@ -4,12 +4,16 @@ import Link from "@/components/site-link";
 import { T, useBilingual, useI18n } from "@/components/i18n";
 import { CopyMapCode } from "@/components/collected-maps";
 import { collectionLabels, type CollectedMap } from "@/lib/collection";
+import { mapName, mapNote } from "@/lib/collection-i18n";
 import { ArrowLeft, Pencil, ClipboardList } from "lucide-react";
 export function CollectedMapDetail({ map: m, admin }: { map: CollectedMap; admin: boolean }) {
   const { locale } = useI18n();
   const l = useBilingual();
   const en = locale !== "zh";
-  const title = (en ? m.title_en || m.title : m.title) || l("名称待补充", "Unidentified map");
+  // Nom et note publics trilingues (chantier 4c) : dictionnaire → données →
+  // défaut propre « Carte <code> » ; les mentions « unconfirmed » du titre
+  // sont retirées du rendu public (conservées dans les données et l'admin).
+  const title = mapName(m, locale);
   return (
     <>
       <Link href="/maps#collection" className="back-link">
@@ -22,7 +26,7 @@ export function CollectedMapDetail({ map: m, admin }: { map: CollectedMap; admin
             <T text="SAVED MAP /" /> {m.map_code}
           </p>
           <h1>{title}</h1>
-          <p>{en ? m.summary_en || m.summary : m.summary}</p>
+          <p>{mapNote(m, locale)}</p>
         </div>
         <span className={`collection-state state-${m.test_status}`}>
           {collectionLabels[m.test_status] &&
