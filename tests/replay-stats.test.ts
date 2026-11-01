@@ -62,10 +62,37 @@ const digestOf = (overrides: Partial<ReplayDigest> = {}): ReplayDigest => ({
   ...overrides,
 });
 
+/** Ligne du registre V3 (colonnes de replay_player_games, ordre du INSERT). */
+interface LedgerRow {
+  code: string;
+  season: string;
+  category: string;
+  player_name: string;
+  won: number;
+  mvp: number;
+  impact_pct: number;
+  mmr: number | null;
+  kills: number;
+  units_lost: number;
+  points: number;
+  region: string | null;
+  bronze_nation: number | null;
+  last_nation: number | null;
+  last_age_research: number | null;
+  medals: string;
+  units_by_age: string;
+  age_reach: string;
+  started_at: string;
+  duration_s: number;
+  team_size: number;
+  mode_key: string;
+}
+
 interface State {
   replays: ReplayRow[];
   results: ReplayResultRow[];
   stats: PlayerStatsRow[];
+  ledger: LedgerRow[];
 }
 
 function makeDb(state: State) {
@@ -186,6 +213,48 @@ function makeDb(state: State) {
             last_played: String(last),
           });
         }
+        return { meta: { changes: 1 } };
+      }
+      if (s.startsWith("INSERT INTO replay_player_games")) {
+        // args suivent l'ordre du INSERT de ledgerStatements.
+        const row: LedgerRow = {
+          code: String(args[0]),
+          season: String(args[1]),
+          category: String(args[2]),
+          player_name: String(args[3]),
+          won: Number(args[4]),
+          mvp: Number(args[5]),
+          impact_pct: Number(args[6]),
+          mmr: (args[7] as number | null) ?? null,
+          kills: Number(args[8]),
+          units_lost: Number(args[9]),
+          points: Number(args[10]),
+          region: (args[11] as string | null) ?? null,
+          bronze_nation: (args[12] as number | null) ?? null,
+          last_nation: (args[13] as number | null) ?? null,
+          last_age_research: (args[14] as number | null) ?? null,
+          medals: String(args[15] ?? "[]"),
+          units_by_age: String(args[16] ?? "[]"),
+          age_reach: String(args[17] ?? "[]"),
+          started_at: String(args[18]),
+          duration_s: Number(args[19]),
+          team_size: Number(args[20]),
+          mode_key: String(args[21] ?? ""),
+        };
+        const idx = state.ledger.findIndex(
+          (r) => r.code === row.code && r.player_name === row.player_name,
+        );
+        if (idx >= 0) state.ledger[idx] = row;
+        else state.ledger.push(row);
+        return { meta: { changes: 1 } };
+      }
+      if (s.startsWith("DELETE FROM replay_player_games WHERE code = ?")) {
+        const before = state.ledger.length;
+        state.ledger = state.ledger.filter((r) => r.code !== String(args[0]));
+        return { meta: { changes: before - state.ledger.length } };
+      }
+      if (s.startsWith("DELETE FROM replay_player_games")) {
+        state.ledger = [];
         return { meta: { changes: 1 } };
       }
       if (s.startsWith("UPDATE replay_results SET aggregated_at = ? WHERE code = ?")) {
@@ -329,7 +398,7 @@ const submitBody = (code: string, digest?: unknown) => ({
 });
 
 beforeEach(() => {
-  state = { replays: [], results: [], stats: [] };
+  state = { replays: [], results: [], stats: [], ledger: [] };
   calls = [];
   envStub.DB = makeDb(state);
   envStub.BUCKET = {};
@@ -425,6 +494,99 @@ describe("soumission avec digest", () => {
       await call("POST", "/api/replay/submit", submitBody(code, digestOf()));
     }
     expect(state.replays.filter((r) => r.status === "pending")).toHaveLength(3);
+  });
+});
+
+describe("registre profil joueur (V3, migration 0013)", () => {
+  const digestV2: ReplayDigest = {
+    ...digestOf(),
+    players: [
+      { n: "Vzgo", w: 0, m: 0, k: 791, l: 477, r: 138, s: 26, bn: 2, ln: 2, la: 1, md: ["deserter"] },
+      { n: "dbat", w: 1, m: 1, k: 490, l: 244, r: 201, s: 84, bn: 3, ln: 13, la: 59, md: ["champion", "farmer"] },
+    ],
+    unitsByAge: [["Vzgo", [["stone", "WarSelection/1/pathfinder", 12]]]],
+    ageReach: [["Vzgo", [[1, 794_000]]]],
+  };
+
+  /** Sème replays+results publiés (chaque test repart d'un état vierge). */
+  const seedLedgerFixture = (aggregated: string | null) => {
+    state.replays.push({
+      code: "Ledger0001A",
+      team_size: 6,
+      mvp_name: "dbat",
+      mode_key: "replayMatchTypeTeamMatch",
+      owner_id: AUTHOR,
+      status: "published",
+      created_at: "2026-11-01T10:00:00.000Z",
+      moderated_at: null,
+      note: null,
+    });
+    state.results.push({
+      code: "Ledger0001A",
+      season: "2026-11",
+      category: "big",
+      started_at: "2026-11-01T09:00:00.000Z",
+      duration_s: 907,
+      mode_key: "replayMatchTypeTeamMatch",
+      team_size: 6,
+      region: "europe",
+      map_code: null,
+      data: JSON.stringify(digestV2),
+      updated_at: "2026-11-01T10:00:00.000Z",
+      aggregated_at: aggregated,
+    });
+  };
+
+  it("applyReplayStats écrit une ligne registre par joueur (champs V2 inclus)", async () => {
+    seedLedgerFixture(null);
+    await applyReplayStats("Ledger0001A");
+    expect(state.ledger).toHaveLength(2);
+    const dbat = state.ledger.find((r) => r.player_name === "dbat")!;
+    expect(dbat.won).toBe(1);
+    expect(dbat.mvp).toBe(1);
+    expect(dbat.impact_pct).toBe(84);
+    expect(dbat.mmr).toBe(201);
+    expect(dbat.bronze_nation).toBe(3);
+    expect(dbat.last_nation).toBe(13);
+    expect(dbat.last_age_research).toBe(59);
+    expect(JSON.parse(dbat.medals)).toEqual(["champion", "farmer"]);
+    const vzgo = state.ledger.find((r) => r.player_name === "Vzgo")!;
+    expect(JSON.parse(vzgo.units_by_age)).toEqual([["stone", "WarSelection/1/pathfinder", 12]]);
+    expect(JSON.parse(vzgo.age_reach)).toEqual([[1, 794_000]]);
+    // Idempotent : re-appel sans effet (garde aggregated_at).
+    await applyReplayStats("Ledger0001A");
+    expect(state.ledger).toHaveLength(2);
+  });
+
+  it("removeReplayStats purge le registre du replay retiré", async () => {
+    seedLedgerFixture(null);
+    await applyReplayStats("Ledger0001A");
+    expect(state.ledger).toHaveLength(2);
+    await removeReplayStats("Ledger0001A");
+    expect(state.ledger).toHaveLength(0);
+  });
+
+  it("rebuildPlayerStats reconstruit le registre depuis les digests stockés", async () => {
+    seedLedgerFixture(null);
+    const result = await rebuildPlayerStats();
+    expect(result.replays).toBe(1);
+    expect(state.ledger).toHaveLength(2);
+    expect(state.ledger.every((r) => r.code === "Ledger0001A")).toBe(true);
+  });
+
+  it("cleanDigest valide les champs V2 (bornes, clés de médailles, buckets)", () => {
+    const clean = cleanDigest(JSON.parse(JSON.stringify(digestV2)));
+    expect(clean?.players[0].md).toEqual(["deserter"]);
+    expect(clean?.unitsByAge?.[0][1][0]).toEqual(["stone", "WarSelection/1/pathfinder", 12]);
+    // Médaille inconnue ignorée silencieusement, bucket inconnu rejeté.
+    const dirty = JSON.parse(JSON.stringify(digestV2)) as Record<string, unknown>;
+    (dirty.players as Array<Record<string, unknown>>)[0].md = ["champion", "nope"];
+    (dirty.unitsByAge as Array<[string, Array<[string, string, number]>]>)[0][1] = [
+      ["nope", "WarSelection/1/worker", 3],
+    ];
+    const cleaned = cleanDigest(dirty)!;
+    expect(cleaned.players[0].md).toEqual(["champion"]);
+    expect(cleaned.unitsByAge).toHaveLength(0); // bucket inconnu → entrée rejetée
   });
 });
 

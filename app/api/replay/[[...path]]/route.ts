@@ -51,7 +51,10 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
 
     if (req.method === "POST" && action === "submit") {
       // Consomme le corps borné AVANT tout retour d'autorisation.
-      const bytes = await limitedBody(req, 4096);
+      // V3 (01/11) : 32 768 o — le digest v2 (médailles, unités par âge,
+      // records d'âge par joueur, borné côté client et cleanDigest) mesure
+      // ~11 Ko sur un 8v8 réel ; pire cas 32 joueurs ≈ 30 Ko.
+      const bytes = await limitedBody(req, 32768);
       sameOrigin(req);
       if (!user) throw new HttpError(401, "请先登录。 / Please sign in.");
       let body: unknown;

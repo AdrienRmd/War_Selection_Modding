@@ -26,7 +26,7 @@
  *    replays (statut published) + replay_results — idempotent, exposé via
  *    POST /api/replay/stats-rebuild (admin). */
 import { bindings, HttpError } from "@/lib/atlas-server";
-import type { DigestPlayer, ReplayDigest } from "@/lib/replay/digest";
+import type { DigestAgeReach, DigestPlayer, DigestUnitByAge, ReplayDigest } from "@/lib/replay/digest";
 
 export const REPLAY_CATEGORIES = ["big", "solo"] as const;
 export type ReplayCategory = (typeof REPLAY_CATEGORIES)[number];
@@ -37,6 +37,24 @@ const MAX_PLAYERS = 32;
 const MAX_UNITS = 12;
 const MAX_NAME = 40;
 const MAX_COUNT = 1_000_000;
+/** V3 profil : bornes miroir du digest client. */
+const MEDAL_KEYS = new Set([
+  "champion",
+  "first-blade",
+  "first-to-fall",
+  "master-of-coin",
+  "in-total-control",
+  "cannon-fodder",
+  "deserter",
+  "ghost",
+  "farmer",
+  "last-stand",
+]) as ReadonlySet<string>;
+const AGE_BUCKETS = new Set(["stone", "bronze", "iron", "industrial1", "industrial2"]);
+const MAX_MEDALS = 10;
+const MAX_UNITS_PER_AGE = 15; // 5 buckets × top 3
+const MAX_AGE_REACH = 12;
+const GAME_ID_RE = /^[\w/.-]+$/;
 
 export interface ReplayResultRow {
   code: string;
@@ -134,12 +152,30 @@ export function cleanDigest(value: unknown): ReplayDigest | null {
     const l = boundedInt(p.l, 0, MAX_COUNT);
     if (k === null || l === null)
       throw new HttpError(400, "回放统计摘要格式不正确。 / Replay stats digest is malformed.");
+    // Champs V3 (profil joueur) — tous optionnels, bornés, jamais décisifs.
+    const r = boundedInt(p.r, 0, 100_000);
+    const share = boundedInt(p.s, 0, 100);
+    const bn = boundedInt(p.bn, 1, 25);
+    const ln = boundedInt(p.ln, 1, 25);
+    const la = boundedInt(p.la, 0, 500);
+    const md: string[] = [];
+    if (Array.isArray(p.md)) {
+      for (const key of p.md) {
+        if (typeof key === "string" && MEDAL_KEYS.has(key) && md.length < MAX_MEDALS) md.push(key);
+      }
+    }
     players.push({
       n: name,
       w: p.w ? 1 : 0,
       m: p.m ? 1 : 0,
       k,
       l,
+      ...(r !== null ? { r } : {}),
+      ...(share !== null ? { s: share } : {}),
+      ...(bn !== null ? { bn } : {}),
+      ...(ln !== null ? { ln } : {}),
+      ...(la !== null ? { la } : {}),
+      ...(md.length > 0 ? { md } : {}),
     });
     if (players.length >= MAX_PLAYERS) break;
   }
@@ -155,6 +191,46 @@ export function cleanDigest(value: unknown): ReplayDigest | null {
       if (units.length >= MAX_UNITS) break;
     }
   }
+  const unitsByAge: Array<[string, DigestUnitByAge[]]> = [];
+  if (d.unitsByAge !== undefined) {
+    if (!Array.isArray(d.unitsByAge))
+      throw new HttpError(400, "回放统计摘要格式不正确。 / Replay stats digest is malformed.");
+    for (const raw of d.unitsByAge) {
+      if (!Array.isArray(raw) || raw.length !== 2) continue;
+      const name = sanitize(raw[0], MAX_NAME);
+      const entries: DigestUnitByAge[] = [];
+      if (Array.isArray(raw[1])) {
+        for (const e of raw[1]) {
+          if (!Array.isArray(e) || e.length !== 3) continue;
+          const bucket = typeof e[0] === "string" && AGE_BUCKETS.has(e[0]) ? e[0] : null;
+          const id = sanitize(e[1], 80);
+          const count = boundedInt(e[2], 0, MAX_COUNT);
+          if (bucket && id && count !== null && GAME_ID_RE.test(id) && entries.length < MAX_UNITS_PER_AGE)
+            entries.push([bucket, id, count]);
+        }
+      }
+      if (name && entries.length > 0 && unitsByAge.length < MAX_PLAYERS) unitsByAge.push([name, entries]);
+    }
+  }
+  const ageReach: Array<[string, DigestAgeReach[]]> = [];
+  if (d.ageReach !== undefined) {
+    if (!Array.isArray(d.ageReach))
+      throw new HttpError(400, "回放统计摘要格式不正确。 / Replay stats digest is malformed.");
+    for (const raw of d.ageReach) {
+      if (!Array.isArray(raw) || raw.length !== 2) continue;
+      const name = sanitize(raw[0], MAX_NAME);
+      const entries: DigestAgeReach[] = [];
+      if (Array.isArray(raw[1])) {
+        for (const e of raw[1]) {
+          if (!Array.isArray(e) || e.length !== 2) continue;
+          const id = boundedInt(e[0], 0, 500);
+          const t = boundedInt(e[1], 0, 172_800_000);
+          if (id !== null && t !== null && entries.length < MAX_AGE_REACH) entries.push([id, t]);
+        }
+      }
+      if (name && entries.length > 0 && ageReach.length < MAX_PLAYERS) ageReach.push([name, entries]);
+    }
+  }
   return {
     startedAt,
     durationS,
@@ -162,6 +238,8 @@ export function cleanDigest(value: unknown): ReplayDigest | null {
     mapCode: sanitize(d.mapCode, 64),
     players,
     units,
+    unitsByAge,
+    ageReach,
   };
 }
 
@@ -222,6 +300,65 @@ const upsertStatements = (
       ),
   );
 
+/* ------------------------------------------------------------------ */
+/* Registre replay_player_games (V3 profil joueur)                     */
+/* ------------------------------------------------------------------ */
+
+/** Lignes de registre dérivées du digest (borné, JSON sérialisé ici). */
+function ledgerStatements(
+  row: ReplayResultRow,
+  digest: ReplayDigest,
+  db: D1Like,
+): D1Statement[] {
+  const unitsByAge = new Map((digest.unitsByAge ?? []).map(([n, v]) => [n, v]));
+  const ageReach = new Map((digest.ageReach ?? []).map(([n, v]) => [n, v]));
+  return digest.players.map((p) => {
+    const ua = unitsByAge.get(p.n) ?? [];
+    const ar = ageReach.get(p.n) ?? [];
+    return db
+      .prepare(
+        `INSERT INTO replay_player_games
+           (code, season, category, player_name, won, mvp, impact_pct, mmr, kills, units_lost,
+            points, region, bronze_nation, last_nation, last_age_research, medals, units_by_age,
+            age_reach, started_at, duration_s, team_size, mode_key)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(code, player_name) DO UPDATE SET
+           won = excluded.won, mvp = excluded.mvp, impact_pct = excluded.impact_pct,
+           mmr = excluded.mmr, kills = excluded.kills, units_lost = excluded.units_lost,
+           points = excluded.points, region = excluded.region,
+           bronze_nation = excluded.bronze_nation, last_nation = excluded.last_nation,
+           last_age_research = excluded.last_age_research, medals = excluded.medals,
+           units_by_age = excluded.units_by_age, age_reach = excluded.age_reach,
+           started_at = excluded.started_at, duration_s = excluded.duration_s,
+           team_size = excluded.team_size, mode_key = excluded.mode_key`,
+      )
+      .bind(
+        row.code,
+        row.season,
+        row.category,
+        p.n,
+        p.w,
+        p.m,
+        p.s ?? 0,
+        p.r ?? null,
+        p.k,
+        p.l,
+        matchPoints(p),
+        row.region,
+        p.bn ?? null,
+        p.ln ?? null,
+        p.la ?? null,
+        JSON.stringify(p.md ?? []),
+        JSON.stringify(ua),
+        JSON.stringify(ar),
+        row.started_at,
+        row.duration_s,
+        row.team_size,
+        row.mode_key,
+      );
+  });
+}
+
 /** Applique les stats d'un replay publié (idempotent via aggregated_at).
  *  Sans ligne replay_results (soumissions antérieures au digest) : no-op
  *  documenté — la ligne rejoindra le classement au prochain rebuild. */
@@ -241,6 +378,7 @@ export async function applyReplayStats(code: string): Promise<void> {
       1,
       db,
     ),
+    ...ledgerStatements(row, digest, db),
     db.prepare("UPDATE replay_results SET aggregated_at = ? WHERE code = ?").bind(now, code),
   ]);
 }
@@ -262,6 +400,7 @@ export async function removeReplayStats(code: string): Promise<void> {
       db,
     ),
     db.prepare("UPDATE replay_results SET aggregated_at = NULL WHERE code = ?").bind(code),
+    db.prepare("DELETE FROM replay_player_games WHERE code = ?").bind(code),
     db.prepare(
       "DELETE FROM player_stats WHERE season = ? AND category = ? AND player_name IN (SELECT value FROM json_each(?)) AND games = 0",
     ).bind(row.season, row.category, JSON.stringify(digest.players.map((p) => p.n))),
@@ -291,6 +430,7 @@ export async function rebuildPlayerStats(): Promise<{ players: number; replays: 
   const now = new Date().toISOString();
   const statements: D1Statement[] = [
     db.prepare("DELETE FROM player_stats").bind(),
+    db.prepare("DELETE FROM replay_player_games").bind(),
     db.prepare("UPDATE replay_results SET aggregated_at = NULL").bind(),
   ];
   const aggregated = new Map<string, { wins: number; mvps: number; games: number; kills: number; losses: number; points: number; last: string }>();
@@ -310,6 +450,7 @@ export async function rebuildPlayerStats(): Promise<{ players: number; replays: 
       if (row.started_at > acc.last) acc.last = row.started_at;
       aggregated.set(key, acc);
     }
+    statements.push(...ledgerStatements(row, digest, db));
     statements.push(
       db.prepare("UPDATE replay_results SET aggregated_at = ? WHERE code = ?").bind(now, row.code),
     );

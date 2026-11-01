@@ -83,7 +83,14 @@ export function PlayersLadder({
                       <span className="rank-plain">{rank}</span>
                     )}
                   </td>
-                  <td className="player">{row.player_name}</td>
+                  <td className="player">
+                    <a
+                      className="ladder-player-link"
+                      href={`/player/${encodeURIComponent(row.player_name)}`}
+                    >
+                      {row.player_name}
+                    </a>
+                  </td>
                   <td className="num points">{fmt.format(row.points)}</td>
                   <td className="num">{fmt.format(row.games)}</td>
                   <td className="num">{fmt.format(row.wins)}</td>

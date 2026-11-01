@@ -267,6 +267,56 @@ export const playerStats = sqliteTable(
   (t) => [uniqueIndex("pk_player_stats").on(t.season, t.category, t.playerName)],
 );
 
+// Profil joueur wsva (V3, 01/11/2026, migration 0013 additive) — REGISTRE
+// « une ligne par joueur et par replay publié » : courbe de points, parties
+// récentes, médailles, unités favorites par âge, records de vitesse, nations.
+// Écrit à la publication (et au rebuild) depuis le digest v2 (borné) ; le
+// retrait d'un replay supprime ses lignes. Colonnes JSON = texte sérialisé
+// validé côté serveur (cleanDigest), jamais lu en SQL autrement que par le
+// serveur applicatif. Rebuildable intégralement depuis replays ×
+// replay_results (champs v2 absents des anciens digests → NULL, profil
+// dégradé documenté).
+export const replayPlayerGames = sqliteTable(
+  "replay_player_games",
+  {
+    code: text("code").notNull(),
+    season: text("season").notNull(),
+    category: text("category").notNull(),
+    playerName: text("player_name").notNull(),
+    won: integer("won").notNull().default(0),
+    mvp: integer("mvp").notNull().default(0),
+    /** Part d'impact de l'équipe, 0-100. */
+    impactPct: integer("impact_pct").notNull().default(0),
+    /** MMR (rating du replay) — NULL si absent des données. */
+    mmr: integer("mmr"),
+    kills: integer("kills").notNull().default(0),
+    unitsLost: integer("units_lost").notNull().default(0),
+    points: integer("points").notNull().default(0),
+    region: text("region"),
+    /** Nation de l'âge du bronze (2=Europe, 3=Asie) — NULL si inconnue. */
+    bronzeNation: integer("bronze_nation"),
+    /** Dernière nation/branche atteinte (id nation du dataset). */
+    lastNation: integer("last_nation"),
+    /** Dernière recherche d'âge atteinte (id, pour libellé + icône). */
+    lastAgeResearch: integer("last_age_research"),
+    /** Clés de médailles gagnées, JSON ["deserter",…]. */
+    medals: text("medals").notNull().default("[]"),
+    /** Top unités par bucket d'âge, JSON [["stone","WarSelection/1/x",12],…]. */
+    unitsByAge: text("units_by_age").notNull().default("[]"),
+    /** Records d'âge (id recherche → temps ms du PREMIER passage), JSON. */
+    ageReach: text("age_reach").notNull().default("[]"),
+    startedAt: text("started_at").notNull(),
+    durationS: integer("duration_s").notNull().default(0),
+    teamSize: integer("team_size").notNull().default(0),
+    modeKey: text("mode_key").notNull().default(""),
+  },
+  (t) => [
+    uniqueIndex("pk_replay_player_games").on(t.code, t.playerName),
+    index("idx_replay_player_games_name").on(t.playerName, t.startedAt),
+    index("idx_replay_player_games_season").on(t.playerName, t.season),
+  ],
+);
+
 // Replay phase 2 (B4, migration 0012 additive) — retours « ces données
 // sont-elles exactes ? » sur la page résultat : un vote par (replay,
 // compte), modifiable, quotas miroir de la couche soumissions.

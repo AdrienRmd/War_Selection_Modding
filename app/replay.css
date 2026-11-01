@@ -821,3 +821,58 @@ tr.rp-row:hover {
   padding-top: 10px;
   padding-bottom: 10px;
 }
+
+/* V3 : lien joueur du classement → profil (/player/<name>). */
+.ladder-player-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(125, 125, 125, 0.5);
+  text-underline-offset: 3px;
+}
+.ladder-player-link:hover {
+  text-decoration-color: currentColor;
+}
+
+/* V3 profil — responsivité : le SVG de courbe suit la largeur du conteneur
+ * (viewBox 720), la table des records défile horizontalement dans sa tuile,
+ * les tuiles de la grille détails peuvent rétrécir (min-width:0). */
+.rp .points-chart svg {
+  width: 100%;
+  height: auto;
+}
+.rp .details-grid .tile-inset {
+  min-width: 0;
+}
+.rp .tile-inset .data-table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* V3 profil — libellés FR plus longs que la référence EN (« il y a 2 jours »,
+ * « Voir le replay ») : la ligne de partie récente passe à 2 lignes sous
+ * 480 px au lieu de déborder. */
+@media (width <= 480px) {
+  .rp .recent-game {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  .rp .recent-game .recent-date {
+    flex: 1 1 auto;
+    text-align: right;
+  }
+}
+
+/* V3 profil — cible tactile des onglets de période (~27 px visuels chez
+ * wsva) portée à 38 px par padding vertical transparent. */
+.rp .profile-toolbar .chip {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* V3 profil — cible tactile du lien « Voir le replay » (button-text ~17 px
+ * chez wsva) portée à 38 px par padding vertical transparent. */
+.rp .recent-game .recent-replay-link {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
