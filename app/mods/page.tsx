@@ -2,6 +2,7 @@ import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/page-metadata";
 import { ModLibrary } from "@/components/mod-library";
+import { InstallGuide } from "@/components/install-guide";
 import { listMods } from "@/lib/mod-server";
 export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,6 +19,7 @@ export default async function Mods() {
           title="规则背后的完整档案。"
           text="独立查看 Mod 功能与兼容说明。地图只关联资料，不再与资料库混在一起。"
         />
+        <InstallGuide page="mods" />
         <ModLibrary entries={entries} />
       </main>
       <AtlasFooter />

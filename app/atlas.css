@@ -2697,3 +2697,108 @@ tr.top-3 .rank-badge {
 .units-fiche {
   background: url("/atlas-emblem-watermark.png") right 10px bottom 10px / 132px no-repeat;
 }
+
+/* ---------------------------------------------------------------------------
+   Finitions 01/11 — guide « Installer une carte ou un mod — 3 étapes »
+   (components/install-guide.tsx, pages /maps et /mods). Carte compacte,
+   discrète, repliable (préférence localStorage) ; CTA vers l'atelier simple
+   en fin de guide. */
+.install-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 18px 0 6px;
+  padding: 14px 16px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(80% 140% at 8% 0%, rgb(240 178 100 / 0.05), transparent 60%),
+    var(--card);
+}
+.install-guide-pending {
+  visibility: hidden; /* avant hydratation : jamais un flash de guide fermé */
+}
+.install-guide-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.install-guide-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.install-guide-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--muted-foreground);
+}
+.install-guide-close:hover {
+  color: var(--foreground);
+  border-color: var(--border);
+}
+.install-guide-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 18px;
+}
+.install-guide-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--foreground);
+  counter-increment: guide-step;
+}
+.install-guide-steps li .install-guide-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  margin-top: 1px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgb(240 178 100 / 0.3);
+  background: rgb(240 178 100 / 0.08);
+  color: var(--primary);
+}
+.install-guide-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 8px 13px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgb(240 178 100 / 0.4);
+  background: rgb(240 178 100 / 0.1);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+.install-guide-cta:hover {
+  background: rgb(240 178 100 / 0.16);
+}
+@media (max-width: 760px) {
+  .install-guide-steps {
+    grid-template-columns: 1fr;
+  }
+  .install-guide-steps li {
+    align-items: center;
+  }
+}

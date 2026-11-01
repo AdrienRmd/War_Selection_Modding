@@ -143,6 +143,6 @@ describe("couverture FR des libellés des composants cartes", () => {
 
   it("le composant cartes n'affiche plus « Nom à compléter » comme titre", () => {
     const src = readFileSync("components/collected-maps.tsx", "utf8");
-    expect(src).not.toMatch(/名称待补充.*Unidentified map/s);
+    expect(src).not.toMatch(/名称待补充[\s\S]*Unidentified map/);
   });
 });

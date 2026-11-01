@@ -4,6 +4,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { Bilingual } from "@/components/i18n";
 import { CollectedMaps } from "@/components/collected-maps";
+import { InstallGuide } from "@/components/install-guide";
 import { CommunityMaps } from "@/components/community-maps";
 import { collectedMaps } from "@/lib/collection-server";
 import { identity } from "@/lib/atlas-server";
@@ -40,6 +41,7 @@ export default async function Maps() {
           title="地图档案"
           text="寻找下一张地图，查看原始预览与分享码；测试状态独立标注。"
         />
+        <InstallGuide page="maps" />
         <div className="collection-management">
           <div>
             <h2>

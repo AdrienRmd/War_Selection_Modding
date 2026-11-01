@@ -1796,6 +1796,15 @@ export const french: Record<string, string> = {
   "Player count unknown": "Nombre de joueurs inconnu",
   "按人数筛选": "Filtrer par nombre de joueurs",
   "人数：全部": "Joueurs : tous",
+  "安装指南": "Guide d'installation",
+  "安装地图或 Mod — 三步": "Installer une carte ou un mod — 3 étapes",
+  "收起指南": "Fermer le guide",
+  "从档案页复制分享码（地图或 Mod）。": "Copiez le code de partage depuis la fiche (carte ou mod).",
+  "在游戏里打开对应入口：地图用地图分享，Mod 用 Mod 加载。":
+    "Dans War Selection, ouvrez l'entrée correspondante : partage de cartes pour une carte, chargement de mods pour un mod.",
+  "粘贴代码并确认，开一局私房测试。":
+    "Collez le code, validez, et lancez une partie privée pour tester.",
+  "自己做一张？简单工坊 — 三步导出": "Créez le vôtre ? Atelier simple — export en 3 étapes",
   "排序方式": "Ordre de tri",
   "最新收录": "Récemment ajoutées",
   "名称 A→Z": "Nom A→Z",
