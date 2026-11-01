@@ -1,5 +1,22 @@
 import { z } from "zod";
 import { generateGameplayLua } from "./mod-export.mjs";
+import type { Locale } from "./i18n";
+
+/**
+ * Nom affiché d'une unité du catalogue de l'atelier selon la locale.
+ * HOTFIX i18n 01/11 : la locale FR lisait nameEn (le catalogue n'avait pas de
+ * nameFr — corrigé par scripts/add-unit-catalog-fr.mjs + expand-workbench).
+ * Règles : fr → nameFr (repli nameEn), en → nameEn, zh → name (texte source).
+ * Jamais de chaîne vide : dernier repli sur le nom zh.
+ */
+export function catalogUnitName(
+  unit: { name: string; nameEn: string; nameFr?: string },
+  locale: Locale,
+): string {
+  if (locale === "zh") return unit.name || unit.nameEn;
+  if (locale === "fr") return unit.nameFr || unit.nameEn || unit.name;
+  return unit.nameEn || unit.name;
+}
 export type Guard = {
   producerId: number;
   workId: number;
@@ -55,6 +72,8 @@ export type Unit = {
   id: number;
   name: string;
   nameEn: string;
+  /** Nom officiel FR (merge 01/11/2026, cf. scripts/add-unit-catalog-fr.mjs). */
+  nameFr?: string;
   nation: string;
   category: string;
   population: number | null;

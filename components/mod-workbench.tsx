@@ -52,6 +52,7 @@ import {
   readProject,
   projectJSON,
   lua,
+  catalogUnitName,
   type Catalog,
   type Unit,
   type Field,
@@ -160,8 +161,17 @@ function Workspace({ catalog }: { catalog: Catalog }) {
     [pending, setPending] = useState<ReturnType<typeof readProject> | null>(null);
   const fileInput = useRef<HTMLInputElement>(null),
     unit = catalog.units.find((u) => u.id === selected) || catalog.units[0];
-  const unitName = (u: Unit) => (locale !== "zh" ? u.nameEn : u.name);
-  const label = (f: Field) => (locale !== "zh" ? f.labelEn || t(f.label) : f.label);
+  const unitName = (u: Unit) => catalogUnitName(u, locale);
+  // HOTFIX i18n 01/11 : libellés/aide FR via le dictionnaire (clés zh
+  // officielles) avant le repli anglais — plus jamais nameEn/labelEn en dur
+  // pour la locale fr.
+  const frFirst = (zh: string, en?: string) => {
+    if (locale === "zh") return zh;
+    if (locale === "en") return en || zh;
+    const fr = t(zh);
+    return fr !== zh ? fr : en || zh;
+  };
+  const label = (f: Field) => frFirst(f.label, f.labelEn);
   const count = Object.keys(draft).length + rules.length;
   const checked = useMemo(() => {
     try {
@@ -201,7 +211,7 @@ function Workspace({ catalog }: { catalog: Catalog }) {
         (u) =>
           (nation === "all" || u.nation === nation) &&
           (category === "all" || u.category === category) &&
-          String(u.id + " " + u.name + " " + u.nameEn)
+          String(u.id + " " + u.name + " " + u.nameEn + " " + (u.nameFr ?? ""))
             .toLowerCase()
             .includes(query.trim().toLowerCase()),
       ),
@@ -332,7 +342,7 @@ function Workspace({ catalog }: { catalog: Catalog }) {
           )}
         </small>
         <p className="field-help" id={helpId}>
-          {locale !== "zh" ? f.helpEn : f.help}
+          {frFirst(f.help ?? "", f.helpEn) || f.helpEn || f.help}
         </p>
         {f.defaulted && (
           <small>
@@ -546,7 +556,7 @@ function Workspace({ catalog }: { catalog: Catalog }) {
                 <T text="UNIT" /> {unit.id} / {t(unit.nation)}
               </p>
               <h2>{unitName(unit)}</h2>
-              <p>{locale === "en" ? unit.name : unit.nameEn}</p>
+              <p>{unitName(unit)}</p>
             </div>
             <Button
               className="button"
@@ -671,7 +681,7 @@ function Workspace({ catalog }: { catalog: Catalog }) {
               {unit.workItems.map((w) => (
                 <div className="work-entry" key={w.workId}>
                   {group(
-                    locale !== "zh" ? w.labelEn : w.label,
+                    frFirst(w.label, w.labelEn),
                     fields(w.fields),
                     "Work ID " +
                       w.workId +
@@ -694,9 +704,14 @@ function Workspace({ catalog }: { catalog: Catalog }) {
                 {unit.trainingSources.map((s) => (
                   <div key={s.producerId + "-" + s.workId}>
                     {group(
-                      (locale !== "zh"
-                        ? catalog.units.find((u) => u.id === s.producerId)?.nameEn
-                        : s.producerName) +
+                      ((producer: Unit | undefined) =>
+                        producer
+                          ? catalogUnitName(producer, locale)
+                          : locale === "zh"
+                            ? s.producerName
+                            : "Unit #" + s.producerId)(
+                        catalog.units.find((u) => u.id === s.producerId),
+                      ) +
                         " #" +
                         s.producerId +
                         " / Work " +
@@ -1105,9 +1120,7 @@ function RuleEditor({
                 />
                 <small>
                   {selected
-                    ? locale !== "zh"
-                      ? selected.nameEn
-                      : selected.name
+                    ? catalogUnitName(selected, locale)
                     : b("未找到单位", "Unknown unit")}
                 </small>
               </label>

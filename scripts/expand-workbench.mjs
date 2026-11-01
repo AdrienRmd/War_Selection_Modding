@@ -21,6 +21,17 @@ const loc = (lang) =>
   );
 const zh = loc("cn"),
   en = loc("en");
+// HOTFIX i18n 01/11 : noms FR officiels pour l'atelier complet. Les noms du
+// catalogue de base sont le texte zh résolu ; fr.loc mappe la même clé. Repli
+// nameEn (jamais de vide). Cf. scripts/add-unit-catalog-fr.mjs (merge initial
+// depuis lib/units-index.json) et lib/workbench.ts catalogUnitName.
+const frLoc = (() => {
+  try {
+    return loc("fr");
+  } catch {
+    return null; // dossier de jeu sans fr.loc : nameFr = repli EN
+  }
+})();
 const resource = ["食物", "木材", "金属"],
   resourceEn = ["Food", "Wood", "Metal"];
 const byId = new Map(catalog.units.map((u) => [u.id, u]));
@@ -902,6 +913,16 @@ for (const u of catalog.units)
   }
 catalog.schemaVersion = 2;
 catalog.provenance.expandedAt = new Date().toISOString();
+// Noms FR : le texte zh résolu du catalogue de base n'est pas la clé loc, on
+// re-synchronise via la table zh→clé (cn.loc inverse) puis fr.loc ; en cas
+// d'échec local, repli sur le nameFr existant (merge) puis nameEn.
+if (frLoc) {
+  const frByZh = new Map(Object.entries(zh).map(([key, text]) => [text, frLoc[key]]));
+  for (const u of catalog.units) {
+    const fr = frByZh.get(u.name) || u.nameFr || u.nameEn;
+    if (fr) u.nameFr = fr;
+  }
+}
 catalog.provenance.expansionNote =
   "Runtime paths cross-checked against installed scripts and a prior runtime schema dump; defaults are explicitly marked. No in-game run performed.";
 catalog.validation.note =
