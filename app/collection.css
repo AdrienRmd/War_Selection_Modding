@@ -440,3 +440,110 @@
   font-size: 13px;
   color: var(--muted-foreground);
 }
+
+/* ---------------------------------------------------------------------------
+   Finitions 01/11, chantier 7 — captures en jeu soumises par les testeurs
+   (components/map-captures.tsx sur les fiches ; map-captures-moderation.tsx
+   dans l'onglet cartes de /admin). */
+.map-captures-anchor {
+  display: flex;
+  justify-content: flex-end;
+  margin: 18px 0 -8px;
+}
+.map-captures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.map-captures-grid > a,
+.map-captures-pending {
+  position: relative;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--muted);
+}
+.map-captures-grid img {
+  display: block;
+  width: 100%;
+  height: 118px;
+  object-fit: cover;
+}
+.map-captures-caption {
+  display: block;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+.map-captures-pending {
+  border-style: dashed;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  align-items: flex-start;
+}
+.map-captures-pending img {
+  width: 100%;
+  height: 86px;
+  object-fit: cover;
+  border-radius: var(--radius-xs);
+}
+.map-captures-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--primary);
+}
+.map-captures-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+}
+.map-captures-form label {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.map-captures-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-basis: 100%;
+  font-size: 13px;
+  color: var(--primary);
+}
+.captures-moderation-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.captures-moderation-list li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+}
+.captures-moderation-list img {
+  width: 120px;
+  height: 74px;
+  object-fit: cover;
+  border-radius: var(--radius-xs);
+}
+.captures-moderation-meta {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+.captures-moderation-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}

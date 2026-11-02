@@ -1,12 +1,22 @@
 "use client";
 import { MapProvenance } from "@/components/map-provenance";
+import { MapCaptures } from "@/components/map-captures";
 import Link from "@/components/site-link";
 import { T, useBilingual, useI18n } from "@/components/i18n";
 import { CopyMapCode } from "@/components/collected-maps";
 import { collectionLabels, type CollectedMap } from "@/lib/collection";
 import { mapName, mapNote } from "@/lib/collection-i18n";
 import { ArrowLeft, Pencil, ClipboardList } from "lucide-react";
-export function CollectedMapDetail({ map: m, admin }: { map: CollectedMap; admin: boolean }) {
+export function CollectedMapDetail({
+  map: m,
+  admin,
+  signedIn = false,
+}: {
+  map: CollectedMap;
+  admin: boolean;
+  /** Connecté ? (formulaire d'upload des captures en jeu, chantier 7). */
+  signedIn?: boolean;
+}) {
   const { locale } = useI18n();
   const l = useBilingual();
   const en = locale !== "zh";
@@ -50,6 +60,18 @@ export function CollectedMapDetail({ map: m, admin }: { map: CollectedMap; admin
         <p className="notice">{l("此档案已从公开收藏中隐藏。", "Hidden from the public collection.")}</p>
       )}
       <MapProvenance map={m} />
+      {/* Chantier 7 — captures en jeu soumises par les testeurs (modérées).
+          Badge « testée » lié : la section affiche le statut de test de la
+          fiche à côté des captures, pour distinguer capture ≠ test officiel. */}
+      <section className="map-captures-anchor">
+        <span className={`collection-state state-${m.test_status}`}>
+          {collectionLabels[m.test_status] &&
+            (locale === "zh"
+              ? collectionLabels[m.test_status][0]
+              : l(collectionLabels[m.test_status][0], collectionLabels[m.test_status][1]))}
+        </span>
+      </section>
+      <MapCaptures mapId={m.id} signedIn={signedIn} />
       <div className="overview-grid">
         <article className="panel">
           <h2>{l("原记录中的玩法", "Source description")}</h2>

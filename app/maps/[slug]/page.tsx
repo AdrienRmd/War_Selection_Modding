@@ -43,7 +43,7 @@ export default async function MapPage({ params }: { params: Promise<{ slug: stri
       <>
         <AtlasHeader />
         <main className="shell">
-          <CollectedMapDetail map={item} admin={viewer.admin} />
+          <CollectedMapDetail map={item} admin={viewer.admin} signedIn={!!viewer.user} />
         </main>
         <AtlasFooter />
       </>

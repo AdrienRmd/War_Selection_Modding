@@ -219,6 +219,31 @@ export const replays = sqliteTable(
   ],
 );
 
+// Finitions (01/11/2026, migration 0014 additive) — captures EN JEU soumises
+// par les testeurs pour les fiches de la collection : une ligne par capture
+// (image R2 `map-captures/<mapId>/<id>`), modérée comme les soumissions
+// replay (pending → published / rejected ; retrait auteur → withdrawn).
+// Aucune stat de jeu n'est inventée : la valeur vient des testeurs réels.
+export const mapCaptures = sqliteTable(
+  "map_captures",
+  {
+    id: text("id").primaryKey(),
+    mapId: text("map_id").notNull(),
+    ownerId: text("owner_id").notNull(),
+    storageKey: text("storage_key").notNull(),
+    contentType: text("content_type").notNull(),
+    caption: text("caption"),
+    status: text("status").notNull().default("pending"),
+    createdAt: text("created_at").notNull(),
+    moderatedAt: text("moderated_at"),
+  },
+  (t) => [
+    index("idx_map_captures_map_status").on(t.mapId, t.status),
+    index("idx_map_captures_owner_created").on(t.ownerId, t.createdAt),
+    index("idx_map_captures_status_created").on(t.status, t.createdAt),
+  ],
+);
+
 // Replay phase 2 (31/10/2026, migration 0011 additive) — digest public par
 // replay soumis : saison (calendaire mensuelle UTC, fallback documenté : pas
 // de champ saison dans les données games-api), catégorie big/solo, horodatage

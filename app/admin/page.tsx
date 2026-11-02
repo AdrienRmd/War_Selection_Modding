@@ -4,6 +4,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 import { isAdmin } from "@/lib/atlas-server";
 import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { SubmissionDashboard } from "@/components/submission-dashboard";
+import { MapCapturesModeration } from "@/components/map-captures-moderation";
 import { CreatorFeatured } from "@/components/creator-featured";
 import { ModDashboard } from "@/components/mod-dashboard";
 import { ReplayModeration } from "@/components/replay/replay-moderation";
@@ -30,6 +31,7 @@ export default async function Admin() {
               <>
                 <CreatorFeatured />
                 <SubmissionDashboard admin />
+                <MapCapturesModeration />
               </>
             }
             mods={<ModDashboard admin />}
