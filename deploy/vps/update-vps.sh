@@ -24,7 +24,11 @@ echo '[update-vps] archivage du static du build courant...'
 bash "$(pwd)/deploy/vps/preserve-static-assets.sh" "$(pwd)" archive-current
 
 # 3. Build production.
+#    CHANTIER 9 (post-mortem incident 01/11) : le build racine est verrouillé
+#    par scripts/guard-build.mjs — il ne s'exécute QUE si WS_ATLAS_DEPLOY=1,
+#    posé ici par le déploiement (jamais à la main pour de la validation).
 echo '[update-vps] build...'
+export WS_ATLAS_DEPLOY=1
 npm run build
 
 # 4. HOTFIX 31/10 : refusionner les chunks des builds précédents dans le
