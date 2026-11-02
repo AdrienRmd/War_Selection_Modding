@@ -1,49 +1,65 @@
 "use client";
-/** Thème des graphiques replay/profil sur canvas sombre Field Archive
- *  (refonte 03/11 — « charts sombres ») : palette catégorielle VIVE dont
- *  l'ordre d'empilement alterne clair/sombre (ΔL CIE ≥ 15 entre aires
- *  adjacentes, mesuré — min 15.9 sur la séquence complète), teintes d'équipe
- *  contrastées (bleu clair vs rouge soutenu, ΔL 23.6), encre/grille/texte
- *  ≥ 4.5:1 sur le fond effectif (#0d100e panneau / #101413 page).
+/** Thème « haute visibilité » des graphiques replay (refonte 04/11 — style
+ *  ws-stats strict, après diagnostic prod de la refonte « charts sombres »).
  *
- *  Les dégradés verticaux des aires (opacité pleine en haut → réduite en
- *  bas) sont calibrés PAR COULEUR : l'opacité du bas est la plus faible
- *  garantissant un contraste composite ≥ 3:1 contre le panneau (les teintes
- *  foncées gardent plus d'opacité) — cf. bottomAreaAlpha, testé dans
- *  tests/chart-theme.test.ts. */
+ *  DIAGNOSTIC (mesuré en prod sur rep-Jd894wx6so9, 1440 + 375, 0 erreur
+ *  console) : les SVG rendaient à leur vraie taille (ResizeObserver OK,
+ *  pas de bug 0 px) et les aires couvraient 95-100 % du tracé — MAIS les
+ *  dégradés semi-transparents (alpha 0.95 → 0.85) composités sur le
+ *  panneau #181917 lavaient chaque teinte en ton moyen (saturation moyenne
+ *  du tracé ≈ 55 %, #7cc4ff rendu #6eacde) : à distance, l'utilisateur
+ *  voyait un rectangle sombre pastel — « je ne vois rien / pas beaux ».
+ *
+ *  NOUVELLE DIRECTION (référence ws-stats, section phases de
+ *  wsva-detail/result-full.png : aplats fill-opacity 1) :
+ *  - aires OPACHES (aucun dégradé, aucune transparence) ;
+ *  - teintes VIVES saturées ≥ 44 % HSL (bleu #4da3ff, jaune #ffd166,
+ *    rouge #ff5c5c, cyan #22d3ee, orange #fb923c, violet #a78bfa,
+ *    vert #29d36a, magenta #f15bb5, lime #a3e635, rose #fb7185) ;
+ *  - ordre d'empilement à familles de teintes alternées : ΔE(CIE76) ≥ 20
+ *    entre bandes adjacentes (min mesuré 66.9) ET vs panneau (min 79.0) ;
+ *  - liseré clair fin (#f4f6ef, 1 px) entre bandes — séparations nettes
+ *    « bord à bord » comme la courbe de séparation ws-stats (stroke
+ *    var(--panel) de la référence, ici clair sur fond sombre).
+ *
+ *  Tout est mesuré dans tests/chart-theme.test.ts (seuils ci-dessus). */
 
 export const CHART_PANEL = "#181917"; // fond effectif derrière les aires (panneau wsva)
 export const CHART_PAGE = "#101413"; // enveloppe ATLAS
 
-/** Équipes : bleu CLAIR vs rouge SOUTENU (ΔL 19.7 — lisibles l'un de
- *  l'autre et du fond, ≥ 5:1 plein). */
-export const TEAM_BLUE = "#7cc4ff"; // L* 76.7 — 9.4:1 sur panneau
-export const TEAM_RED = "#e05e6b"; // L* 57.0 — 5.0:1 sur panneau
+/** Équipes : bleu vif vs rouge vif (ΔE 105.1 entre eux, ≥ 79 vs panneau). */
+export const TEAM_BLUE = "#4da3ff";
+export const TEAM_RED = "#ff5c5c";
 
-/** Palette joueur (10) — ordre = ordre d'empilement (bas → haut).
- *  Séquence claire/fonceé alternée : ambre, indigo, ocre, magenta, sauge,
- *  cuivre rouille, menthe, rose framboise, or, sarcelle. */
+/** Palette joueur (10) — ordre = ordre d'empilement (bas → haut) :
+ *  bleu, jaune, rouge, cyan, orange, violet, vert, magenta, lime, rose. */
 export const PLAYER_COLORS = [
-  "#ffb454", // ambre        L* 78.8
-  "#8b7ce8", // indigo       L* ~58
-  "#e6b84c", // ocre         L* 77.1
-  "#f15bb5", // magenta      L* 61.2
-  "#a3d977", // vert sauge   L* 81.2
-  "#c65f3d", // cuivre rouille L* 52.4
-  "#7ae0c3", // menthe       L* 82.6
-  "#e05263", // rose framboise L* 54.8
-  "#ffd166", // or           L* 85.9
-  "#2a9d8f", // sarcelle     L* 58.6
+  "#4da3ff", // bleu    L* 65.7
+  "#ffd166", // jaune   L* 85.9
+  "#ff5c5c", // rouge   L* 61.4
+  "#22d3ee", // cyan    L* 77.9
+  "#fb923c", // orange  L* 70.5
+  "#a78bfa", // violet  L* 64.6
+  "#29d36a", // vert    L* 74.9
+  "#f15bb5", // magenta L* 61.2
+  "#a3e635", // lime    L* 84.3
+  "#fb7185", // rose    L* 65.0
 ] as const;
 
+/** Liseré clair entre bandes — ΔE ≥ 45.4 vs chaque teinte de la palette. */
+export const BAND_EDGE = "#f4f6ef";
+
+/** Ligne médiane 50 % tracée AU-DESSUS des aires (lecture des parts). */
+export const CHART_MIDLINE = "#ffffffb3";
+
 /** Encre du graphe : axes, grille, textes, séparations. */
-export const CHART_TEXT = "#c8cfbf"; // labels axes/phases — 12.0:1
+export const CHART_TEXT = "#c8cfbf"; // labels axes/phases — 11.0:1 sur panneau
 export const CHART_TEXT_SOFT = "#aab3a0"; // libellés secondaires — ~8:1
-export const CHART_GRID = "#ffffff17"; // filets fins horizontaux
-export const CHART_AXIS = "#ffffff3d"; // axes 0 % / 100 % + ligne 50 %
+export const CHART_GRID = "#ffffff17"; // filets fins horizontaux (sous les aires)
+export const CHART_AXIS = "#ffffff3d"; // axes 0 % / 100 %
 export const CHART_INK_LINE = "#ffd04d"; // « Partie décidée » — 13.1:1
-export const CHART_GRAY_ZONE = "#9aa58c"; // zone « ne compte pas » (texturée)
-export const WIN_CHANCE_LINE = "#f2ead8"; // courbe win chance — ~13:1
+export const CHART_GRAY_ZONE = "#9aa58c"; // zone « ne compte pas » (overlay + hachures)
+export const WIN_CHANCE_LINE = "#ffffff"; // courbe win chance — ≥ 3:1 sur les aires
 export const POINTS_LINE = "#ffd166"; // courbe de points profil (or)
 
 /* ------------------------------------------------------------------ */
@@ -83,27 +99,43 @@ export function ciel(hexColor: string): number {
   return y <= 216 / 24389 ? (24389 / 27 * y) / 116 : 116 * y ** (1 / 3) - 16;
 }
 
+/** ΔE CIE76 entre deux couleurs (seuil de distinction d'aire ≥ 20). */
+export function deltaE(a: string, b: string): number {
+  const lab = (h: string) => {
+    const [r, g, bl] = rgb(h);
+    const rl = srgbToLinear(r);
+    const gl = srgbToLinear(g);
+    const bll = srgbToLinear(bl);
+    let x = (rl * 0.4124 + gl * 0.3576 + bll * 0.1805) / 0.95047;
+    let y = rl * 0.2126 + gl * 0.7152 + bll * 0.0722;
+    let z = (rl * 0.0193 + gl * 0.1192 + bll * 0.9505) / 1.08883;
+    const f = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+    x = f(x);
+    y = f(y);
+    z = f(z);
+    return [116 * y - 16, 500 * (x - y), 200 * (y - z)] as const;
+  };
+  const A = lab(a);
+  const B = lab(b);
+  return Math.sqrt((A[0] - B[0]) ** 2 + (A[1] - B[1]) ** 2 + (A[2] - B[2]) ** 2);
+}
+
+/** Saturation HSL (0..1) — les teintes d'aire visibles gardent ≥ 0.40. */
+export function hslSaturation(hexColor: string): number {
+  const [r, g, b] = rgb(hexColor).map((v) => v / 255) as [number, number, number];
+  const mx = Math.max(r, g, b);
+  const mn = Math.min(r, g, b);
+  if (mx === mn) return 0;
+  const d = mx - mn;
+  return mx + mn > 1 ? d / (2 - mx - mn) : d / (mx + mn);
+}
+
 /** Couleur composite d'une teinte semi-transparente sur un fond opaque. */
 export function composite(hexColor: string, bg: string, alpha: number): string {
   const c = rgb(hexColor);
   const b = rgb(bg);
   const out = c.map((v, i) => Math.round(alpha * v + (1 - alpha) * b[i]));
   return "#" + out.map((v) => v.toString(16).padStart(2, "0")).join("");
-}
-
-/** Opacité du BAS de dégradé d'une aire : dégradé SUBTIL — plancher 0.85
- *  (une fondu plus profond affaiblirait le ΔL aux jonctions entre aires
- *  adjacentes) ; si la teinte est trop foncée pour garder ≥ 3:1 en
- *  composite sur le panneau, l'opacité est relevée au-delà. */
-export function bottomAreaAlpha(hexColor: string): number {
-  let lo = 0.55;
-  let hi = 0.96;
-  for (let i = 0; i < 8; i++) {
-    const mid = (lo + hi) / 2;
-    if (contrastRatio(composite(hexColor, CHART_PANEL, mid), CHART_PANEL) >= 3) hi = mid;
-    else lo = mid;
-  }
-  return Math.min(0.96, Math.max(0.85, hi));
 }
 
 /** Identifiant stable d'une série joueur (la légende et l'état « estompé »

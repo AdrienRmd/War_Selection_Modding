@@ -1,37 +1,43 @@
 "use client";
-/** Graphiques SVG de la page résultat /replay — refonte « charts sombres »
- *  (03/11) pour le canvas Field Archive (#101413) :
+/** Graphiques SVG de la page résultat /replay — refonte « haute
+ *  visibilité » style ws-stats (04/11), après diagnostic prod de la
+ *  refonte « charts sombres » (les dégradés semi-transparents lavaient
+ *  les teintes : saturation moyenne du tracé ≈ 55 % → « je ne vois
+ *  rien » ; cf. chart-theme.ts pour le diagnostic mesuré).
  *
- *  - teintes VIVES par joueur, ordre d'empilement alterné clair/sombre
- *    (ΔL CIE ≥ 15 entre aires adjacentes — palette dans chart-theme.ts,
- *    mesurée dans tests/chart-theme.test.ts) ;
- *  - aires en dégradé vertical (opacité pleine en haut → réduite en bas,
- *    calibrée par teinte pour un contraste composite ≥ 3:1) séparées par un
- *    liseré d'encre fin ;
- *  - grille fine discrète + axes 0/25/50/75/100 % marqués, ticks
- *    horaires RONDS (multiples de 5 min) ;
- *  - zone grise « ne compte pas » texturée (hachures), ligne « Partie
- *    décidée » dorée + pastille ;
- *  - légende interactive par joueur (pastille + nom) : décocher estompe le
- *    chip SANS barrer le nom et retire SA série — l'état est indexé par
- *    identifiant joueur stable (jamais par position) ;
- *  - survol/tap → info-bulle joueur + part + horloge (div HTML positionnée
- *    sur le graphe, non mise à l'échelle) ;
- *  - rendu 1:1 (viewBox = largeur mesurée) : les textes gardent leur taille
- *  réelle quel que soit l'écran ; mode compact ≤ 520 px (3 ticks, marges
- *  réduites) — responsive 375 px sans collision.
+ *  - aires OPACHES (fill-opacity 1, plus aucun dégradé) : chaque teinte
+ *    vive rend EXACTEMENT sa couleur, bord à bord ;
+ *  - liseré clair fin (#f4f6ef, 1 px) sur le contour de chaque bande —
+ *    séparations nettes entre joueurs, comme la courbe de séparation
+ *    var(--panel) de la référence ws-stats (stroke de chaque aire) ;
+ *  - annotations AU-DESSUS des aires (sinon invisibles sous les aplats) :
+ *    ligne médiane 50 %, frontières de phases, ligne « Partie décidée »,
+ *    zone « ne compte pas » (voile sombre + hachures claires) ;
+ *  - grille fine discrète + axes 0/25/50/75/100 %, ticks horaires RONDS
+ *    (multiples de 5 min), labels ≥ 8:1 sur le panneau ;
+ *  - légende interactive par joueur (décocher retire SA série, état
+ *    indexé par identifiant joueur stable) ;
+ *  - survol/tap → info-bulle joueur + part + horloge ;
+ *  - rendu 1:1 (viewBox = largeur mesurée) : la largeur est mesurée dès
+ *    le montage (useLayoutEffect) puis suivie par ResizeObserver — un
+ *    SVG jamais rendu à 0 px (les largeurs nulles/fermées sont ignorées,
+ *    la dernière largeur valide est conservée) ;
+ *  - cadre plus haut (228–348 px, ratio ≤ 3.7:1 comme la référence
+ *    ws-stats 1048×280) : les bandes ne sont plus des rubans plats ;
+ *    mode compact ≤ 520 px (3 ticks, marges réduites) — responsive
+ *    375 px sans collision.
  *
  *  Rendu vectoriel pur (aucune dépendance). Couleurs et libellés fournis par
  *  le parent ; les graphiques ne s'affichent QUE dans le scope .rp. */
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReplayAnalysis } from "@/lib/replay/analysis";
 import {
-  bottomAreaAlpha,
+  BAND_EDGE,
   CHART_AXIS,
   CHART_GRAY_ZONE,
   CHART_INK_LINE,
+  CHART_MIDLINE,
   CHART_TEXT,
-  CHART_TEXT_SOFT,
   CHART_GRID,
   TEAM_BLUE,
   TEAM_RED,
@@ -63,16 +69,24 @@ function roundTimeTicks(maxMs: number, target: number): number[] {
 /* Cadre responsive : largeur mesurée, rendu 1:1                        */
 /* ------------------------------------------------------------------ */
 
-/** Largeur rendue d'un conteneur (ResizeObserver) — 0 avant montage. */
+/** Largeur rendue d'un conteneur : MESURÉE dès le montage
+ *  (useLayoutEffect, avant le premier paint navigateur) puis suivie par
+ *  ResizeObserver. Les largeurs nulles (élément masqué/replié) sont
+ *  ignorées : on conserve la dernière largeur valide, le SVG ne s'effondre
+ *  jamais à 0 px. Retourne 0 avant montage (fallback de rendu 720). */
 export function useElementWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] {
   const ref = useRef<T | null>(null);
   const [width, setWidth] = useState(0);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const w = entries[0]?.contentRect.width ?? 0;
+    const apply = (w: number) => {
+      if (w <= 0) return; // élément masqué : garder la dernière largeur valide
       setWidth((prev) => (Math.abs(prev - w) > 1 ? w : prev));
+    };
+    apply(el.getBoundingClientRect().width); // mesure synchrone au montage
+    const ro = new ResizeObserver((entries) => {
+      apply(entries[0]?.contentRect.width ?? 0);
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -91,13 +105,15 @@ interface Frame {
 
 function frameFor(width: number): Frame {
   const compact = width < 520;
-  const height = Math.round(Math.max(205, Math.min(255, width * 0.33)));
+  // Cadre haut (ratio ≤ 3.7:1, cf. référence ws-stats 1048×280) : les
+  // bandes empilées restent épaisses et lisibles même à 8 joueurs.
+  const height = Math.round(Math.max(228, Math.min(348, width * 0.36)));
   return {
     width,
     height,
     padL: compact ? 42 : 48,
     padR: compact ? 10 : 14,
-    padT: 30,
+    padT: 34,
     padB: 28,
   };
 }
@@ -113,7 +129,10 @@ interface FrameSvgProps {
   maxMs: number;
   ariaLabel: string;
   children: React.ReactNode;
+  /** Annotations rendues SOUS les aires (grille, repères discrets). */
   extra?: React.ReactNode;
+  /** Annotations rendues AU-DESSUS des aires opaques (sinon invisibles). */
+  overlay?: React.ReactNode;
   defs?: React.ReactNode;
   onPointer?: (e: React.PointerEvent<SVGSVGElement>) => void;
   onPointerLeave?: () => void;
@@ -125,6 +144,7 @@ function ChartFrameSvg({
   ariaLabel,
   children,
   extra,
+  overlay,
   defs,
   onPointer,
   onPointerLeave,
@@ -145,7 +165,9 @@ function ChartFrameSvg({
       onPointerLeave={onPointerLeave}
     >
       {defs}
-      {/* Grille fine ; axes 0 % et 100 % marqués + ligne 50 % visible. */}
+      {/* Grille fine discrète (sous les aires — marges seulement) ; axes
+          0 % et 100 % marqués ; la médiane 50 % est reprise AU-DESSUS des
+          aires (overlay) pour rester lisible sur les aplats. */}
       {[0.25, 0.75].map((r) => (
         <line
           key={r}
@@ -165,7 +187,7 @@ function ChartFrameSvg({
           y1={ys[i * 2]}
           y2={ys[i * 2]}
           stroke={CHART_AXIS}
-          strokeWidth={i === 1 ? 1 : 1.4}
+          strokeWidth={1}
         />
       ))}
       {pcts.map((p, i) => (
@@ -205,12 +227,23 @@ function ChartFrameSvg({
       ))}
       {extra}
       {children}
+      {/* Médiane 50 % au-dessus des aires : lecture des parts à mi-hauteur. */}
+      <line
+        x1={frame.padL}
+        x2={frame.width - frame.padR}
+        y1={frame.padT + 0.5 * (frame.height - frame.padT - frame.padB)}
+        y2={frame.padT + 0.5 * (frame.height - frame.padT - frame.padB)}
+        stroke={CHART_MIDLINE}
+        strokeWidth={1}
+        pointerEvents="none"
+      />
+      {overlay}
     </svg>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Marqueurs de phases / décision / cleanup (partagés)                 */
+/* Marqueurs de phases / décision / cleanup (annotations AU-DESSUS)    */
 /* ------------------------------------------------------------------ */
 
 interface StageMarksProps {
@@ -223,6 +256,9 @@ interface StageMarksProps {
   patternId: string;
 }
 
+/** Annotations de phases — rendues AU-DESSUS des aires opaques (prop
+ *  overlay) : voile « ne compte pas », frontières de phases, ligne
+ *  « Partie décidée », libellés. */
 function StageMarks(p: StageMarksProps) {
   const innerW = p.frame.width - p.frame.padL - p.frame.padR;
   const maxIdx = p.count - 1;
@@ -242,14 +278,16 @@ function StageMarks(p: StageMarksProps) {
   const pillRight = decidedX + 4 + labelW > p.frame.width - p.frame.padR;
   return (
     <>
-      {/* Zone grise « ne compte pas » : fond discret + hachures (texture
-          distincte de toute teinte joueur) + liseré de départ. */}
+      {/* Zone « ne compte pas » : voile sombre + hachures claires AU-DESSUS
+          des aires (les points y sont gelés mais non comptés) + frontière
+          de départ nette. La texture reste distincte de toute teinte. */}
       <rect
         x={cleanupX}
         y={top}
         width={Math.max(0, p.frame.width - p.frame.padR - cleanupX)}
         height={bottom - top}
         fill={`url(#${p.patternId})`}
+        pointerEvents="none"
       />
       <line
         x1={cleanupX}
@@ -257,9 +295,9 @@ function StageMarks(p: StageMarksProps) {
         y1={top}
         y2={bottom}
         stroke={CHART_GRAY_ZONE}
-        strokeOpacity={0.55}
-        strokeWidth={1}
-        strokeDasharray="2 3"
+        strokeOpacity={0.8}
+        strokeWidth={1.2}
+        pointerEvents="none"
       />
       {[e, m].map((i, k) => (
         <line
@@ -268,9 +306,11 @@ function StageMarks(p: StageMarksProps) {
           x2={x(i * p.periodMs)}
           y1={top}
           y2={bottom}
-          stroke={CHART_AXIS}
+          stroke="#ffffff"
+          strokeOpacity={0.45}
           strokeWidth={1}
           strokeDasharray="3 4"
+          pointerEvents="none"
         />
       ))}
       {/* Ligne « Partie décidée » : trait doré contrasté + pastille. */}
@@ -283,6 +323,7 @@ function StageMarks(p: StageMarksProps) {
             y2={bottom}
             stroke={CHART_INK_LINE}
             strokeWidth={1.8}
+            pointerEvents="none"
           />
           <g
             transform={
@@ -305,32 +346,38 @@ function StageMarks(p: StageMarksProps) {
           </g>
         </>
       )}
-      {/* Libellés de phases, centrés entre bornes. */}
+      {/* Libellés de phases, centrés entre bornes — plaque sombre : les
+          aires vives opaques passent sous le texte, le gris seul serait
+          illisible (≈ 1.6:1 sur une bande vive). */}
       {[
         { from: 0, to: e, label: p.stageLabels[0] },
         { from: e, to: m, label: p.stageLabels[1] },
         { from: m, to: maxIdx, label: p.stageLabels[2] },
-      ].map((s, k) => (
-        <text
-          key={k}
-          x={(x(s.from * p.periodMs) + x(s.to * p.periodMs)) / 2}
-          y={top + (decided ? 26 : 12)}
-          textAnchor="middle"
-          fontSize={10.5}
-          fill={CHART_TEXT_SOFT}
-        >
-          {s.label}
-        </text>
-      ))}
+      ].map((s, k) => {
+        const cx = (x(s.from * p.periodMs) + x(s.to * p.periodMs)) / 2;
+        const ly = top + (decided ? 26 : 12);
+        const w = s.label.length * 5.6 + 10;
+        return (
+          <g key={k} pointerEvents="none">
+            <rect x={cx - w / 2} y={ly - 9} width={w} height={13} rx={3} fill="#10120f" fillOpacity={0.78} />
+            <text x={cx} y={ly} textAnchor="middle" fontSize={10.5} fill={CHART_TEXT}>
+              {s.label}
+            </text>
+          </g>
+        );
+      })}
     </>
   );
 }
 
+/** Texture de la zone « ne compte pas » : voile sombre (les aires vives
+ *  ressortent gommées) traversé de hachures claires — visible sans
+ *  confusion avec une teinte joueur. */
 function grayZonePattern(id: string): React.ReactNode {
   return (
-    <pattern id={id} width={7} height={7} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <rect width={7} height={7} fill={CHART_GRAY_ZONE} fillOpacity={0.14} />
-      <line x1={0} y1={0} x2={0} y2={7} stroke={CHART_GRAY_ZONE} strokeOpacity={0.5} strokeWidth={1.4} />
+    <pattern id={id} width={8} height={8} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width={8} height={8} fill="#0c0e0c" fillOpacity={0.62} />
+      <line x1={0} y1={0} x2={0} y2={8} stroke="#ffffff" strokeOpacity={0.22} strokeWidth={1.3} />
     </pattern>
   );
 }
@@ -447,8 +494,7 @@ export function PowerBalanceChart({
     { xr: number; yr: number; clock: string; blue: number; red: number; win: number } | null
   >(null);
   const n = power.blue.length;
-  const gid = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const frame = frameFor(width || 720);
+  const frame = useMemo(() => frameFor(width || 720), [width]);
   const plot = useMemo(() => {
     if (n < 2) return null;
     const maxMs = Math.max(durationMs, n * 30000);
@@ -495,30 +541,20 @@ export function PowerBalanceChart({
         frame={frame}
         maxMs={plot.maxMs}
         ariaLabel={`${labels.blue} / ${labels.red}`}
-        defs={
-          <>
-            <linearGradient id={`pb-b-${gid}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={TEAM_BLUE} stopOpacity={0.95} />
-              <stop offset="100%" stopColor={TEAM_BLUE} stopOpacity={bottomAreaAlpha(TEAM_BLUE)} />
-            </linearGradient>
-            <linearGradient id={`pb-r-${gid}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={TEAM_RED} stopOpacity={0.95} />
-              <stop offset="100%" stopColor={TEAM_RED} stopOpacity={bottomAreaAlpha(TEAM_RED)} />
-            </linearGradient>
-          </>
-        }
         onPointer={onPointer}
         onPointerLeave={() => setTip(null)}
       >
-        <path d={plot.blueArea} fill={`url(#pb-b-${gid})`} stroke={TEAM_BLUE} strokeWidth={1.4} />
-        <path d={plot.redArea} fill={`url(#pb-r-${gid})`} stroke={TEAM_RED} strokeWidth={1.4} />
+        {/* Aplats opaques + liseré clair sur le contour (bord à bord). */}
+        <path d={plot.blueArea} fill={TEAM_BLUE} stroke={BAND_EDGE} strokeWidth={1} />
+        <path d={plot.redArea} fill={TEAM_RED} stroke={BAND_EDGE} strokeWidth={1} />
         <polyline
           points={winChanceBlue.map((w, i) => `${plot.x(i)},${plot.y(w)}`).join(" ")}
           fill="none"
           stroke={WIN_CHANCE_LINE}
-          strokeWidth={2.2}
-          strokeDasharray="6 4"
+          strokeWidth={2.4}
+          strokeDasharray="7 5"
           strokeLinejoin="round"
+          strokeLinecap="round"
         />
       </ChartFrameSvg>
       <ChartLegend
@@ -564,7 +600,7 @@ export function StageShareChart({
   const [muted, setMuted] = useState<ReadonlySet<string>>(new Set());
   const [tip, setTip] = useState<{ xr: number; yr: number; clock: string; player: number; share: number } | null>(null);
   const patternId = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const frame = frameFor(width || 720);
+  const frame = useMemo(() => frameFor(width || 720), [width]);
   const count = Math.max(...players.map((p) => p.rate.length), 2);
   const starts = useMemo(
     () => [
@@ -604,20 +640,26 @@ export function StageShareChart({
       sharesGrid.push(players.map((_, p) => (total > 0 ? cum[p] / total : 1 / players.length)));
     }
     // Une bande par joueur : bas = cumul des parts précédentes, haut = + sienne.
+    // Le chemin `d` est figé dans le mémo (jamais de mutation en rendu —
+    // l'ancien `top.reverse()` modifiait le tableau mémoïsé à chaque passe).
     const bands = players.map((p) => ({
       color: p.color,
       name: p.name,
-      top: [] as string[],
-      bottom: [] as string[],
+      d: "",
     }));
+    const tops: string[][] = players.map(() => []);
+    const bottoms: string[][] = players.map(() => []);
     for (let t = 0; t < count; t++) {
       let acc = 0;
       for (let p = 0; p < players.length; p++) {
         const lo = acc;
         acc += sharesGrid[t][p];
-        bands[p].bottom.push(`${x(t)},${y(lo)}`);
-        bands[p].top.push(`${x(t)},${y(acc)}`);
+        bottoms[p].push(`${x(t)},${y(lo)}`);
+        tops[p].push(`${x(t)},${y(acc)}`);
       }
+    }
+    for (let p = 0; p < players.length; p++) {
+      bands[p].d = `M ${bottoms[p].join(" L ")} L ${[...tops[p]].reverse().join(" L ")} Z`;
     }
     return { x, y, sharesGrid, bands };
   }, [players, count, starts, frame]);
@@ -681,18 +723,8 @@ export function StageShareChart({
           frame={frame}
           maxMs={count * periodMs}
           ariaLabel={caption}
-          defs={
-            <>
-              {grayZonePattern(`gz-${patternId}`)}
-              {players.map((p, i) => (
-                <linearGradient key={`sg-${patternId}-${i}`} id={`sg-${patternId}-${i}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={p.color} stopOpacity={0.96} />
-                  <stop offset="100%" stopColor={p.color} stopOpacity={bottomAreaAlpha(p.color)} />
-                </linearGradient>
-              ))}
-            </>
-          }
-          extra={
+          defs={grayZonePattern(`gz-${patternId}`)}
+          overlay={
             <StageMarks
               frame={frame}
               periodMs={periodMs}
@@ -706,16 +738,11 @@ export function StageShareChart({
           onPointer={onPointer}
           onPointerLeave={() => setTip(null)}
         >
+          {/* Bandes opaques bord à bord + liseré clair fin : chaque
+              joueur garde SA teinte vive, séparée nettement. */}
           {plot.bands.map((b, i) =>
             muted.has(ids[i]) ? null : (
-              <path
-                key={ids[i]}
-                d={`M ${b.bottom.join(" L ")} L ${b.top.reverse().join(" L ")} Z`}
-                fill={`url(#sg-${patternId}-${i})`}
-                stroke="#0d100e"
-                strokeWidth={1}
-                strokeOpacity={0.9}
-              />
+              <path key={ids[i]} d={b.d} fill={b.color} stroke={BAND_EDGE} strokeWidth={1} />
             ),
           )}
         </ChartFrameSvg>
@@ -759,8 +786,7 @@ export function VersusChart({
   const [wrapRef, width] = useElementWidth<HTMLDivElement>();
   const [tip, setTip] = useState<{ xr: number; yr: number; clock: string; blue: number } | null>(null);
   const patternId = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const gid = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const frame = frameFor(width || 720);
+  const frame = useMemo(() => frameFor(width || 720), [width]);
   const count = Math.max(blue.length, red.length, 2);
   const plot = useMemo(() => {
     const maxIdx = count - 1;
@@ -808,20 +834,8 @@ export function VersusChart({
           frame={frame}
           maxMs={count * periodMs}
           ariaLabel={caption}
-          defs={
-            <>
-              {grayZonePattern(`vz-${patternId}`)}
-              <linearGradient id={`vs-b-${gid}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={TEAM_BLUE} stopOpacity={0.96} />
-                <stop offset="100%" stopColor={TEAM_BLUE} stopOpacity={bottomAreaAlpha(TEAM_BLUE)} />
-              </linearGradient>
-              <linearGradient id={`vs-r-${gid}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={TEAM_RED} stopOpacity={0.96} />
-                <stop offset="100%" stopColor={TEAM_RED} stopOpacity={bottomAreaAlpha(TEAM_RED)} />
-              </linearGradient>
-            </>
-          }
-          extra={
+          defs={grayZonePattern(`vz-${patternId}`)}
+          overlay={
             <StageMarks
               frame={frame}
               periodMs={periodMs}
@@ -835,8 +849,8 @@ export function VersusChart({
           onPointer={onPointer}
           onPointerLeave={() => setTip(null)}
         >
-          <path d={plot.blueArea} fill={`url(#vs-b-${gid})`} stroke={TEAM_BLUE} strokeWidth={1.4} />
-          <path d={plot.redArea} fill={`url(#vs-r-${gid})`} stroke={TEAM_RED} strokeWidth={1.4} />
+          <path d={plot.blueArea} fill={TEAM_BLUE} stroke={BAND_EDGE} strokeWidth={1} />
+          <path d={plot.redArea} fill={TEAM_RED} stroke={BAND_EDGE} strokeWidth={1} />
         </ChartFrameSvg>
         <ChartLegend
           items={[

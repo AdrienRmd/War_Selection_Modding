@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  BAND_EDGE,
   CHART_GRAY_ZONE,
   CHART_INK_LINE,
   CHART_PAGE,
@@ -10,66 +11,78 @@ import {
   TEAM_BLUE,
   TEAM_RED,
   WIN_CHANCE_LINE,
-  bottomAreaAlpha,
   ciel,
   composite,
   contrastRatio,
+  deltaE,
+  hslSaturation,
   playerSeriesId,
 } from "../components/replay/chart-theme";
 
-/** Seuils documentés (refonte « charts sombres » 03/11) :
- *  - ΔL CIE ≥ 15 entre aires JOUEUR adjacentes (ordre d'empilement) ;
- *  - teintes d'aire ≥ 4:1 pleines et ≥ 3:1 au bas de leur dégradé
- *    (grandes surfaces non textuelles : WCAG 1.4.11 = 3:1, marge prise) ;
- *  - textes/axes/ligne « décidée » ≥ 4.5:1 (WCAG AA texte). */
-const DL_MIN = 15;
-const FILL_MIN = 4;
-const FILL_BOTTOM_MIN = 3;
+/** Seuils documentés (refonte « haute visibilité » 04/11, style ws-stats) :
+ *  - aires OPACHES : chaque teinte garde saturation HSL ≥ 40 % (palette
+ *    vive ws-stats — plus de dégradés semi-transparents qui lavaient les
+ *    couleurs sur le panneau sombre) ;
+ *  - ΔE(CIE76) ≥ 20 pour chaque teinte vs le fond (panneau ET page) et
+ *    entre bandes JOUEUR adjacentes dans l'ordre d'empilement ;
+ *  - liseré BAND_EDGE : ΔE ≥ 20 vs chaque teinte (séparation nette) ;
+ *  - textes/axes/ligne « décidée » ≥ 4.5:1 (WCAG AA texte) sur le panneau
+ *    ET sur la page. */
+const DE_MIN = 20;
+const SAT_MIN = 0.4;
 const TEXT_MIN = 4.5;
 
-describe("palette des graphiques sombres", () => {
+describe("palette haute visibilité (ws-stats)", () => {
   it("10 teintes joueur, hex valides", () => {
     expect(PLAYER_COLORS).toHaveLength(10);
     for (const c of PLAYER_COLORS) expect(c).toMatch(/^#[0-9a-f]{6}$/);
   });
 
-  it("ΔL ≥ 15 entre joueurs adjacents dans l'ordre d'empilement", () => {
-    for (let i = 1; i < PLAYER_COLORS.length; i++) {
-      const dl = Math.abs(ciel(PLAYER_COLORS[i]) - ciel(PLAYER_COLORS[i - 1]));
-      expect(dl, `${PLAYER_COLORS[i - 1]} → ${PLAYER_COLORS[i]}`).toBeGreaterThanOrEqual(DL_MIN);
-    }
-  });
-
-  it("alternance clair/sombre : aucune paire ADJACENTE sous le seuil (couvert ci-dessus)", () => {
-    // L'ordre d'empilement alterne clair/foncé : deux teintes claires proches
-    // (ex. ocre/sauge) ne sont JAMAIS adjacentes — un bande foncée les sépare.
-    const ls = [...PLAYER_COLORS].map(ciel);
-    const adjacentDeltas = ls.slice(1).map((v, i) => Math.abs(v - ls[i]));
-    expect(Math.min(...adjacentDeltas)).toBeGreaterThanOrEqual(DL_MIN);
-  });
-
-  it("chaque teinte ≥ 4:1 pleine et ≥ 3:1 en bas de dégradé (panneau)", () => {
-    for (const c of PLAYER_COLORS) {
-      expect(contrastRatio(c, CHART_PANEL), `${c} pleine`).toBeGreaterThanOrEqual(FILL_MIN);
-      const bottom = composite(c, CHART_PANEL, bottomAreaAlpha(c));
-      expect(contrastRatio(bottom, CHART_PANEL), `${c} bas de dégradé`).toBeGreaterThanOrEqual(
-        FILL_BOTTOM_MIN,
-      );
-    }
-  });
-
-  it("dégradé subtil : opacité du bas bornée [0.85, 0.96]", () => {
+  it("teintes vives : saturation HSL ≥ 40 % (aplat opaque, pas lavé)", () => {
     for (const c of [...PLAYER_COLORS, TEAM_BLUE, TEAM_RED]) {
-      const a = bottomAreaAlpha(c);
-      expect(a, `${c}`).toBeGreaterThanOrEqual(0.85);
-      expect(a).toBeLessThanOrEqual(0.96);
+      expect(hslSaturation(c), `${c}`).toBeGreaterThanOrEqual(SAT_MIN);
     }
   });
 
-  it("équipes : bleu clair vs rouge soutenu, ΔL ≥ 15, ≥ 4.5:1 pleines", () => {
-    expect(Math.abs(ciel(TEAM_BLUE) - ciel(TEAM_RED))).toBeGreaterThanOrEqual(DL_MIN);
-    expect(contrastRatio(TEAM_BLUE, CHART_PANEL)).toBeGreaterThanOrEqual(4.5);
-    expect(contrastRatio(TEAM_RED, CHART_PANEL)).toBeGreaterThanOrEqual(4.5);
+  it("chaque teinte : ΔE ≥ 20 vs panneau ET vs page (aires pleines)", () => {
+    for (const c of [...PLAYER_COLORS, TEAM_BLUE, TEAM_RED]) {
+      expect(deltaE(c, CHART_PANEL), `${c} vs panneau`).toBeGreaterThanOrEqual(DE_MIN);
+      expect(deltaE(c, CHART_PAGE), `${c} vs page`).toBeGreaterThanOrEqual(DE_MIN);
+    }
+  });
+
+  it("ΔE ≥ 20 entre joueurs adjacents dans l'ordre d'empilement", () => {
+    for (let i = 1; i < PLAYER_COLORS.length; i++) {
+      const de = deltaE(PLAYER_COLORS[i], PLAYER_COLORS[i - 1]);
+      expect(de, `${PLAYER_COLORS[i - 1]} → ${PLAYER_COLORS[i]}`).toBeGreaterThanOrEqual(DE_MIN);
+    }
+  });
+
+  it("aucune paire de teintes confondables (ΔE ≥ 20 sur TOUTES les paires)", () => {
+    for (let i = 0; i < PLAYER_COLORS.length; i++)
+      for (let j = i + 1; j < PLAYER_COLORS.length; j++) {
+        const de = deltaE(PLAYER_COLORS[i], PLAYER_COLORS[j]);
+        expect(de, `${PLAYER_COLORS[i]} / ${PLAYER_COLORS[j]}`).toBeGreaterThanOrEqual(DE_MIN);
+      }
+  });
+
+  it("liseré clair : ΔE ≥ 20 vs chaque teinte (séparation des bandes)", () => {
+    for (const c of [...PLAYER_COLORS, TEAM_BLUE, TEAM_RED]) {
+      expect(deltaE(BAND_EDGE, c), `liseré vs ${c}`).toBeGreaterThanOrEqual(DE_MIN);
+    }
+  });
+
+  it("équipes : bleu vif vs rouge vif, ΔE ≥ 20 entre eux", () => {
+    expect(deltaE(TEAM_BLUE, TEAM_RED)).toBeGreaterThanOrEqual(DE_MIN);
+    expect(TEAM_BLUE).not.toBe(TEAM_RED);
+  });
+
+  it("aplats : les couleurs rendues SONT les couleurs de la palette", () => {
+    // Plus de dégradé : le composite pleine opacité doit être la teinte
+    // elle-même (régression du diagnostic « #7cc4ff rendu #6eacde »).
+    for (const c of [...PLAYER_COLORS, TEAM_BLUE, TEAM_RED]) {
+      expect(composite(c, CHART_PANEL, 1)).toBe(c.toLowerCase());
+    }
   });
 
   it("encre : textes, axes, « partie décidée », win chance ≥ 4.5:1", () => {
@@ -84,8 +97,15 @@ describe("palette des graphiques sombres", () => {
     }
   });
 
-  it("zone grise « ne compte pas » : teinte pleine ≥ 3:1 (texture discrète)", () => {
+  it("zone grise « ne compte pas » : teinte pleine ≥ 3:1 (overlay texturé)", () => {
     expect(contrastRatio(CHART_GRAY_ZONE, CHART_PANEL)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("ΔL CIE toujours disponible (compat mesures existantes)", () => {
+    for (let i = 1; i < PLAYER_COLORS.length; i++) {
+      const dl = Math.abs(ciel(PLAYER_COLORS[i]) - ciel(PLAYER_COLORS[i - 1]));
+      expect(dl).toBeGreaterThan(0);
+    }
   });
 });
 

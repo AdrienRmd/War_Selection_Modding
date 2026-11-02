@@ -189,8 +189,8 @@
 .rp .chart-key{align-items:center;gap:var(--space-1);margin-top:var(--space-1);display:flex}
 .rp .chart-key-swatch{gap:3px;display:flex}
 .rp .chart-key-dash{border-top:2px dashed;width:14px}
-.rp .chart-key-dash-blue{border-color:var(--team-blue)}
-.rp .chart-key-dash-red{border-color:var(--team-red)}
+.rp .chart-key-dash-blue{border-color:#4da3ff}
+.rp .chart-key-dash-red{border-color:#ff5c5c}
 .rp .chart-frame .recharts-area-area,.rp .chart-frame .recharts-line-curve,.rp .chart-legend .player-dot,.rp .chart-tooltip .player-dot{filter:var(--chart-tone)}
 .rp .chart-frame .recharts-line{opacity:1;transition:opacity .35s var(--ease-out)}
 .rp .chart-frame .chart-line-hidden{opacity:0;pointer-events:none}
@@ -968,17 +968,20 @@
 .rp .units-table td,.rp .units-table th{border-bottom:1px solid var(--edge)}
 .rp .units-table tbody tr:last-child td{border-bottom:0}
 /* ============================================================
-   Charts sombres (refonte 03/11) — lisibilité des graphiques replay/
-   profil sur le canvas Field Archive (#101413) :
+   Charts haute visibilité (refonte 04/11, style ws-stats) — après
+   diagnostic prod de la refonte « charts sombres » (dégradés
+   semi-transparents lavant les teintes sur #181917, sat. ≈ 55 %) :
    . les SVG .rp-chart remplissent leur conteneur (l'ancienne grille
      .timeline-chart-row 150px+1fr, pensée « label + chart » wsva,
      enfermait nos figures seules dans la colonne de 150 px) ;
+   . aires OPACHES bord à bord + liseré clair (chart-theme.ts) — les
+     tirets .chart-key-dash-blue/red rappellent les teintes d'équipe ;
    . légende interactive .rp-legend : chip estompé (opacité .45,
      pastille vidée) SANS text-decoration:line-through — neutralise
      aussi la règle vendor dormante .chart-legend-item (barré) ;
    . info-bulle .rp-chart-tip (HTML superposé, non mise à l'échelle) ;
    . courbe de points profil : encre/grille réhaussées (.graph-*).
-   Palette et dégradés : components/replay/chart-theme.ts.
+   Palette et seuils mesurés : components/replay/chart-theme.ts.
    ============================================================ */
 .rp .timeline-chart-row{grid-template-columns:minmax(0,1fr)}
 .rp .chart-frame{height:auto}
