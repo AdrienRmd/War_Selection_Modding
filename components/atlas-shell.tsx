@@ -34,7 +34,12 @@ export async function AtlasHeader() {
             </a>
           )}
           <Link href="/submit" className="button primary">
-            <T text="提交作品" /> <ArrowUpRight size={17} />
+            {/* .button-label : compacté en icône seule sur téléphone (CSS) ;
+               le libellé reste le nom accessible du lien (masquage visuel). */}
+            <span className="button-label">
+              <T text="提交作品" />
+            </span>{" "}
+            <ArrowUpRight size={17} />
           </Link>
         </div>
       </header>

@@ -359,6 +359,52 @@ nav .nav-menu-trigger[aria-expanded="true"],
     right: 12px;
     max-width: calc(100vw - 24px);
   }
+  /* Réorg 10/11 — directive utilisateur : la nav (Archives · Classement ·
+     Mods) occupe SA rangée, répartie sur toute la largeur de la rangée 1
+     (brand + Se connecter/Soumettre), mêmes marges, une seule ligne équilibrée.
+     Sélecteur « html[lang] header.header » (spécificité 0,2,3) : globals.css
+     est importé en PREMIER (app/layout.tsx) et community.css porte des
+     dérogations html[lang="en"] .header nav (0,2,2, ex FIX 02/11) — ce
+     préfixe gagne sur toutes les feuilles, toutes langues.
+     Le mécanisme des menus déroulants et l'ancrage des panneaux ci-dessus ne
+     changent pas (harnais header-menus e2e à re-vérifier). */
+  html[lang] header.header nav {
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+  html[lang] header.header nav > * {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  /* Réorg 10/11 — rangée 1 compacte sur toute la zone ≤760 px : le brand
+     complet (FR : 290 px avec sous-titre) + les actions complètes (326 px)
+     ne tiennent pas côte à côte avant ~765 px, ce qui laissait une cascade
+     de 3 rangées entre ~551 et 760 px. Sous-titre masqué, brand 17 px,
+     bouton resserré → rangée 1 = brand + Se connecter/Soumettre sur UNE
+     ligne dès 320 px (mesuré FR, pire cas : 140+10+77+10+196 = 433 px). */
+  html[lang] header.header .brand {
+    font-size: 17px;
+    letter-spacing: 1.2px;
+    gap: 10px;
+  }
+  html[lang] header.header .brand .atlas-emblem {
+    width: 36px;
+    height: 36px;
+  }
+  html[lang] header.header .brand small {
+    display: none;
+  }
+  html[lang] header.header .header-actions {
+    gap: 10px;
+  }
+  html[lang] header.header .header-actions .account-name {
+    max-width: 96px;
+  }
+  html[lang] header.header .button {
+    padding: 9px 12px;
+    font-size: 13px;
+  }
 }
 .nav-menu-item {
   display: flex;
@@ -726,16 +772,8 @@ h1 em {
   }
 }
 @media (max-width: 550px) {
-  .brand {
-    font-size: 21px;
-  }
-  .brand small {
-    font-size: 12px;
-    letter-spacing: 0;
-  }
-  .header .button {
-    padding: 8px 12px;
-  }
+  /* (Réorg 10/11 : la compaction brand/bouton de la rangée 1 vit dans le bloc
+     ≤760 px ci-dessus, même zone que la nav — plus de règle dupliquée ici.) */
   .shell {
     padding: 25px 5% 35px;
   }
@@ -768,6 +806,48 @@ h1 em {
   }
   .feature .eyebrow {
     letter-spacing: 0;
+  }
+}
+@media (max-width: 520px) {
+  /* Réorg 10/11 — ≤520 px, le libellé du bouton Soumettre ne tient PAS à
+     côté du brand compact et de « Se connecter » (mesuré 375 px, FR pire
+     cas : brand 140 + 10 + lien 77 + 10 + bouton 196 = 433 > 337 utiles ;
+     même la variante EN déborde). Le bouton garde son icône ↗ sur zone
+     tactile 44 px ; le libellé reste le NOM ACCESSIBLE du lien via masquage
+     visuel (≠ display:none) — cf. .button-label dans atlas-shell.tsx. */
+  html[lang] header.header .button .button-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  html[lang] header.header .button {
+    padding: 9px 11px;
+    min-width: 44px;
+  }
+}
+@media (max-width: 340px) {
+  /* Réorg 10/11 — garde-fou très petits écrans (< iPhone SE 320 px) : sans
+     ceci, la nav FR nowrap (291 px min) et la rangée 1 (291 px) débordent
+     sous ~324 px. Marges réduites à 10 px, nav et compte à 13/12 px. */
+  html[lang] header.header {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  html[lang] header.header nav {
+    font-size: 13px;
+    gap: 10px;
+  }
+  html[lang] header.header .nav-menu-trigger {
+    font-size: 13px;
+  }
+  html[lang] header.header .brand {
+    font-size: 15px;
+  }
+  html[lang] header.header .header-actions .account-link {
+    font-size: 12px;
   }
 }
 
