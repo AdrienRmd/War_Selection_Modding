@@ -29,7 +29,7 @@ const page = await browser.newPage({
 });
 await page.context().addCookies([{ name: "atlas_locale", value: "fr", url: origin }]);
 
-async function probeGroups(page, path, expectSub) {
+async function probeGroups(page, path) {
   await page.goto(origin + path, { waitUntil: "networkidle" });
   await page.locator(".units-toolbar").waitFor({ state: "visible", timeout: 15000 });
   const groups = page.locator(".units-toolbar .units-factions");
@@ -104,8 +104,8 @@ async function probeGroups(page, path, expectSub) {
   return n;
 }
 
-await probeGroups(page, "/units", false);
-const researchGroups = await probeGroups(page, "/researches", true);
+await probeGroups(page, "/units");
+const researchGroups = await probeGroups(page, "/researches");
 check(
   "/researches : sous-familles présentes après choix de famille",
   researchGroups >= 1,
