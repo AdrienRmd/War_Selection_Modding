@@ -324,8 +324,84 @@
   }
 }
 @media (max-width: 640px) {
+  /* 2×2 sur téléphone (demande utilisateur 04/11) : la collection reste en
+     2 colonnes compactes jusqu'au bas de la gamme (harmonisé avec la
+     bibliothèque Mod). Vignette quasi carrée, texte resserré — vérifié
+     375 px : 2 colonnes, scrollWidth 375, aucun débordement. */
   .collection-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .collection-card-body {
+    padding: 12px;
+  }
+  .collection-preview {
+    height: 160px;
+    padding: 6px;
+  }
+  .collection-preview .collection-state {
+    left: 8px;
+    bottom: 8px;
+    font-size: 11px;
+    padding: 3px 7px;
+  }
+  .collection-image-kind {
+    right: 8px;
+    top: 8px;
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+  .collection-card-body > small {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .collection-card h3 {
+    font-size: 15px;
+    margin: 8px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  /* Titre = zone tactile pleine largeur ; la flèche suit le texte (le flex
+     de base casserait le line-clamp à 2 lignes). */
+  .collection-card h3 a {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .collection-card h3 svg {
+    margin-left: 5px;
+    vertical-align: -3px;
+  }
+  .collection-card p {
+    font-size: 12px;
+    line-height: 1.55;
+    margin: 0 0 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .collection-meta {
+    font-size: 11px;
+    gap: 4px 10px;
+    margin: 6px 0 8px;
+  }
+  .collection-meta span {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .collection-code {
+    padding-top: 8px;
+  }
+  .collection-code code {
+    font-size: 12px;
   }
   .collection-section {
     margin: 45px 0;
@@ -338,9 +414,6 @@
   .collection-toolbar select {
     min-width: 0;
     flex: 1;
-  }
-  .collection-preview {
-    height: 255px;
   }
   .collection-detail-heading {
     flex-direction: column;

@@ -1184,8 +1184,73 @@ des color-mix de jetons pour les teintes — harmonisation sans rupture, la
     margin: 0;
     padding: 8px 10px;
   }
+  /* 2×2 sur téléphone (demande utilisateur 04/11) : la bibliothèque Mod
+     passe en 2 colonnes compactes plutôt qu'une pile de cartes larges.
+     Vérifié 375 px — scripts d'audit grid375 : 2 colonnes, scrollWidth 375,
+     titre 2 lignes max (ellipsis), zones tactiles pleine largeur. */
   .library-main .mod-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .library-main .mod-card {
+    padding: 12px;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+  .library-main .mod-card-head {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .library-main .mod-card .mod-index {
+    font-size: 11px;
+  }
+  .library-main .mod-card .status {
+    font-size: 11px;
+    padding: 2px 6px;
+  }
+  .library-main .mod-card h3 {
+    font-size: 15px;
+    margin: 0 0 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  /* Lien plein cadre : le titre est la zone tactile principale de la carte. */
+  .library-main .mod-card h3 a {
+    display: block;
+  }
+  .library-main .mod-card > p:not(.mod-source) {
+    font-size: 12px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .library-main .mod-card .mod-source {
+    font-size: 11px;
+    margin-top: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .library-main .mod-card-footer {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 10px;
+    margin-top: 12px;
+    font-size: 12px;
+  }
+  .library-main .mod-card-footer .source-pill {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  .library-main .mod-card-footer .text-link {
+    padding: 5px 0;
+  }
+  .library-main .mod-manage-actions {
+    margin-top: 10px;
   }
   .library-top {
     flex-wrap: wrap;

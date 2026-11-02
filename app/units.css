@@ -431,6 +431,11 @@
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
   }
+  /* 2 colonnes confirmées à 375 px (auto-fill minmax(150px)) — la vignette
+     passe à ~120 px pour rester lisible en tuile compacte (demande 04/11). */
+  .units-thumb {
+    width: min(150px, 82%);
+  }
   .units-card > button {
     padding: 14px 8px 12px;
   }
