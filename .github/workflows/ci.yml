@@ -35,3 +35,7 @@ jobs:
 
       - name: Build
         run: npm run build
+        # CHANTIER 9 : scripts/guard-build.mjs refuse `npm run build` sans
+        # WS_ATLAS_DEPLOY=1. Sûr ici : runner CI éphémère, dist/ jetable.
+        env:
+          WS_ATLAS_DEPLOY: 1

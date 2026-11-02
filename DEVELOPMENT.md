@@ -20,10 +20,10 @@ npm run install:ci
 
 Copy `.env.example` to `.env` using your editor or file manager. It contains only the fake local administrator identity, not a real account credential.
 
-Build once to generate the local Worker configuration:
+Build once to generate the local Worker configuration. The build is locked by a guard and requires `WS_ATLAS_DEPLOY=1` — see `scripts/guard-build.mjs`:
 
 ```sh
-npm run build
+WS_ATLAS_DEPLOY=1 npm run build
 ```
 
 For a **new empty local database only**, apply these three schema migrations in order:
@@ -46,8 +46,10 @@ Open the localhost URL printed by the server (normally port 5173). Local ChatGPT
 
 ```sh
 npx tsc --noEmit
-npm run build
+WS_ATLAS_DEPLOY=1 npm run build
 ```
+
+`npm run build` requires `WS_ATLAS_DEPLOY=1` (root build lock) — see `scripts/guard-build.mjs`.
 
 With the local server and local schema ready:
 

@@ -77,7 +77,10 @@ log "npm run install:ci (en tant que $SERVICE_USER)..."
 as_user "npm run install:ci"
 
 log "npm run build (en tant que $SERVICE_USER)..."
-as_user "npm run build"
+# CHANTIER 9 : le build racine est verrouillé par scripts/guard-build.mjs —
+# il exige WS_ATLAS_DEPLOY=1. Préfixe DANS la commande car `su -c` ne
+# transmet pas les exports du shell root (même garde que update-vps.sh).
+as_user "WS_ATLAS_DEPLOY=1 npm run build"
 [ -f "$APP_DIR/dist/server/wrangler.json" ] || fail "build incomplet : dist/server/wrangler.json absent"
 
 # ---------------------------------------------------------------- 5. Migrations D1 locales
