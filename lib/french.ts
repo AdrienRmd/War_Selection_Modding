@@ -2554,6 +2554,7 @@ export const french: Record<string, string> = {
   "对局按全体玩家的中位数时间划分：到达中世纪（前期结束）与首次进入工业时代（中期结束），之后为后期。每条色带是一名玩家自本阶段开始以来占全队积分的份额，因此前期影响力显示在累计旁边。图表下方是各阶段在全队影响力中的权重。积分很少的阶段会标注为小样本：其份额可能因一场战斗而波动。末尾的灰色区域是收尾阶段：对局已经决定，那里的军队与村民击杀不再计入（最多截去最后 5 分钟）。淘汰与奇观仍然计入。":
     "La partie est découpée en trois phases selon l'instant où le joueur médian a atteint le Moyen Âge (fin du début) puis le premier Âge industriel (fin du milieu) ; la fin est le reste. Chaque bande colorée est la part des points d'impact de l'équipe gagnée par un joueur depuis le début de la phase. Sous chaque graphique figure le poids de chaque phase pour l'équipe. Une phase avec très peu de points est un petit échantillon : ces parts peuvent basculer sur un seul combat. La zone grise finale est le ramassage : la partie était déjà décidée, les armées et villageois détruits là ne comptent pas (au plus les 5 dernières minutes sont coupées). Les éliminations et la merveille comptent toujours.",
   自各阶段开始以来占全队积分的份额: "Part des points de l'équipe depuis le début de chaque phase",
+  每个阶段从零开始计算: "Chaque phase repart de zéro",
   对局已定: "Partie décidée",
   灰色区域不计入积分: "La zone grise ne compte pas",
   "${stage1} ${t1} = ${w1}% · ${stage2} ${t2} = ${w2}% · ${stage3} ${t3} = ${w3}%（占全队影响力）":

@@ -22,7 +22,9 @@
  *    « bord à bord » comme la courbe de séparation ws-stats (stroke
  *    var(--panel) de la référence, ici clair sur fond sombre).
  *
- *  Tout est mesuré dans tests/chart-theme.test.ts (seuils ci-dessus). */
+ *  Tout est mesuré dans tests/chart-theme.test.ts (seuils ci-dessus) et,
+ *  pour les correctifs du retour visuel 02/11 (palette réordonnée, voile
+ *  gris estompant, échelle Y), dans tests/replay-chart-frame.test.ts. */
 
 export const CHART_PANEL = "#181917"; // fond effectif derrière les aires (panneau wsva)
 export const CHART_PAGE = "#101413"; // enveloppe ATLAS
@@ -31,19 +33,25 @@ export const CHART_PAGE = "#101413"; // enveloppe ATLAS
 export const TEAM_BLUE = "#4da3ff";
 export const TEAM_RED = "#ff5c5c";
 
-/** Palette joueur (10) — ordre = ordre d'empilement (bas → haut) :
- *  bleu, jaune, rouge, cyan, orange, violet, vert, magenta, lime, rose. */
+/** Palette joueur (10) — ordre = ordre d'empilement (bas → haut),
+ *  familles de teintes alternées pour maximiser le ΔE des paires rendues
+ *  proches (retour visuel n° 8, 02/11) : ΔE adjacent min 66,9 ; le rouge
+ *  (n° 2) et l'orange/ambre (n° 5) ne sont JAMAIS adjacents (ΔE 57,3 —
+ *  l'ancien rouge/orange ΔE 39,7 se confondait à distance : « HANIBAL vs
+ *  FakeKurier trop proches ») ; le rose framboise vif (sat 1,00, ΔE 39,8
+ *  vs rouge — l'ancien #fb7185 plafonnait à 20,4) reste repérable même en
+ *  bande fine. */
 export const PLAYER_COLORS = [
-  "#4da3ff", // bleu    L* 65.7
-  "#ffd166", // jaune   L* 85.9
-  "#ff5c5c", // rouge   L* 61.4
-  "#22d3ee", // cyan    L* 77.9
-  "#fb923c", // orange  L* 70.5
-  "#a78bfa", // violet  L* 64.6
-  "#29d36a", // vert    L* 74.9
-  "#f15bb5", // magenta L* 61.2
-  "#a3e635", // lime    L* 84.3
-  "#fb7185", // rose    L* 65.0
+  "#4da3ff", // bleu        L* 65,7
+  "#ffd166", // jaune       L* 85,9
+  "#ff5c5c", // rouge       L* 61,4
+  "#22d3ee", // cyan        L* 77,9
+  "#a78bfa", // violet      L* 64,6
+  "#f59e0b", // ambre       L* 72,2 (ex-orange #fb923c, trop proche du rouge)
+  "#29d36a", // vert        L* 74,9
+  "#f15bb5", // magenta     L* 61,2
+  "#a3e635", // lime        L* 84,3
+  "#ff2f8f", // rose vif    L* 57,3 (ex-#fb7185, ΔE 20,4 seulement vs rouge)
 ] as const;
 
 /** Liseré clair entre bandes — ΔE ≥ 45.4 vs chaque teinte de la palette. */
@@ -52,13 +60,32 @@ export const BAND_EDGE = "#f4f6ef";
 /** Ligne médiane 50 % tracée AU-DESSUS des aires (lecture des parts). */
 export const CHART_MIDLINE = "#ffffffb3";
 
+/** Filets 25/75 % tracés AU-DESSUS des aires opaques — sous les aplats,
+ *  ils étaient invisibles (le ancien code les dessinait dessous). */
+export const CHART_GRID_OVER = "#ffffff2e";
+
+/** Zone « ne compte pas » — voile CLAIR à haute opacité (retour visuel
+ *  n° 5) : l'ancien voile sombre 0,62 laissait passer 42–66 % de
+ *  saturation des aires vives (« les couleurs restent visibles »).
+ *  Composite mesuré sur toute la palette : saturation HSL résiduelle
+ *  ≤ 0,126, contraste ≥ 3:1 vs panneau (zone distincte du fond). */
+export const GRAY_ZONE_VEIL = "#666a63";
+export const GRAY_ZONE_VEIL_ALPHA = 0.9;
+export const GRAY_ZONE_HATCH = "#14161a";
+export const GRAY_ZONE_HATCH_ALPHA = 0.55;
+
+/** Teinte réellement rendue sous le voile « ne compte pas » (mesure). */
+export function grayZoneComposite(bandHex: string): string {
+  return composite(GRAY_ZONE_VEIL, bandHex, GRAY_ZONE_VEIL_ALPHA);
+}
+
 /** Encre du graphe : axes, grille, textes, séparations. */
 export const CHART_TEXT = "#c8cfbf"; // labels axes/phases — 11.0:1 sur panneau
 export const CHART_TEXT_SOFT = "#aab3a0"; // libellés secondaires — ~8:1
 export const CHART_GRID = "#ffffff17"; // filets fins horizontaux (sous les aires)
 export const CHART_AXIS = "#ffffff3d"; // axes 0 % / 100 %
 export const CHART_INK_LINE = "#ffd04d"; // « Partie décidée » — 13.1:1
-export const CHART_GRAY_ZONE = "#9aa58c"; // zone « ne compte pas » (overlay + hachures)
+export const CHART_GRAY_ZONE = "#9aa58c"; // zone « ne compte pas » (frontière + hachures)
 export const WIN_CHANCE_LINE = "#ffffff"; // courbe win chance — ≥ 3:1 sur les aires
 export const POINTS_LINE = "#ffd166"; // courbe de points profil (or)
 

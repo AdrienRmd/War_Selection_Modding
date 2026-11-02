@@ -258,7 +258,12 @@
 .rp .timeline-versus .chart-legend-item{cursor:default}
 .rp .timeline-team-header{margin-bottom:var(--space-2)}
 .rp .timeline-chart-row{gap:var(--space-3);grid-template-columns:150px minmax(0,1fr);align-items:start;display:grid}
-.rp .stage-running-caption{margin-bottom:var(--space-2)}
+/* Légende de section : UNE occurrence (figcaption du graphique) —
+ * retour visuel n° 7 : l'ancien doublon .stage-running-caption est retiré. */
+/* Ancre du résultat /replay : atterrit SOUS le header sticky (le JS
+ * affiner scroll-margin-top à la hauteur réelle du header, repli 96 px). */
+/* HORS scope .rp : l'ancre précède .page-backdrop dans la page. */
+.result-anchor{scroll-margin-top:96px}
 .rp .stage-running .chart-stage-label,.rp .timeline-versus .chart-stage-label{fill:var(--text-primary);paint-order:stroke;stroke:#000;stroke-opacity:.6;stroke-width:3px}
 .rp .chart-frame .chart-stage-muted .recharts-reference-area-rect{fill:var(--panel);fill-opacity:.6;stroke:none}
 .rp .stage-weights{margin-top:var(--space-2)}

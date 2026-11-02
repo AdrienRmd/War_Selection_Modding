@@ -397,6 +397,7 @@ export function ReplayResult({
                       stages={analysis.stages}
                       periodMs={data.timeLinePeriod}
                       caption={l("两队积分占比", "Share of each team's points")}
+                      phaseNote={l("每个阶段从零开始计算", "Each stage restarts from zero")}
                       stageLabels={stageLabels}
                       decidedLabel={l("对局已定", "Game decided")}
                       labels={{ blue: teamLabel(0), red: teamLabel(1) }}
@@ -847,9 +848,10 @@ function TimelineTeam({
   return (
     <section className="timeline-team stage-running">
       <header className="timeline-team-header">{teamLabel}</header>
-      <p className="label-text stage-running-caption">
-        {l("自各阶段开始以来占全队积分的份额", "Share of the team's points since the start of each stage")}
-      </p>
+      {/* La légende « part des points de l'équipe depuis le début de chaque
+          phase » est rendue UNE seule fois, en figcaption du graphique
+          (retour visuel n° 7 : elle apparaissait en double, au-dessus ET
+          au-dessous). */}
       <div className="timeline-chart-row">
         <StageShareChart
           players={series}
@@ -859,6 +861,7 @@ function TimelineTeam({
           stageLabels={stageLabels}
           decidedLabel={l("对局已定", "Game decided")}
           decidedCaption={l("灰色区域不计入积分", "Grey zone scores no points")}
+          phaseNote={l("每个阶段从零开始计算", "Each stage restarts from zero")}
         />
       </div>
       <p className="label-text stage-weights">

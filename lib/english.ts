@@ -2512,6 +2512,7 @@ export const english: Record<string, string> = {
   "对局按全体玩家的中位数时间划分：到达中世纪（前期结束）与首次进入工业时代（中期结束），之后为后期。每条色带是一名玩家自本阶段开始以来占全队积分的份额，因此前期影响力显示在累计旁边。图表下方是各阶段在全队影响力中的权重。积分很少的阶段会标注为小样本：其份额可能因一场战斗而波动。末尾的灰色区域是收尾阶段：对局已经决定，那里的军队与村民击杀不再计入（最多截去最后 5 分钟）。淘汰与奇观仍然计入。":
     "The game is split in three stages by when the median player of the game reached Middle Ages (end of Early) and the first Industrial age (end of Mid); Late is the rest. Each coloured band is the share of the team's impact points a player earned since the start of the stage, so early impact shows next to the total. Under each chart is how much each stage weighs for the team. A stage with very few points is marked as a small sample: those shares can swing on a single fight. The grey zone at the end is the cleanup: the game was already decided, so army and workers killed there don't count (at most the last 5 minutes are cut). Eliminations and the wonder still count.",
   自各阶段开始以来占全队积分的份额: "Share of the team's points since the start of each stage",
+  每个阶段从零开始计算: "Each stage restarts from zero",
   对局已定: "Game decided",
   灰色区域不计入积分: "Grey zone scores no points",
   "${stage1} ${t1} = ${w1}% · ${stage2} ${t2} = ${w2}% · ${stage3} ${t3} = ${w3}%（占全队影响力）":

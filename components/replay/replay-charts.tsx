@@ -1,49 +1,65 @@
 "use client";
 /** Graphiques SVG de la page résultat /replay — refonte « haute
- *  visibilité » style ws-stats (04/11), après diagnostic prod de la
- *  refonte « charts sombres » (les dégradés semi-transparents lavaient
- *  les teintes : saturation moyenne du tracé ≈ 55 % → « je ne vois
- *  rien » ; cf. chart-theme.ts pour le diagnostic mesuré).
- *
- *  - aires OPACHES (fill-opacity 1, plus aucun dégradé) : chaque teinte
- *    vive rend EXACTEMENT sa couleur, bord à bord ;
- *  - liseré clair fin (#f4f6ef, 1 px) sur le contour de chaque bande —
- *    séparations nettes entre joueurs, comme la courbe de séparation
- *    var(--panel) de la référence ws-stats (stroke de chaque aire) ;
- *  - annotations AU-DESSUS des aires (sinon invisibles sous les aplats) :
- *    ligne médiane 50 %, frontières de phases, ligne « Partie décidée »,
- *    zone « ne compte pas » (voile sombre + hachures claires) ;
- *  - grille fine discrète + axes 0/25/50/75/100 %, ticks horaires RONDS
- *    (multiples de 5 min), labels ≥ 8:1 sur le panneau ;
- *  - légende interactive par joueur (décocher retire SA série, état
- *    indexé par identifiant joueur stable) ;
- *  - survol/tap → info-bulle joueur + part + horloge ;
+ *  visibilité » style ws-stats (04/11) puis correctifs du retour visuel
+ *  utilisateur (02/11, 9 points — cf. tests/replay-chart-frame.test.ts
+ *  et scripts/validate-charts-correctifs.mjs pour les mesures) :
+ *  - AXE Y JUSTE : 0 % en bas, 100 % en haut, graduations 0/25/50/75/100
+ *    réparties sur toute la hauteur, tracé et échelle partagent yFor()
+ *    (l'ancien rendu indexait les labels depuis le haut) ;
+ *  - plus de ligne claire parasite au sommet 100 % : les aires n'ont plus
+ *    de contour, seules les SÉPARATIONS entre bandes portent le liseré ;
+ *  - libellés de phases EN BAS sur plaques (anti-collision), pastille
+ *    « Partie décidée » seule en haut, marqueurs discrets aux frontières
+ *    (le modèle « chaque phase repart de zéro » est inchangé, expliqué
+ *    dans la légende) ;
+ *  - axe X : ticks ronds réguliers couvrant toute la largeur + repère de
+ *    fin à la durée exacte (5 min ≤ 30 min de partie, sinon 10/15/30) ;
+ *  - zone « ne compte pas » : voile clair à haute opacité qui ESTOMPE
+ *    réellement les teintes dessous (saturation résiduelle ≤ 13 %),
+ *    hachures sombres, distincte du panneau ;
+ *  - grille 25/75 % et médiane 50 % tracées AU-DESSUS des aires opaques
+ *    (elles étaient invisibles dessous) ;
+ *  - survol/tap → info-bulle joueur + part + horloge ; légende
+ *    interactive (décocher retire SA série, état indexé par identifiant
+ *    joueur stable) ;
  *  - rendu 1:1 (viewBox = largeur mesurée) : la largeur est mesurée dès
  *    le montage (useLayoutEffect) puis suivie par ResizeObserver — un
- *    SVG jamais rendu à 0 px (les largeurs nulles/fermées sont ignorées,
- *    la dernière largeur valide est conservée) ;
- *  - cadre plus haut (228–348 px, ratio ≤ 3.7:1 comme la référence
- *    ws-stats 1048×280) : les bandes ne sont plus des rubans plats ;
- *    mode compact ≤ 520 px (3 ticks, marges réduites) — responsive
- *    375 px sans collision.
+ *    SVG jamais rendu à 0 px ; cadre 228–348 px, mode compact ≤ 520 px.
  *
- *  Rendu vectoriel pur (aucune dépendance). Couleurs et libellés fournis par
- *  le parent ; les graphiques ne s'affichent QUE dans le scope .rp. */
+ *  Géométrie pure (testable) : ./chart-frame.ts. Couleurs : ./chart-theme.ts.
+ *  Rendu vectoriel pur (aucune dépendance). Les graphiques ne s'affichent
+ *  QUE dans le scope .rp. */
 import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReplayAnalysis } from "@/lib/replay/analysis";
 import {
   BAND_EDGE,
   CHART_AXIS,
   CHART_GRAY_ZONE,
+  CHART_GRID_OVER,
   CHART_INK_LINE,
   CHART_MIDLINE,
   CHART_TEXT,
-  CHART_GRID,
+  GRAY_ZONE_HATCH,
+  GRAY_ZONE_HATCH_ALPHA,
+  GRAY_ZONE_VEIL,
+  GRAY_ZONE_VEIL_ALPHA,
   TEAM_BLUE,
   TEAM_RED,
   WIN_CHANCE_LINE,
   playerSeriesId,
 } from "./chart-theme";
+import {
+  type Frame,
+  bandPath,
+  decidedPill,
+  frameFor,
+  phasePlaques,
+  stageShares,
+  stackPixelEdges,
+  timeTicks,
+  yFor,
+  yTickLabels,
+} from "./chart-frame";
 
 export { TEAM_BLUE, TEAM_RED, PLAYER_COLORS } from "./chart-theme";
 
@@ -52,17 +68,6 @@ function formatClock(ms: number): string {
   const m = Math.floor(total / 60);
   const s = total % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
-}
-
-/** Ticks horaires RONDS : multiples de 5 min (pas « naturel » 1/2/5 × 60 s)
- *  couvrant maxMs en ~`target` graduations. */
-function roundTimeTicks(maxMs: number, target: number): number[] {
-  const rough = maxMs / target;
-  const units = [60_000, 120_000, 300_000, 600_000, 900_000, 1_800_000, 3_600_000];
-  const step = units.find((u) => u >= rough) ?? units[units.length - 1];
-  const ticks: number[] = [];
-  for (let t = 0; t <= maxMs; t += step) ticks.push(t);
-  return ticks;
 }
 
 /* ------------------------------------------------------------------ */
@@ -94,44 +99,13 @@ export function useElementWidth<T extends HTMLElement>(): [React.RefObject<T | n
   return [ref, width];
 }
 
-interface Frame {
-  width: number;
-  height: number;
-  padL: number;
-  padR: number;
-  padT: number;
-  padB: number;
-}
-
-function frameFor(width: number): Frame {
-  const compact = width < 520;
-  // Cadre haut (ratio ≤ 3.7:1, cf. référence ws-stats 1048×280) : les
-  // bandes empilées restent épaisses et lisibles même à 8 joueurs.
-  const height = Math.round(Math.max(228, Math.min(348, width * 0.36)));
-  return {
-    width,
-    height,
-    padL: compact ? 42 : 48,
-    padR: compact ? 10 : 14,
-    padT: 34,
-    padB: 28,
-  };
-}
-
-function yPositions(frame: Frame): number[] {
-  return [0, 0.25, 0.5, 0.75, 1].map(
-    (r) => frame.padT + r * (frame.height - frame.padT - frame.padB),
-  );
-}
-
 interface FrameSvgProps {
   frame: Frame;
   maxMs: number;
   ariaLabel: string;
   children: React.ReactNode;
-  /** Annotations rendues SOUS les aires (grille, repères discrets). */
-  extra?: React.ReactNode;
-  /** Annotations rendues AU-DESSUS des aires opaques (sinon invisibles). */
+  /** Annotations rendues AU-DESSUS des aires opaques (filets, médiane,
+   *  voile « ne compte pas », frontières, plaques, pastille). */
   overlay?: React.ReactNode;
   defs?: React.ReactNode;
   onPointer?: (e: React.PointerEvent<SVGSVGElement>) => void;
@@ -143,17 +117,16 @@ function ChartFrameSvg({
   maxMs,
   ariaLabel,
   children,
-  extra,
   overlay,
   defs,
   onPointer,
   onPointerLeave,
 }: FrameSvgProps) {
   const compact = frame.width < 520;
-  const ys = yPositions(frame);
-  const innerW = frame.width - frame.padL - frame.padR;
-  const ticks = roundTimeTicks(maxMs, compact ? 3 : 5);
-  const pcts = compact ? [0, 50, 100] : [0, 25, 50, 75, 100];
+  const bottom = frame.height - frame.padB;
+  const right = frame.width - frame.padR;
+  const ticks = timeTicks(maxMs, compact);
+  const xTick = (ms: number) => frame.padL + ((ms / maxMs) * (right - frame.padL));
   return (
     <svg
       className="rp-chart"
@@ -165,74 +138,64 @@ function ChartFrameSvg({
       onPointerLeave={onPointerLeave}
     >
       {defs}
-      {/* Grille fine discrète (sous les aires — marges seulement) ; axes
-          0 % et 100 % marqués ; la médiane 50 % est reprise AU-DESSUS des
-          aires (overlay) pour rester lisible sur les aplats. */}
-      {[0.25, 0.75].map((r) => (
-        <line
-          key={r}
-          x1={frame.padL}
-          x2={frame.width - frame.padR}
-          y1={frame.padT + r * (frame.height - frame.padT - frame.padB)}
-          y2={frame.padT + r * (frame.height - frame.padT - frame.padB)}
-          stroke={CHART_GRID}
-          strokeWidth={1}
-        />
-      ))}
-      {[0, 0.5, 1].map((r, i) => (
-        <line
-          key={i}
-          x1={frame.padL}
-          x2={frame.width - frame.padR}
-          y1={ys[i * 2]}
-          y2={ys[i * 2]}
-          stroke={CHART_AXIS}
-          strokeWidth={1}
-        />
-      ))}
-      {pcts.map((p, i) => (
-        <text
-          key={p}
-          x={frame.padL - 7}
-          y={ys[i] + 4}
-          textAnchor="end"
-          fontSize={12}
-          fill={CHART_TEXT}
-        >
-          {p}%
+      {/* Graduations Y : positions = échelle du tracé (0 % en BAS,
+          100 % en HAUT — correctif n° 1 : l'ancien index depuis le haut
+          affichait 0 % au sommet et 100 % plus bas). */}
+      {yTickLabels(frame, compact).map(({ pct, y }) => (
+        <text key={pct} x={frame.padL - 7} y={y} textAnchor="end" fontSize={12} fill={CHART_TEXT}>
+          {pct}%
         </text>
       ))}
+      {/* Axe X : ticks ronds réguliers couvrant toute la largeur + repère
+          de fin (durée exacte, demi-gras, ancré à droite) — l'ancien
+          rendu s'arrêtait à 30:00 sur une partie de 55:56. */}
       {ticks.map((t, i) => (
         <line
-          key={i}
-          x1={frame.padL + (innerW * t) / maxMs}
-          x2={frame.padL + (innerW * t) / maxMs}
-          y1={frame.height - frame.padB}
-          y2={frame.height - frame.padB + 4}
+          key={`m${i}`}
+          x1={xTick(t.ms)}
+          x2={xTick(t.ms)}
+          y1={bottom}
+          y2={bottom + 4}
           stroke={CHART_AXIS}
           strokeWidth={1}
         />
       ))}
       {ticks.map((t, i) => (
         <text
-          key={i}
-          x={frame.padL + (innerW * t) / maxMs}
+          key={`t${i}`}
+          x={xTick(t.ms)}
           y={frame.height - 9}
-          textAnchor={i === 0 ? "start" : i === ticks.length - 1 ? "end" : "middle"}
+          textAnchor={t.anchor}
           fontSize={12}
+          fontWeight={t.end ? 600 : 400}
           fill={CHART_TEXT}
         >
-          {formatClock(t)}
+          {formatClock(t.ms)}
         </text>
       ))}
-      {extra}
       {children}
-      {/* Médiane 50 % au-dessus des aires : lecture des parts à mi-hauteur. */}
+      {/* Repères AU-DESSUS des aires opaques (dessous, une grille était
+          invisible) : filets 25/75 % discrets, axe 0 %, médiane 50 %. */}
+      {yTickLabels(frame, compact)
+        .filter(({ pct }) => pct % 50 !== 0)
+        .map(({ pct, y }) => (
+          <line
+            key={`g${pct}`}
+            x1={frame.padL}
+            x2={right}
+            y1={y - 4}
+            y2={y - 4}
+            stroke={CHART_GRID_OVER}
+            strokeWidth={1}
+            pointerEvents="none"
+          />
+        ))}
+      <line x1={frame.padL} x2={right} y1={bottom} y2={bottom} stroke={CHART_AXIS} strokeWidth={1} pointerEvents="none" />
       <line
         x1={frame.padL}
-        x2={frame.width - frame.padR}
-        y1={frame.padT + 0.5 * (frame.height - frame.padT - frame.padB)}
-        y2={frame.padT + 0.5 * (frame.height - frame.padT - frame.padB)}
+        x2={right}
+        y1={yFor(frame, 0.5)}
+        y2={yFor(frame, 0.5)}
         stroke={CHART_MIDLINE}
         strokeWidth={1}
         pointerEvents="none"
@@ -257,14 +220,14 @@ interface StageMarksProps {
 }
 
 /** Annotations de phases — rendues AU-DESSUS des aires opaques (prop
- *  overlay) : voile « ne compte pas », frontières de phases, ligne
- *  « Partie décidée », libellés. */
+ *  overlay) : voile « ne compte pas », frontières de phases + marqueurs
+ *  discrets (chaque phase repart de zéro), ligne « Partie décidée » en
+ *  haut (seule), libellés de phases EN BAS sur plaques. */
 function StageMarks(p: StageMarksProps) {
   const innerW = p.frame.width - p.frame.padL - p.frame.padR;
   const maxIdx = p.count - 1;
   const x = (ms: number) =>
-    p.frame.padL +
-    (Math.min(Math.round(ms / p.periodMs), maxIdx) / maxIdx) * innerW;
+    p.frame.padL + (Math.min(Math.round(ms / p.periodMs), maxIdx) / maxIdx) * innerW;
   const [e, m] = [
     Math.round(p.stages.earlyEndMs / p.periodMs),
     Math.round(p.stages.midEndMs / p.periodMs),
@@ -274,13 +237,22 @@ function StageMarks(p: StageMarksProps) {
   const bottom = p.frame.height - p.frame.padB;
   const decided = p.stages.decidedMs !== undefined;
   const decidedX = x(p.stages.decidedMs ?? 0);
-  const labelW = p.decidedLabel.length * 5.6 + 12;
-  const pillRight = decidedX + 4 + labelW > p.frame.width - p.frame.padR;
+  const pill = decided ? decidedPill(p.frame, decidedX, p.decidedLabel) : null;
+  const plaques = phasePlaques(
+    p.frame,
+    [
+      { label: p.stageLabels[0], fromIdx: 0, toIdx: e },
+      { label: p.stageLabels[1], fromIdx: e, toIdx: m },
+      { label: p.stageLabels[2], fromIdx: m, toIdx: maxIdx },
+    ],
+    (i) => x(i * p.periodMs),
+  );
   return (
     <>
-      {/* Zone « ne compte pas » : voile sombre + hachures claires AU-DESSUS
-          des aires (les points y sont gelés mais non comptés) + frontière
-          de départ nette. La texture reste distincte de toute teinte. */}
+      {/* Zone « ne compte pas » : voile CLAIR à haute opacité — il
+          estompe réellement les teintes dessous (saturation résiduelle
+          ≤ 13 % sur toute la palette, mesurée) tout en restant distinct
+          du panneau sombre ; hachures sombres inversées, frontière nette. */}
       <rect
         x={cleanupX}
         y={top}
@@ -299,22 +271,34 @@ function StageMarks(p: StageMarksProps) {
         strokeWidth={1.2}
         pointerEvents="none"
       />
-      {[e, m].map((i, k) => (
-        <line
-          key={k}
-          x1={x(i * p.periodMs)}
-          x2={x(i * p.periodMs)}
-          y1={top}
-          y2={bottom}
-          stroke="#ffffff"
-          strokeOpacity={0.45}
-          strokeWidth={1}
-          strokeDasharray="3 4"
-          pointerEvents="none"
-        />
-      ))}
-      {/* Ligne « Partie décidée » : trait doré contrasté + pastille. */}
-      {decided && (
+      {/* Frontières de phases + marqueur discret en sommet : à chaque
+          frontière, les parts REPARTENT DE ZÉRO (modèle inchangé,
+          explicité — les sauts brusques à 16:57 / 33:14 sont attendus). */}
+      {[e, m].map((i, k) => {
+        const bx = x(i * p.periodMs);
+        return (
+          <g key={k} pointerEvents="none">
+            <line
+              x1={bx}
+              x2={bx}
+              y1={top}
+              y2={bottom}
+              stroke="#ffffff"
+              strokeOpacity={0.45}
+              strokeWidth={1}
+              strokeDasharray="3 4"
+            />
+            <path
+              d={`M ${bx - 3.5} ${top} L ${bx + 3.5} ${top} L ${bx} ${top + 5.5} Z`}
+              fill="#ffffff"
+              fillOpacity={0.55}
+            />
+          </g>
+        );
+      })}
+      {/* Ligne « Partie décidée » : trait doré contrasté + pastille (seule
+          en haut — plus de collision avec les libellés de phases). */}
+      {decided && pill && (
         <>
           <line
             x1={decidedX}
@@ -325,16 +309,10 @@ function StageMarks(p: StageMarksProps) {
             strokeWidth={1.8}
             pointerEvents="none"
           />
-          <g
-            transform={
-              pillRight
-                ? `translate(${decidedX - labelW - 5}, ${top + 2})`
-                : `translate(${decidedX + 5}, ${top + 2})`
-            }
-          >
-            <rect width={labelW} height={15} rx={7.5} fill={CHART_INK_LINE} />
+          <g transform={`translate(${pill.x}, ${pill.y})`}>
+            <rect width={pill.w} height={pill.h} rx={7.5} fill={CHART_INK_LINE} />
             <text
-              x={labelW / 2}
+              x={pill.w / 2}
               y={11}
               textAnchor="middle"
               fontSize={9.5}
@@ -346,38 +324,40 @@ function StageMarks(p: StageMarksProps) {
           </g>
         </>
       )}
-      {/* Libellés de phases, centrés entre bornes — plaque sombre : les
-          aires vives opaques passent sous le texte, le gris seul serait
-          illisible (≈ 1.6:1 sur une bande vive). */}
-      {[
-        { from: 0, to: e, label: p.stageLabels[0] },
-        { from: e, to: m, label: p.stageLabels[1] },
-        { from: m, to: maxIdx, label: p.stageLabels[2] },
-      ].map((s, k) => {
-        const cx = (x(s.from * p.periodMs) + x(s.to * p.periodMs)) / 2;
-        const ly = top + (decided ? 26 : 12);
-        const w = s.label.length * 5.6 + 10;
-        return (
+      {/* Libellés de phases EN BAS, sur plaques sombres (lisaibles sur
+          les aires vives) — anti-collision : un libellé qui chevaucherait
+          le précédent est masqué, les frontières restent. */}
+      {plaques
+        .filter((pl) => !pl.hidden)
+        .map((pl, k) => (
           <g key={k} pointerEvents="none">
-            <rect x={cx - w / 2} y={ly - 9} width={w} height={13} rx={3} fill="#10120f" fillOpacity={0.78} />
-            <text x={cx} y={ly} textAnchor="middle" fontSize={10.5} fill={CHART_TEXT}>
-              {s.label}
+            <rect
+              x={pl.cx - pl.w / 2}
+              y={pl.cy - 9}
+              width={pl.w}
+              height={13}
+              rx={3}
+              fill="#10120f"
+              fillOpacity={0.78}
+            />
+            <text x={pl.cx} y={pl.cy} textAnchor="middle" fontSize={10.5} fill={CHART_TEXT}>
+              {pl.label}
             </text>
           </g>
-        );
-      })}
+        ))}
     </>
   );
 }
 
-/** Texture de la zone « ne compte pas » : voile sombre (les aires vives
- *  ressortent gommées) traversé de hachures claires — visible sans
- *  confusion avec une teinte joueur. */
+/** Texture de la zone « ne compte pas » : voile clair à haute opacité
+ *  (0.90 — estompe les aires vives dessous, saturation résiduelle
+ *  ≤ 13 %) traversé de hachures sombres — visible sans confusion avec
+ *  une teinte joueur. */
 function grayZonePattern(id: string): React.ReactNode {
   return (
     <pattern id={id} width={8} height={8} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <rect width={8} height={8} fill="#0c0e0c" fillOpacity={0.62} />
-      <line x1={0} y1={0} x2={0} y2={8} stroke="#ffffff" strokeOpacity={0.22} strokeWidth={1.3} />
+      <rect width={8} height={8} fill={GRAY_ZONE_VEIL} fillOpacity={GRAY_ZONE_VEIL_ALPHA} />
+      <line x1={0} y1={0} x2={0} y2={8} stroke={GRAY_ZONE_HATCH} strokeOpacity={GRAY_ZONE_HATCH_ALPHA} strokeWidth={1.3} />
     </pattern>
   );
 }
@@ -499,11 +479,12 @@ export function PowerBalanceChart({
     if (n < 2) return null;
     const maxMs = Math.max(durationMs, n * 30000);
     const x = (i: number) => frame.padL + (i / (n - 1)) * (frame.width - frame.padL - frame.padR);
-    const y = (p: number) => frame.padT + (1 - p) * (frame.height - frame.padT - frame.padB);
+    const y = (p: number) => yFor(frame, p);
     const bluePts = power.blue.map((b, i) => `${x(i)},${y(b)}`).join(" ");
     const blueArea = `M ${x(0)},${y(0)} L ${bluePts.replace(/ /g, " L ")} L ${x(n - 1)},${y(0)} Z`;
     const redArea = `M ${x(0)},${frame.padT} L ${x(n - 1)},${frame.padT} L ${bluePts.split(" ").reverse().join(" L ")} Z`;
-    return { maxMs, x, y, blueArea, redArea };
+    const separator = power.blue.map((b, i) => `${x(i)},${y(b)}`).join(" ");
+    return { maxMs, x, y, blueArea, redArea, separator };
   }, [power.blue, n, durationMs, frame]);
   const onPointer = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
@@ -544,9 +525,18 @@ export function PowerBalanceChart({
         onPointer={onPointer}
         onPointerLeave={() => setTip(null)}
       >
-        {/* Aplats opaques + liseré clair sur le contour (bord à bord). */}
-        <path d={plot.blueArea} fill={TEAM_BLUE} stroke={BAND_EDGE} strokeWidth={1} />
-        <path d={plot.redArea} fill={TEAM_RED} stroke={BAND_EDGE} strokeWidth={1} />
+        {/* Aplats opaques SANS contour : le liseré clair ne trace que la
+            SÉPARATION bleu/rouge — plus de ligne parasite au sommet
+            100 % (retour visuel n° 2). */}
+        <path d={plot.blueArea} fill={TEAM_BLUE} />
+        <path d={plot.redArea} fill={TEAM_RED} />
+        <polyline
+          points={plot.separator}
+          fill="none"
+          stroke={BAND_EDGE}
+          strokeWidth={1}
+          pointerEvents="none"
+        />
         <polyline
           points={winChanceBlue.map((w, i) => `${plot.x(i)},${plot.y(w)}`).join(" ")}
           fill="none"
@@ -587,6 +577,7 @@ export function StageShareChart({
   stageLabels,
   decidedLabel,
   decidedCaption,
+  phaseNote,
 }: {
   players: StagePlayerSeries[];
   stages: NonNullable<ReplayAnalysis["stages"]>;
@@ -595,6 +586,9 @@ export function StageShareChart({
   stageLabels: [string, string, string];
   decidedLabel: string;
   decidedCaption: string;
+  /** Mention courte « chaque phase repart de zéro » (modèle inchangé,
+   *  explicite les sauts aux frontières — retour visuel n° 9). */
+  phaseNote?: string;
 }) {
   const [wrapRef, width] = useElementWidth<HTMLDivElement>();
   const [muted, setMuted] = useState<ReadonlySet<string>>(new Set());
@@ -622,46 +616,22 @@ export function StageShareChart({
   }, []);
 
   const plot = useMemo(() => {
-    const maxIdx = count - 1;
-    const innerW = frame.width - frame.padL - frame.padR;
-    const x = (i: number) => frame.padL + (Math.min(i, maxIdx) / maxIdx) * innerW;
-    const y = (p: number) => frame.padT + (1 - p) * (frame.height - frame.padT - frame.padB);
-    // Parts cumulées par phase (identique au rendu précédent).
-    const sharesGrid: number[][] = [];
-    const cum = players.map(() => 0);
-    for (let t = 0; t < count; t++) {
-      const stage = t >= starts[2] ? 2 : t >= starts[1] ? 1 : 0;
-      if (t === starts[stage]) cum.fill(0);
-      let total = 0;
-      for (let p = 0; p < players.length; p++) {
-        cum[p] += players[p].rate[t] ?? 0;
-        total += cum[p];
-      }
-      sharesGrid.push(players.map((_, p) => (total > 0 ? cum[p] / total : 1 / players.length)));
-    }
-    // Une bande par joueur : bas = cumul des parts précédentes, haut = + sienne.
-    // Le chemin `d` est figé dans le mémo (jamais de mutation en rendu —
-    // l'ancien `top.reverse()` modifiait le tableau mémoïsé à chaque passe).
-    const bands = players.map((p) => ({
+    // Parts cumulées par phase — MODÈLE INCHANGÉ (chaque phase repart de
+    // zéro ; les sauts aux frontières sont attendus, cf. phaseNote).
+    const sharesGrid = stageShares(
+      players.map((p) => p.rate),
+      count,
+      starts,
+    );
+    const { xs, lo, hi } = stackPixelEdges(frame, sharesGrid);
+    // Une bande par joueur, chemin figé dans le mémo (jamais de mutation
+    // en rendu).
+    const bands = players.map((p, idx) => ({
       color: p.color,
       name: p.name,
-      d: "",
+      d: bandPath(xs, lo[idx] ?? [], hi[idx] ?? []),
     }));
-    const tops: string[][] = players.map(() => []);
-    const bottoms: string[][] = players.map(() => []);
-    for (let t = 0; t < count; t++) {
-      let acc = 0;
-      for (let p = 0; p < players.length; p++) {
-        const lo = acc;
-        acc += sharesGrid[t][p];
-        bottoms[p].push(`${x(t)},${y(lo)}`);
-        tops[p].push(`${x(t)},${y(acc)}`);
-      }
-    }
-    for (let p = 0; p < players.length; p++) {
-      bands[p].d = `M ${bottoms[p].join(" L ")} L ${[...tops[p]].reverse().join(" L ")} Z`;
-    }
-    return { x, y, sharesGrid, bands };
+    return { xs, hi, sharesGrid, bands };
   }, [players, count, starts, frame]);
 
   const onPointer = useCallback(
@@ -702,6 +672,12 @@ export function StageShareChart({
     [frame, count, plot, players.length, muted, ids, periodMs],
   );
 
+  // Liserés INTERNES uniquement : chaque bande VISIBLE sauf la plus haute
+  // trace son bord supérieur — séparations nettes entre joueurs, aucune
+  // ligne claire au sommet 100 % ni à la base (retour visuel n° 2).
+  const visibleIdx = players.map((_, i) => i).filter((i) => !muted.has(ids[i]));
+  const separatorIdx = visibleIdx.slice(0, -1);
+
   return (
     <figure className="rp-stage">
       <div className="rp-chart-wrap" ref={wrapRef}>
@@ -738,13 +714,22 @@ export function StageShareChart({
           onPointer={onPointer}
           onPointerLeave={() => setTip(null)}
         >
-          {/* Bandes opaques bord à bord + liseré clair fin : chaque
-              joueur garde SA teinte vive, séparée nettement. */}
+          {/* Bandes opaques bord à bord, teinte SATURÉE pleine (aucun
+              dégradé — les bandes fines gardent leur hue, liseré 1 px
+              pour les repérer) ; PAS de contour d'aire. */}
           {plot.bands.map((b, i) =>
-            muted.has(ids[i]) ? null : (
-              <path key={ids[i]} d={b.d} fill={b.color} stroke={BAND_EDGE} strokeWidth={1} />
-            ),
+            muted.has(ids[i]) ? null : <path key={ids[i]} d={b.d} fill={b.color} />,
           )}
+          {separatorIdx.map((p) => (
+            <polyline
+              key={`sep-${p}`}
+              points={plot.xs.map((x, t) => `${x},${plot.hi[p][t]}`).join(" ")}
+              fill="none"
+              stroke={BAND_EDGE}
+              strokeWidth={1}
+              pointerEvents="none"
+            />
+          ))}
         </ChartFrameSvg>
         <ChartLegend
           items={players.map((p, i) => ({ id: ids[i], name: p.name, color: p.color }))}
@@ -755,6 +740,7 @@ export function StageShareChart({
       <figcaption className="rp-stage-caption">
         {caption}
         {decidedCaption ? ` · ${decidedCaption}` : ""}
+        {phaseNote ? ` · ${phaseNote}` : ""}
       </figcaption>
     </figure>
   );
@@ -772,6 +758,7 @@ export function VersusChart({
   caption,
   stageLabels,
   decidedLabel,
+  phaseNote,
   labels,
 }: {
   blue: number[];
@@ -781,6 +768,7 @@ export function VersusChart({
   caption: string;
   stageLabels: [string, string, string];
   decidedLabel: string;
+  phaseNote?: string;
   labels: { blue: string; red: string };
 }) {
   const [wrapRef, width] = useElementWidth<HTMLDivElement>();
@@ -792,7 +780,7 @@ export function VersusChart({
     const maxIdx = count - 1;
     const innerW = frame.width - frame.padL - frame.padR;
     const x = (i: number) => frame.padL + (Math.min(i, maxIdx) / maxIdx) * innerW;
-    const y = (p: number) => frame.padT + (1 - p) * (frame.height - frame.padT - frame.padB);
+    const y = (p: number) => yFor(frame, p);
     const shareBlue = blue.map((b, i) => {
       const r = red[i] ?? 0;
       return b + r > 0 ? b / (b + r) : 0.5;
@@ -800,7 +788,7 @@ export function VersusChart({
     const pts = shareBlue.map((s, i) => `${x(i)},${y(s)}`).join(" ");
     const blueArea = `M ${x(0)},${y(0)} L ${pts.replace(/ /g, " L ")} L ${x(count - 1)},${y(0)} Z`;
     const redArea = `M ${x(0)},${frame.padT} L ${x(count - 1)},${frame.padT} L ${pts.split(" ").reverse().join(" L ")} Z`;
-    return { x, y, shareBlue, blueArea, redArea };
+    return { x, y, shareBlue, blueArea, redArea, separator: pts };
   }, [blue, red, count, frame]);
   const onPointer = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
@@ -849,8 +837,16 @@ export function VersusChart({
           onPointer={onPointer}
           onPointerLeave={() => setTip(null)}
         >
-          <path d={plot.blueArea} fill={TEAM_BLUE} stroke={BAND_EDGE} strokeWidth={1} />
-          <path d={plot.redArea} fill={TEAM_RED} stroke={BAND_EDGE} strokeWidth={1} />
+          {/* Aplats opaques, liseré sur la seule frontière bleu/rouge. */}
+          <path d={plot.blueArea} fill={TEAM_BLUE} />
+          <path d={plot.redArea} fill={TEAM_RED} />
+          <polyline
+            points={plot.separator}
+            fill="none"
+            stroke={BAND_EDGE}
+            strokeWidth={1}
+            pointerEvents="none"
+          />
         </ChartFrameSvg>
         <ChartLegend
           items={[
@@ -859,7 +855,10 @@ export function VersusChart({
           ]}
         />
       </div>
-      <figcaption className="rp-stage-caption">{caption}</figcaption>
+      <figcaption className="rp-stage-caption">
+        {caption}
+        {phaseNote ? ` · ${phaseNote}` : ""}
+      </figcaption>
     </figure>
   );
 }

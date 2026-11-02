@@ -184,7 +184,19 @@ export function ReplayPortal({
         setData(loaded);
         if (scroll) {
           window.history.replaceState(null, "", `/replay?code=${encodeURIComponent(normalized)}`);
-          resultAnchor.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          // Retour visuel n° 6 : le scrollIntoView « block:start » plaçait le
+          // résultat SOUS le header sticky (76–216 px selon le viewport), le
+          // titre de section et le texte étaient recouverts/tronqués. On
+          // affine scroll-margin-top à la hauteur RÉELLE du header avant de
+          // défiler (la classe .result-anchor porte un repli CSS de 96 px).
+          const anchor = resultAnchor.current;
+          const header = document.querySelector("header.header");
+          if (anchor) {
+            anchor.style.scrollMarginTop = header
+              ? `${Math.round(header.getBoundingClientRect().height) + 12}px`
+              : "96px";
+            anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
         }
       } catch {
         setError(
@@ -327,7 +339,7 @@ export function ReplayPortal({
         </p>
       ) : null}
 
-      <div ref={resultAnchor} />
+      <div ref={resultAnchor} className="result-anchor" />
 
       {success ? (
         <>
