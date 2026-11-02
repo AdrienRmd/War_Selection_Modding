@@ -1394,15 +1394,91 @@ code {
   .panel {
     padding: 22px;
   }
+  /* Panneaux de détail et formulaires : restent en 1 colonne pleine
+     largeur (upload, checklist d'engagement, code de partage, champs de
+     saisie, panneaux de texte long du dossier). */
   .overview-grid .detail-aside,
   .form-layout > .detail-aside,
-  .mod-grid,
   .info-grid,
-  .economy-metrics,
-  .community-grid,
   .form-grid,
   .upload-grid {
     grid-template-columns: 1fr;
+  }
+  /* 2×2 sur téléphone (harmonisation « 2 colonnes partout », suite du
+     commit 33f6d07 — collection et bibliothèque Mod) : cartes compactes du
+     dossier — mods compatibles et métriques économiques — en 2 colonnes
+     serrées. Vérifié 375 px : 2 colonnes, scrollWidth 375, aucun
+     débordement (scripts/capture-grid2x2.mjs). NB .library-main .mod-grid
+     (command.css, spécificité supérieure) garde la priorité sur /mods. */
+  .mod-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .mod-card {
+    padding: 14px;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+  .mod-card-head {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .mod-card h3 {
+    font-size: 15px;
+    margin: 0 0 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .mod-card h3 a {
+    display: block;
+  }
+  .mod-card > p {
+    font-size: 12px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .mod-card details {
+    margin-top: 12px;
+    padding-top: 10px;
+    font-size: 12px;
+  }
+  .mod-card details p {
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 10px 0;
+  }
+  .economy-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .economy-metrics article {
+    padding: 14px;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+  .economy-metrics strong {
+    font-size: 34px;
+    line-height: 1.3;
+  }
+  .economy-metrics strong small {
+    font-size: 15px;
+    margin-left: 4px;
+  }
+  .economy-metrics h3 {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  .economy-metrics p {
+    font-size: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .hero-grid {
     grid-template-columns: 1fr 1fr;
@@ -1545,6 +1621,65 @@ code {
   }
   .account-link {
     white-space: nowrap;
+  }
+}
+@media (max-width: 640px) {
+  /* 2×2 sur téléphone (harmonisation « 2 colonnes partout », cf. commit
+     33f6d07) : les cartes communautaires (accueil + /maps) passent en 2
+     colonnes compactes — même traitement que la collection juste au-dessus
+     sur /maps. Placé APRÈS le bloc ≤600 px ci-dessus pour reprendre la
+     main sur l'ancien empilement à 1 colonne. Vérifié 375 px : 2 colonnes,
+     scrollWidth 375, titres au pire sur 2 lignes, aucun débordement. */
+  .community-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .map-card {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+  .map-card-cover {
+    height: 130px;
+  }
+  .map-card-cover .tag {
+    left: 10px;
+    top: 10px;
+  }
+  .map-card-body {
+    padding: 12px;
+  }
+  .map-card-body small {
+    font-size: 11px;
+  }
+  .map-card-body h3 {
+    font-size: 15px;
+    margin: 6px 0;
+  }
+  .map-card-body h3 svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+  .map-card-body p {
+    font-size: 12px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .map-card-body > div {
+    margin-top: 10px;
+    padding-top: 10px;
+    font-size: 11px;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+  .map-card-body > div > span {
+    min-width: 0;
+  }
+  .map-card-author {
+    overflow-wrap: anywhere;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1771,8 +1906,25 @@ code {
   margin-top: 16px;
 }
 @media (max-width: 480px) {
-  .hub-grid {
-    grid-template-columns: 1fr;
+  /* 2×2 sur téléphone : le hub « Mes créations » garde ses 2 colonnes de
+     compteurs (cartes compactes) au lieu de s'empiler — la grille de base
+     1fr 1fr continue de s'appliquer, on resserre seulement le contenu.
+     Vérifié 375 px : 2 colonnes, libellés FR multi-lignes acceptés. */
+  .hub-type {
+    padding: 12px;
+  }
+  .hub-total {
+    font-size: 20px;
+  }
+  .hub-counts li {
+    font-size: 13px;
+  }
+  .hub-counts li span {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+  .hub-counts strong {
+    font-size: 17px;
   }
 }
 
@@ -2144,19 +2296,60 @@ code {
   gap: 8px 18px;
   margin-top: 14px;
 }
-@media (max-width: 900px) {
+@media (max-width: 640px) {
+  /* 2×2 sur téléphone : les cartes « Explorer » restent sur 2 colonnes
+     (cartes verticales compactes, icône au-dessus) au lieu de s'empiler.
+     Remplace l'ancien empilement ≤900 px + retouches ≤550 px. La carte
+     entière est un lien : zone tactile pleine largeur. Vérifié 375 px :
+     2 colonnes, scrollWidth 375, descriptions 3 lignes max. */
   .explore-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
-}
-@media (max-width: 550px) {
   .explore-card {
-    padding: 18px;
-    gap: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 14px;
+    gap: 10px;
+    min-width: 0;
+  }
+  .explore-icon {
+    padding: 9px;
+  }
+  .explore-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  .explore-body h3 {
+    font-size: 15px;
+    margin: 3px 0 2px;
+  }
+  .explore-count {
+    font-size: 11px;
+    margin: 2px 0 5px;
+  }
+  .explore-desc {
+    font-size: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .explore-thumbs {
+    gap: 6px;
+    margin-top: 8px;
   }
   .explore-thumbs img {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
+  }
+  .explore-links {
+    gap: 6px 12px;
+    font-size: 12px;
+    margin-top: 10px;
+  }
+  .explore-chevron {
+    display: none;
   }
 }
 
@@ -2617,7 +2810,23 @@ tr.top-3 .rank-badge {
 }
 @media (max-width: 550px) {
   .stat-cards {
-    grid-template-columns: 1fr;
+    /* 2×2 sur téléphone : cartes stats compactes en 2 colonnes au lieu
+       d'une pile pleine largeur. Vérifié 375 px : valeurs FR « 18 min
+       32 s » lisibles à 24 px, aucun débordement. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 14px 16px;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+  .stat-value {
+    font-size: 24px;
+  }
+  .stat-label {
+    font-size: 11px;
+    letter-spacing: 0.5px;
   }
   .ladder-toolbar {
     align-items: flex-start;

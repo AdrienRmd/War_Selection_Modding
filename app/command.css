@@ -1155,8 +1155,45 @@ des color-mix de jetons pour les teintes — harmonisation sans rupture, la
   .command-brief h2 br {
     display: none;
   }
+  /* 2×2 sur téléphone : les 2 cartes portail restent côte à côte en
+     cartes verticales compactes (icône au-dessus, chevron masqué) au lieu
+     de s'empiler. La carte entière est un lien : zone tactile pleine
+     largeur. Vérifié 375 px : 2 colonnes, scrollWidth 375, titres FR sur 2
+     lignes max. */
   .portal-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .portal-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 16px;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+  .portal-card > svg:first-child {
+    width: 24px;
+    height: 24px;
+  }
+  .portal-card > svg:last-child {
+    display: none;
+  }
+  .portal-card h2 {
+    font-size: 16px;
+    margin: 2px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .portal-card p:not(.eyebrow) {
+    font-size: 12px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .page-heading {
     align-items: flex-start;
@@ -1274,8 +1311,21 @@ des color-mix de jetons pour les teintes — harmonisation sans rupture, la
   .unit-list {
     max-height: 205px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 3px;
+  }
+  /* 2×2 partout : gardes anti-débordement des choix d'unité sur toute la
+     gamme 2 colonnes (min-width 0 + ellipsis) — les noms longs ne gonflent
+     plus la cellule. */
+  .unit-choice > span:nth-of-type(2) {
+    min-width: 0;
+    flex: 1;
+  }
+  .unit-choice b,
+  .unit-choice small {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .unit-browser-head {
     padding: 15px;
@@ -1358,8 +1408,21 @@ des color-mix de jetons pour les teintes — harmonisation sans rupture, la
   }
 }
 @media (max-width: 390px) {
-  .unit-list {
-    grid-template-columns: 1fr;
+  /* 2×2 partout : le navigateur d'unités garde ses 2 colonnes compactes
+     jusqu'en bas de gamme (gardes ellipsis posées à ≤760 ci-dessus).
+     Vérifié 360 px : 2 colonnes lisibles, aucun débordement. */
+  .unit-choice {
+    padding: 9px 8px;
+    gap: 8px;
+  }
+  .unit-choice b {
+    font-size: 13px;
+  }
+  .unit-choice small {
+    font-size: 10.5px;
+  }
+  .unit-choice > span:first-child {
+    min-width: 24px;
   }
   .numeric-fields {
     grid-template-columns: 1fr;
