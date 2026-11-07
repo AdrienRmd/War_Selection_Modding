@@ -1,6 +1,12 @@
 // Source-backed English UI and archived-content translations. Canonical data keys stay unchanged.
 export const english: Record<string, string> = {
 
+  // Micro-mission 07/11 — section Recherches dépliée d'office.
+  "每位玩家的研究，按完成时间先后（图标 · 名称 · 时刻）。": "Every player's researches, in chronological order (icon · name · time).",
+
+  // Micro-mission 07/11 — entrée exacte (évite le template "${c} / ${n}").
+  "存活 / 被淘汰": "Survival / eliminated",
+
   // Mission 06/11 — clés propres aux listes replay (évitent les collisions).
   劳作单位: "Worker units",
   野生生物: "Other · wildlife",

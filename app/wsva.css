@@ -1014,3 +1014,33 @@
 @media (min-width:821px){
   .rp .rp-population-panel-toggle{display:none}
 }
+
+/* ============================================================
+   Micro-mission UI 07/11 — tableau « Statistiques complètes des
+   joueurs » : intercolonnes ≥ 16 px, numérique à droite en chiffres
+   tabulaires, séparateurs discrets + survol, éliminés grisés (†),
+   tri marqué sur la seule colonne active, en-tête collant opaque,
+   défilement horizontal ; blocs Recherches toujours dépliés.
+   ============================================================ */
+.rp .player-stats-wrap{max-height:70vh;overflow:auto}
+.rp .player-stats-table{border-collapse:separate;border-spacing:0;min-width:1180px}
+.rp .player-stats-table th,.rp .player-stats-table td{padding:8px 16px;text-align:left}
+.rp .player-stats-table .cell-number{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rp .player-stats-table thead th{position:sticky;top:0;background:var(--panel-raised);z-index:2;border-bottom:1px solid var(--edge-strong)}
+.rp .rp-sort-head{width:100%;justify-content:flex-end;align-items:center;gap:4px;font:inherit;font-weight:600;color:inherit;background:0 0;border:0;padding:0;cursor:pointer;display:inline-flex}
+.rp .rp-sort-head:hover{color:var(--gold)}
+.rp .rp-sort-arrow{font-size:11px;color:var(--gold)}
+.rp .player-stats-table tbody td{border-bottom:1px solid var(--edge)}
+.rp .player-stats-table tbody tr:last-child td{border-bottom:0}
+.rp .player-stats-table tbody tr:hover td{background:var(--row-hover)}
+/* Joueurs éliminés : texte atténué (marqueur † conservé dans la cellule). */
+.rp .player-stats-table tr.rp-row-dead td{color:var(--text-muted)}
+.rp .player-stats-table tr.rp-row-dead .name-text{color:var(--text-muted)}
+/* Blocs Recherches : en-tête simple, liste rendue d'office (plus de
+   bouton de dépliage — retour utilisateur 07/11). */
+.rp .research-block-head{align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);background:var(--panel-raised);display:flex}
+.rp .research-block-count{margin-left:auto;white-space:nowrap}
+/* En-tête de bloc Recherches : le pseudo long ne doit jamais pousser le
+   compteur hors du panneau (flex shrink + retour à la ligne si besoin). */
+.rp .research-block-head{min-width:0;flex-wrap:wrap}
+.rp .research-block-head .name-link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}

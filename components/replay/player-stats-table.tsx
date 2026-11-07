@@ -17,7 +17,7 @@ import { useMemo, useState } from "react";
 import Link from "@/components/site-link";
 import { useBilingual, useI18n } from "@/components/i18n";
 import type { TeamImpact } from "@/lib/replay/analysis";
-import { formatClock, researchIconUrl } from "@/lib/replay/wsva-view";
+import { formatClock, researchDisplayName, researchIconUrl } from "@/lib/replay/wsva-view";
 
 export type StatsSortKey =
   | "mvp"
@@ -134,7 +134,8 @@ export function PlayerStatsTable({ teams }: { teams: TeamImpact[] }) {
   });
   const rows = useMemo(() => buildStatsRows(teams), [teams]);
   const sorted = useMemo(() => sortStatsRows(rows, sort.key, sort.dir), [rows, sort]);
-  const fmt = useMemo(() => compactNumberCurry(locale), [locale]);
+  const fmt = useMemo(() => formatStatNumber(locale), [locale]);
+  const localeTag = locale === "zh" ? "zh-CN" : locale;
 
   const headers: Array<{ key: StatsSortKey; label: string }> = [
     { key: "mvp", label: l("MVP 分", "MVP score") },
@@ -157,7 +158,7 @@ export function PlayerStatsTable({ teams }: { teams: TeamImpact[] }) {
     );
 
   return (
-    <div className="table-scroll rp-table-wrap">
+    <div className="table-scroll rp-table-wrap player-stats-wrap">
       <table className="rp-data-table player-stats-table" aria-label={l("玩家完整统计", "Full player statistics")}>
         <caption className="visually-hidden">
           {l(
@@ -181,9 +182,11 @@ export function PlayerStatsTable({ teams }: { teams: TeamImpact[] }) {
                 >
                   <button type="button" className="rp-sort-head" onClick={() => onSort(h.key)}>
                     {h.label}
-                    <span className={`rp-sort-arrow${active ? " rp-sort-arrow-on" : ""}`} aria-hidden="true">
-                      {active && sort.dir === "asc" ? "↑" : "↓"}
-                    </span>
+                    {active ? (
+                      <span className="rp-sort-arrow" aria-hidden="true">
+                        {sort.dir === "asc" ? "↑" : "↓"}
+                      </span>
+                    ) : null}
                   </button>
                 </th>
               );
@@ -194,7 +197,7 @@ export function PlayerStatsTable({ teams }: { teams: TeamImpact[] }) {
           {sorted.map((r) => {
             const ageIcon = r.lastAgeResearch !== undefined ? researchIconUrl(r.lastAgeResearch) : "";
             return (
-              <tr key={`${r.side}-${r.name}`}>
+              <tr key={`${r.side}-${r.name}`} className={r.dead ? "rp-row-dead" : undefined}>
                 <td className="cell-player">
                   <span className="value-pairs">
                     <span
@@ -217,7 +220,7 @@ export function PlayerStatsTable({ teams }: { teams: TeamImpact[] }) {
                     "–"
                   ) : r.dead ? (
                     <span title={l("于 ${time} 被淘汰", "Eliminated at ${time}").replace("${time}", formatClock(r.survivalMs))}>
-                      ✞ {formatClock(r.survivalMs)}
+                      † {formatClock(r.survivalMs)}
                     </span>
                   ) : (
                     <span title={l("存活到对局结束", "Survived to the end of the game")}>
@@ -228,7 +231,7 @@ export function PlayerStatsTable({ teams }: { teams: TeamImpact[] }) {
                 <td className="cell-number cell-mono">{r.created}</td>
                 <td className="cell-number cell-mono">{r.killed}</td>
                 <td className="cell-number cell-mono">{r.lost}</td>
-                <td className="cell-number cell-mono">{r.kd === undefined ? "–" : kdText(r.kd)}</td>
+                <td className="cell-number cell-mono">{r.kd === undefined ? "–" : formatKd(r.kd, localeTag)}</td>
                 <td className="cell-number cell-mono">{r.armyMax > 0 ? fmt(r.armyMax) : "–"}</td>
                 <td className="cell-number cell-mono">{fmt(r.food)}</td>
                 <td className="cell-number cell-mono">{fmt(r.wood)}</td>
@@ -236,7 +239,18 @@ export function PlayerStatsTable({ teams }: { teams: TeamImpact[] }) {
                 <td className="cell-number cell-nowrap">
                   <span className="value-pairs">
                     {ageIcon ? (
-                      <img className="icon icon-sm" src={ageIcon} alt="" aria-hidden="true" loading="lazy" />
+                      <img
+                        className="icon icon-sm"
+                        src={ageIcon}
+                        alt=""
+                        aria-hidden="true"
+                        loading="lazy"
+                        title={
+                          r.lastAgeResearch !== undefined
+                            ? researchDisplayName(r.lastAgeResearch, locale)
+                            : undefined
+                        }
+                      />
                     ) : null}
                     <span className="cell-mono">
                       {r.lastAgeTimeMs !== undefined && (r.lastAge ?? 0) > 0 ? formatClock(r.lastAgeTimeMs) : "–"}
@@ -252,14 +266,24 @@ export function PlayerStatsTable({ teams }: { teams: TeamImpact[] }) {
   );
 }
 
-function kdText(kd: number): string {
-  return kd >= 10 ? kd.toFixed(0) : kd.toFixed(2);
+/** K/D : TOUJOURS 2 décimales, séparateur décimal locale (fr « 2,01 »). */
+export function formatKd(kd: number, locale: string): string {
+  const tag = locale === "zh" ? "zh-CN" : locale;
+  return kd.toLocaleString(tag, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function compactNumberCurry(locale: string): (v: number) => string {
-  const fmt = new Intl.NumberFormat(locale === "zh" ? "zh-CN" : locale, {
+/** Valeur de stat : entier brut sous 1000 (« 971 », « 0 ») ; au-delà,
+ *  compact TOUJOURS 1 décimale (« 12,7 k », « 8,0 k », « 149,9 k »). */
+export function formatStatNumber(locale: string): (v: number) => string {
+  const tag = locale === "zh" ? "zh-CN" : locale;
+  const compact = new Intl.NumberFormat(tag, {
     notation: "compact",
+    minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   });
-  return (v: number) => fmt.format(Math.max(0, Math.round(v)));
+  const plain = new Intl.NumberFormat(tag, { maximumFractionDigits: 0 });
+  return (v: number) => {
+    const n = Math.max(0, Math.round(v));
+    return n < 1000 ? plain.format(n) : compact.format(n);
+  };
 }

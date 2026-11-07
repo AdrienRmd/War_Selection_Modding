@@ -288,7 +288,6 @@ export function PlayerStatsTabs({
               )}
               labels={BUILDING_SUBGROUP_LABELS}
               title={l("建造的建筑", "Buildings built")}
-              defaultOpenFirst
             />
           ) : null}
           {destroyedBuildingCounts.length > 0 ? (
@@ -342,19 +341,22 @@ function UnitGroupSections({
   groups,
   labels,
   title,
-  defaultOpenFirst = false,
 }: {
   groups: ReadonlyArray<
     readonly [string, ReadonlyArray<{ gameId: string; count: number }>]
   >;
   labels: Record<string, { zh: string; en: string }>;
   title?: string;
-  /** Déplier le premier groupe par défaut (Éco des bâtiments, référence). */
-  defaultOpenFirst?: boolean;
 }) {
   const l = useBilingual();
   const { locale } = useI18n();
-  const [open, setOpen] = useState<Set<string>>(() => (defaultOpenFirst && groups.length > 0 ? new Set([groups[0][0]]) : new Set()));
+  // Retour utilisateur 07/11 : groupes OUVERTS PAR DÉFAUT dans tous les
+  // onglets (unités produites/tuées, bâtiments construits/détruits) — les
+  // chevrons restent actifs pour replier. L'état est initialisé à la
+  // montage (un onglet à la fois, rendu paresseux : pas de coût global).
+  const [open, setOpen] = useState<Set<string>>(
+    () => new Set(groups.map(([group]) => group)),
+  );
   const toggle = (group: string) =>
     setOpen((prev) => {
       const next = new Set(prev);

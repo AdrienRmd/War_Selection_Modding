@@ -1,6 +1,12 @@
 // Traductions françaises de l'interface et des archives. Les clés canoniques restent inchangées.
 export const french: Record<string, string> = {
 
+  // Micro-mission 07/11 — section Recherches dépliée d'office.
+  "每位玩家的研究，按完成时间先后（图标 · 名称 · 时刻）。": "Les recherches de chaque joueur, dans l'ordre chronologique (icône · nom · heure).",
+
+  // Micro-mission 07/11 — entrée exacte (évite le template "${c} / ${n}").
+  "存活 / 被淘汰": "Survie / élimination",
+
   // Mission 06/11 — clés propres aux listes replay (évitent les collisions).
   劳作单位: "Travailleurs",
   野生生物: "Autre · faune",
