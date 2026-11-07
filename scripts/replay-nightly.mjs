@@ -73,6 +73,7 @@ const report = {
   fetches: 0,
   ingest: { created: 0, conflict: 0, errors: 0 },
   transient: 0,
+  skippedInvalid: 0,
   warnings: [],
   parse: { ok: 0, failed: 0 },
   newCodes: 0,
@@ -316,6 +317,19 @@ try {
       continue;
     }
     report.parse.ok += 1;
+    // Pré-filtre INVALIDITÉ DÉTERMINISTE (micro-correctif prod 07/11) :
+    // un payload que cleanReplayBody refuserait à coup sûr (teamSize hors
+    // 1..16 — replays atypiques de l'index, ~5 %) ne part JAMAIS en POST :
+    // code marqué VU avec raison skipped-invalid, compteur dédié, run OK.
+    // (Le 4xx-déterministe DU SERVEUR reste un échec de run : c'est lui qui
+    // détecte les vraies régressions côté site.)
+    const ts = parsed.payload.teamSize;
+    if (!Number.isInteger(ts) || ts < 1 || ts > 16) {
+      warn(`${code}: teamSize=${ts} invalide (skipped-invalid — aucun POST, code clos)`);
+      report.skippedInvalid += 1;
+      state.codes[code] = 1;
+      continue;
+    }
     if (!DRY_RUN) {
       const result = await ingest(parsed.payload);
       if (result.created) report.ingest.created += 1;
