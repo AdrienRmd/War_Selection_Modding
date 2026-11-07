@@ -1,6 +1,62 @@
 // Source-backed English UI and archived-content translations. Canonical data keys stay unchanged.
 export const english: Record<string, string> = {
 
+  // Mission 06/11 — clés propres aux listes replay (évitent les collisions).
+  劳作单位: "Worker units",
+  野生生物: "Other · wildlife",
+  其余单位: "Other",
+  经济类建筑: "Economy",
+  防御类建筑: "Defense",
+  "搜索玩家们…": "Search players…",
+
+  // Mission 06/11 — compteur de recherches (bloc joueur).
+  "研究 ${n} 项": "${n} researches",
+
+  // Mission 06/11 — complément EN des écrans replay (tests ui-strings).
+  全部收起: "Collapse all",
+  全部展开: "Expand all",
+  阶段影响力: "Impact by phase",
+  "对局按全体玩家的中位数时间划分：到达中世纪（前期结束）与首次进入工业时代（中期结束），之后为后期。表中百分比为该玩家在此阶段内占全队影响力的份额，按总影响力排序。": "The game is split in three stages by when the median player reached Middle Ages (end of Early) and the first Industrial age (end of Mid); Late is the rest. Each percentage is the player's share of their team's impact during that stage, sorted by total impact.",
+  玩家完整统计: "Full player statistics",
+  "点击列标题排序。“最大军队”为军队点数峰值：回放时间线不含存活单位数，故以游戏自己的军队价值（点）计量。": "Click a column header to sort. “Max army” is the peak army value in points: the replay timeline has no living-unit count, so the game's own army value (points) is used.",
+  "各玩家在前期、中期、后期占本队影响力的份额，按总影响力排序。": "Each player's share of their team's impact in the early, mid and late game, sorted by total impact.",
+  "前期 ${a} · 中期 ${b} · 后期 ${c} — 每个阶段从零开始计算": "Early ${a} · Mid ${b} · Late ${c} — each stage restarts from zero",
+  总影响力: "Total impact",
+  "MVP 分": "MVP score",
+  "全体玩家的完整统计，点击列标题排序。": "Full statistics for every player; click a column header to sort.",
+  "最大军队（点）": "Max army (pts)",
+  最高时代: "Max age",
+  存活到对局结束: "Survived to the end of the game",
+  歼灭单位: "Units killed",
+
+  // Mission 06/11 — clés FR exigées aussi côté EN (test i18n).
+  "每个玩家一条曲线。村民/渔船/拖拉机为逐时段精确值，军队按玩家实际生产校准估算；被淘汰后回落到 0。": "One line per player. Workers, fishing boats and tractors are exact per tick; the army part is calibrated on each player's actual production; eliminated players fold back to 0.",
+  "各玩家人口随时间变化的折线图（估算）": "Line chart of each player's population over time (estimate)",
+  "玩家曲线": "Player lines",
+  "纵轴 0–600（超出时自动扩展）· 横轴每 1:30 一格 · 数值为估算": "Y axis 0–600 (auto-extended beyond) · X axis tick every 1:30 · values are estimated",
+  "展开每位玩家，按完成时间先后查看其研究（图标 · 名称 · 时刻）。": "Expand a player to see their researches in chronological order (icon · name · time).",
+  "每位玩家一节，可展开。": "One section per player, expandable.",
+
+  // Mission 06/11 — population, unit groups (siege), buildings, researches.
+  近战单位: "Melee",
+  远程单位: "Ranged",
+  攻城单位: "Siege",
+  骑兵单位: "Cavalry",
+  装甲单位: "Vehicles",
+  战机单位: "Warplanes",
+  战舰单位: "Warships",
+  人口建筑: "Population",
+  军事建筑: "Military",
+  研究建筑: "Research",
+  其他建筑: "Other",
+  建造的建筑: "Buildings built",
+  摧毁的建筑: "Buildings destroyed",
+  生产单位: "Units built",
+  "人口曲线（估算）": "Population over time (estimate)",
+  全选: "Select all",
+  玩家与队伍: "Players & teams",
+  研究列表: "Researches",
+
   // Player statistics — onglets du détail joueur.
   玩家统计: "Player statistics",
   近战: "Melee",

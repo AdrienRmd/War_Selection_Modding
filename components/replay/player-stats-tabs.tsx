@@ -4,18 +4,22 @@
  *  Research, icônes lucide équivalentes à leurs material icons).
  *  Contenu :
  *  - Resources : cartes denses (récolté par ressource, stock final + pic,
- *    efficacité de récolte, territoire, points de villageois) — séries du
- *    parser existantes ;
- *  - Units : sections REPLIABLES par catégorie réelle du dataset (Eco /
- *    Mêlée / Distance / Cavalerie / Blindés / Aviation / Marine / Autres —
- *    cf. lib/replay/unit-groups.ts ; pas de « Siège » : aucun marqueur
- *    public, les armes de siège sont fusionnées dans Distance), tuile par
- *    unité : icône du jeu (/wus-data), nom localisé, nombre produit ;
- *  - Defeated : unités tuées et perdues (mêmes tuiles) ;
- *  - Buildings : production de bâtiments (onglet omis si aucun) ;
- *  - Research : recherches avec icône, nom localisé et horloge.
+ *    efficacité de récolte, territoire, points de villageois) ;
+ *  - Units : sections REPLIABLES par catégorie réelle du dataset
+ *    (Travailleurs / Mêlée / À distance / Siège / Cavalerie / Blindés /
+ *    Aviation / Marine / Faune / Autres — cf. lib/replay/unit-groups.ts),
+ *    LIGNE par unité : icône du jeu (/wus-data), nom localisé, nombre
+ *    produit (mission 06/11 : « Travailleur 33, Archer 52… », image + nom
+ *    + count, PAS de graphique) ;
+ *  - Defeated : unités tuées (lignes non fusionnées : la référence ws-stats
+ *    liste séparément la même unité tuée chez des factions différentes) et
+ *    unités perdues (mêmes lignes) ;
+ *  - Buildings : production de bâtiments (Éco déplié en premier, comme la
+ *    référence) + bâtiments détruits (tués) par sous-catégorie (onglet
+ *    omis si aucun) ;
+ *  - Research : liste icône + nom localisé + horloge MM:SS.
  *  Rendu paresseux : seuls l'onglet actif et les sections ouvertes montent
- *  leurs tuiles ; toutes les images sont loading="lazy". */
+ *  leurs lignes ; toutes les images sont loading="lazy". */
 import { useMemo, useState } from "react";
 import { Coins, Users, Skull, Home, FlaskConical, ChevronDown } from "lucide-react";
 import { useBilingual, useI18n } from "@/components/i18n";
@@ -26,17 +30,18 @@ import {
   UNIT_GROUP_ORDER,
   groupBuildingCounts,
   groupUnitCounts,
+  groupUnitRows,
   type BuildingSubgroupId,
   type UnitGroupId,
 } from "@/lib/replay/unit-groups";
 import {
   compactNumber,
-  formatClock,
   researchDisplayName,
   researchIconUrl,
   unitDisplayName,
   unitIconUrl,
 } from "@/lib/replay/wsva-view";
+import { formatMinutesSeconds } from "@/lib/replay/population";
 
 const RESOURCE_META = [
   { icon: "/wus-data/content/images/resource/0.png", zh: "食物", en: "Food" },
@@ -44,35 +49,34 @@ const RESOURCE_META = [
   { icon: "/wus-data/content/images/resource/2.png", zh: "铁矿", en: "Iron" },
 ] as const;
 
+/** Libellés bilingues des groupes — FR via le dictionnaire (clé zh). */
 const GROUP_LABELS: Record<UnitGroupId, { zh: string; en: string }> = {
   buildings: { zh: "建筑", en: "Buildings" },
-  eco: { zh: "经济", en: "Eco" },
-  melee: { zh: "近战", en: "Melee" },
-  ranged: { zh: "远程", en: "Ranged" },
-  cavalry: { zh: "骑兵", en: "Cavalry" },
-  vehicles: { zh: "装甲", en: "Vehicles" },
-  air: { zh: "航空", en: "Aviation" },
-  fleet: { zh: "舰船", en: "Fleet" },
-  fauna: { zh: "野生动物", en: "Wildlife" },
-  other: { zh: "其他", en: "Other" },
+  eco: { zh: "劳作单位", en: "Worker units" },
+  melee: { zh: "近战单位", en: "Melee" },
+  ranged: { zh: "远程单位", en: "Ranged" },
+  siege: { zh: "攻城单位", en: "Siege" },
+  cavalry: { zh: "骑兵单位", en: "Cavalry" },
+  vehicles: { zh: "装甲单位", en: "Vehicles" },
+  air: { zh: "战机单位", en: "Warplanes" },
+  fleet: { zh: "战舰单位", en: "Warships" },
+  fauna: { zh: "野生生物", en: "Other · wildlife" },
+  other: { zh: "其余单位", en: "Other" },
 };
 
-/** Sous-sections de l'onglet Buildings (V C 02/11) — même découpe que
- *  ws-stats.pl : Eco / Population / Defense / Military / Research / Other
- *  (classificateurs publics du dataset, cf. buildingSubgroupOf). */
+/** Sous-sections de l'onglet Buildings — même découpe que ws-stats.pl :
+ *  Économie (dépliée en premier) / Population / Défense / Militaire /
+ *  Recherche / Autre. */
 const BUILDING_SUBGROUP_LABELS: Record<BuildingSubgroupId, { zh: string; en: string }> = {
-  eco: { zh: "经济", en: "Eco" },
-  population: { zh: "人口", en: "Population" },
-  defense: { zh: "防御", en: "Defense" },
-  military: { zh: "军事", en: "Military" },
-  research: { zh: "研究", en: "Research" },
-  other: { zh: "其他", en: "Other" },
+  eco: { zh: "经济类建筑", en: "Economy" },
+  population: { zh: "人口建筑", en: "Population" },
+  defense: { zh: "防御类建筑", en: "Defense" },
+  military: { zh: "军事建筑", en: "Military" },
+  research: { zh: "研究建筑", en: "Research" },
+  other: { zh: "其他建筑", en: "Other" },
 };
 
-/** Agrège les compteurs d'unités d'un map du parser. Structure
- *  NESTED : clé externe = catégorie (ex. « unitCategoryLand »), la valeur
- *  liste des PlayerUnitStat dont `id` est le gameId — on somme par gameId
- *  (même motif qu'analysis.countUnits). */
+/** Agrège les compteurs d'unités d'un map du parser (somme par gameId). */
 function countUnits(map?: Map<string, PlayerUnitStat[]>): Map<string, number> {
   const out = new Map<string, number>();
   for (const stats of map?.values() ?? []) {
@@ -83,12 +87,34 @@ function countUnits(map?: Map<string, PlayerUnitStat[]>): Map<string, number> {
   return out;
 }
 
+/** Lignes d'unités tuées SANS fusion : une ligne par (faction victime,
+ *  gameId) — la référence ws-stats ne fusionne pas les mêmes unités tuées
+ *  chez des factions différentes. Repli fusionné si la ventilation par
+ *  faction est absente (anciens replays). */
+function killedRows(
+  player: Player,
+): Array<readonly [rowKey: string, gameId: string, count: number]> {
+  const rows: Array<readonly [string, string, number]> = [];
+  if (player.unitsKilledByFaction && player.unitsKilledByFaction.length > 0) {
+    for (const [entryIndex, entry] of player.unitsKilledByFaction.entries()) {
+      for (const [gameId, count] of countUnits(entry.units)) {
+        if (count > 0) rows.push([`${entryIndex}:${gameId}`, gameId, count]);
+      }
+    }
+    if (rows.length > 0) return rows;
+  }
+  for (const [gameId, count] of countUnits(player.unitsKilledPlain)) {
+    if (count > 0) rows.push([gameId, gameId, count]);
+  }
+  return rows;
+}
+
 type TabId = "resources" | "units" | "defeated" | "buildings" | "research";
 
 const TABS: Array<{ id: TabId; icon: typeof Coins; zh: string; en: string }> = [
   { id: "resources", icon: Coins, zh: "资源", en: "Resources" },
-  { id: "units", icon: Users, zh: "单位", en: "Units" },
-  { id: "defeated", icon: Skull, zh: "歼灭", en: "Defeated" },
+  { id: "units", icon: Users, zh: "生产单位", en: "Units built" },
+  { id: "defeated", icon: Skull, zh: "击杀单位", en: "Units killed" },
   { id: "buildings", icon: Home, zh: "建筑", en: "Buildings" },
   { id: "research", icon: FlaskConical, zh: "研究", en: "Research" },
 ];
@@ -116,23 +142,13 @@ export function PlayerStatsTabs({
     () => groupUnitCounts([...created.entries()].filter(([, n]) => n > 0)),
     [created],
   );
-  const killed = useMemo(() => {
-    if (player.unitsKilledPlain && player.unitsKilledPlain.size > 0) {
-      return countUnits(player.unitsKilledPlain);
-    }
-    const merged = new Map<string, number>();
-    for (const entry of player.unitsKilledByFaction ?? []) {
-      for (const [gameId, count] of countUnits(entry.units)) {
-        merged.set(gameId, (merged.get(gameId) ?? 0) + count);
-      }
-    }
-    return merged;
-  }, [player]);
+  const killed = useMemo(() => killedRows(player), [player]);
+  const killedGroups = useMemo(() => groupUnitRows(killed), [killed]);
   const lost = useMemo(() => {
-    if (player.unitsLostPlain && player.unitsLostPlain.size > 0) {
-      return countUnits(player.unitsLostPlain);
-    }
     const merged = new Map<string, number>();
+    for (const [gameId, count] of countUnits(player.unitsLostPlain)) {
+      merged.set(gameId, (merged.get(gameId) ?? 0) + count);
+    }
     for (const entry of player.unitsLostByFaction ?? []) {
       for (const [gameId, count] of countUnits(entry.units)) {
         merged.set(gameId, (merged.get(gameId) ?? 0) + count);
@@ -140,10 +156,6 @@ export function PlayerStatsTabs({
     }
     return merged;
   }, [player]);
-  const killedGroups = useMemo(
-    () => groupUnitCounts([...killed.entries()].filter(([, n]) => n > 0)),
-    [killed],
-  );
   const lostGroups = useMemo(
     () => groupUnitCounts([...lost.entries()].filter(([, n]) => n > 0)),
     [lost],
@@ -158,8 +170,21 @@ export function PlayerStatsTabs({
     [createdGroups],
   );
   const buildingSubgroups = useMemo(() => groupBuildingCounts(buildingCounts), [buildingCounts]);
+  const destroyedBuildingCounts = useMemo(
+    () =>
+      [...(killedGroups.get("buildings") ?? [])].map(
+        (u) => [u.gameId, u.count] as [string, number],
+      ),
+    [killedGroups],
+  );
+  const destroyedBuildingSubgroups = useMemo(
+    () => groupBuildingCounts(destroyedBuildingCounts),
+    [destroyedBuildingCounts],
+  );
   const hasBuildings = (createdGroups.get("buildings")?.length ?? 0) > 0;
-  const visibleTabs = TABS.filter((t) => t.id !== "buildings" || hasBuildings);
+  const visibleTabs = TABS.filter(
+    (t) => t.id !== "buildings" || hasBuildings || destroyedBuildingCounts.length > 0,
+  );
 
   return (
     <div className="player-stats" data-testid="player-stats">
@@ -254,76 +279,82 @@ export function PlayerStatsTabs({
         </div>
       ) : null}
 
-      {tab === "buildings" && hasBuildings ? (
-        <UnitGroupSections
-          groups={BUILDING_SUBGROUP_ORDER.filter((g) => buildingSubgroups.has(g)).map(
-            (g) => [g, buildingSubgroups.get(g)!] as const,
-          )}
-          labels={BUILDING_SUBGROUP_LABELS}
-        />
+      {tab === "buildings" && (hasBuildings || destroyedBuildingCounts.length > 0) ? (
+        <div className="player-stats-defeated">
+          {hasBuildings ? (
+            <UnitGroupSections
+              groups={BUILDING_SUBGROUP_ORDER.filter((g) => buildingSubgroups.has(g)).map(
+                (g) => [g, buildingSubgroups.get(g)!] as const,
+              )}
+              labels={BUILDING_SUBGROUP_LABELS}
+              title={l("建造的建筑", "Buildings built")}
+              defaultOpenFirst
+            />
+          ) : null}
+          {destroyedBuildingCounts.length > 0 ? (
+            <UnitGroupSections
+              groups={BUILDING_SUBGROUP_ORDER.filter((g) => destroyedBuildingSubgroups.has(g)).map(
+                (g) => [g, destroyedBuildingSubgroups.get(g)!] as const,
+              )}
+              labels={BUILDING_SUBGROUP_LABELS}
+              title={l("摧毁的建筑", "Buildings destroyed")}
+            />
+          ) : null}
+        </div>
       ) : null}
 
       {tab === "research" ? (
-        <div className="table-scroll">
-          <table className="units-table player-stats-research">
-            <thead>
-              <tr>
-                <th scope="col">{l("研究", "Research")}</th>
-                <th scope="col" className="cell-number">{l("完成时间", "Completed at")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {researches.map((research, index) => {
-                const icon = researchIconUrl(research.id);
-                return (
-                  <tr key={`${research.id}-${index}`}>
-                    <td>
-                      <span className="value-pairs">
-                        {icon ? (
-                          <img
-                            className="icon icon-md research-image"
-                            src={icon}
-                            alt=""
-                            aria-hidden="true"
-                            loading="lazy"
-                          />
-                        ) : null}
-                        <span>{researchDisplayName(research.id, locale) || `#${research.id}`}</span>
-                      </span>
-                    </td>
-                    <td className="cell-number cell-mono">{formatClock(research.takenTime)}</td>
-                  </tr>
-                );
-              })}
-              {researches.length === 0 ? (
-                <tr>
-                  <td colSpan={2} className="label-text">{l("本局没有完成研究。", "No research completed this game.")}</td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+        <ul className="player-stats-rows player-stats-research-rows">
+          {researches.map((research, index) => {
+            const icon = researchIconUrl(research.id);
+            return (
+              <li className="player-stats-unit-row" key={`${research.id}-${index}`}>
+                <img
+                  className="player-stats-unit-icon"
+                  src={icon || "/icons/sparkles.png"}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                />
+                <span className="player-stats-unit-name">
+                  {researchDisplayName(research.id, locale) || `#${research.id}`}
+                </span>
+                <span className="player-stats-unit-count cell-strong cell-mono">
+                  {formatMinutesSeconds(research.takenTime / 1000)}
+                </span>
+              </li>
+            );
+          })}
+          {researches.length === 0 ? (
+            <li className="label-text">{l("本局没有完成研究。", "No research completed this game.")}</li>
+          ) : null}
+        </ul>
       ) : null}
     </div>
   );
 }
 
-/** Sections repliables par catégorie — tuiles rendues seulement si ouvertes.
+/** Sections repliables par catégorie — LIGNES rendues seulement si ouvertes
+ *  (icône d'expansion chevron, équivalent lucide du expand_more de la
+ *  référence ; groupe déplié : Économie des bâtiments, comme ws-stats).
  *  Générique sur la clé (groupe d'unités OU sous-catégorie de bâtiment). */
 function UnitGroupSections({
   groups,
   labels,
   title,
+  defaultOpenFirst = false,
 }: {
   groups: ReadonlyArray<
     readonly [string, ReadonlyArray<{ gameId: string; count: number }>]
   >;
   labels: Record<string, { zh: string; en: string }>;
   title?: string;
+  /** Déplier le premier groupe par défaut (Éco des bâtiments, référence). */
+  defaultOpenFirst?: boolean;
 }) {
   const l = useBilingual();
   const { locale } = useI18n();
-  const [open, setOpen] = useState<Set<string>>(new Set());
+  const [open, setOpen] = useState<Set<string>>(() => (defaultOpenFirst && groups.length > 0 ? new Set([groups[0][0]]) : new Set()));
   const toggle = (group: string) =>
     setOpen((prev) => {
       const next = new Set(prev);
@@ -356,9 +387,12 @@ function UnitGroupSections({
               </span>
             </button>
             {isOpen ? (
-              <div className="player-stats-unit-grid">
+              <ul className="player-stats-rows">
                 {units.map((unit) => (
-                  <span key={unit.gameId} className="player-stats-unit-tile">
+                  <li
+                    className="player-stats-unit-row"
+                    key={"rowKey" in unit ? (unit.rowKey as string) : unit.gameId}
+                  >
                     <img
                       className="player-stats-unit-icon"
                       src={unitIconUrl(unit.gameId)}
@@ -370,9 +404,9 @@ function UnitGroupSections({
                       {unitDisplayName(unit.gameId, locale)}
                     </span>
                     <span className="player-stats-unit-count cell-strong">{unit.count}</span>
-                  </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             ) : null}
           </div>
         );

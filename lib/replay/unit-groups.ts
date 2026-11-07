@@ -1,35 +1,43 @@
 /** Groupes d'unités pour l'onglet « Units » du détail joueur — ADAPTÉ aux
- *  catégories réelles de notre dataset public (lib/units-index.json), pas
- *  aux libellés ws-stats (leur découpe Melee/Range/Siege repose sur des
- *  marqueurs internes non publiés : aucune arme « siege » ni tag dédié
- *  n'existe dans nos données — les armes de siège sont des armes de portée,
- *  elles sont donc fusionnées dans « ranged », écart documenté).
+ *  catégories réelles de notre dataset public (lib/units-index.json).
+ *
+ *  Siège (mission 06/11, livrable 2) : ws-stats.pl dispose d'un marqueur
+ *  interne (extraType "siege") absent des données publiques ; la liste
+ *  lib/replay/unit-siege.json (générée par scripts/gen-unit-siege.mjs,
+ *  heuristique attackGround/portée minimale sur le dataset servi) fournit
+ *  les ids de fiche classés siège — catapultes, trébuchets, béliers,
+ *  canons, mortiers… Écarts documentés dans le script (pillbox, tours
+ *  d'artillerie, moto lance-grenades).
  *
  *  Règles déterministes (première règle qui matche gagne) :
- *  1. bâtiments — catégorie unitCategory*Build/TC, ou tags Building /
+ *  1. siège — id de fiche présent dans unit-siege.json, AVANT bâtiments :
+ *     trébuchet/bélier sont des DefBuild dans les données du jeu et ne
+ *     doivent pas tomber dans l'onglet Bâtiments ;
+ *  2. bâtiments — catégorie unitCategory*Build/TC, ou tags Building /
  *     Main building / Wonder (unitTag#2/#5/#9) → onglet « Buildings » ;
- *  2. éco — catégorie unitCategoryWorker, ou tag Worker (#3) ;
- *  3. cavalerie — tag Horseman (#25) ou Horse (#35), avant la règle mêlée
+ *  3. éco — catégorie unitCategoryWorker, ou tag Worker (#3) ;
+ *  4. cavalerie — tag Horseman (#25) ou Horse (#35), avant la règle mêlée
  *     (les chevaliers portent des armes de mêlée) ;
- *  4. blindés — tag Heavy vehicle (#34) ;
- *  5. aviation — catégorie unitCategoryAir, ou tag Aviation (#14) ;
- *  6. marine — catégorie unitCategoryFleet, ou tags Fleet (#16/#7) ;
- *  7. faune — tag officiel « Wild animal » (unitTag#33) ou chemin
+ *  5. blindés — tag Heavy vehicle (#34) ;
+ *  6. aviation — catégorie unitCategoryAir, ou tag Aviation (#14) ;
+ *  7. marine — catégorie unitCategoryFleet, ou tags Fleet (#16/#7) ;
+ *  8. faune — tag officiel « Wild animal » (unitTag#33) ou chemin
  *     animals/* (vaches, cerfs, oies, alligators, sangliers, tigres,
- *     ours, aigles, mammouths, chèvres) → section « Faune » (V C 02/11,
- *     comme l'onglet Other de ws-stats qui détaille la faune) — AVANT
+ *     ours, aigles, mammouths, chèvres) → section « Faune » — AVANT
  *     mêlée/distance : les animaux armés restent des animaux ;
- *  8. mêlée — catégorie unitCategoryLand avec une arme weaponTypeMelee ;
- *  9. distance — catégorie unitCategoryLand avec une arme à portée
- *     (weaponTypeRange / weaponTypeAerialBomb) ;
- *  10. autres — le reste (roi, décoration, helpers, horde…).
+ *  9. mêlée — catégorie unitCategoryLand avec une arme weaponTypeMelee ;
+ *  10. distance — catégorie unitCategoryLand avec une arme à portée
+ *      (weaponTypeRange / weaponTypeAerialBomb) ;
+ *  11. autres — le reste (roi, décoration, helpers, horde…).
  *  Unité inconnue de l'index (ne devrait pas arriver : correspondance
  *  453/453 vérifiée) → « autres ». */
 import { unitsIndex, type UnitIndexEntry } from "@/lib/units";
+import siegeTable from "./unit-siege.json";
 
 export type UnitGroupId =
   | "buildings"
   | "eco"
+  | "siege"
   | "cavalry"
   | "vehicles"
   | "air"
@@ -39,11 +47,14 @@ export type UnitGroupId =
   | "fauna"
   | "other";
 
-/** Ordre d'affichage de l'onglet Units (bâtiments exclus → onglet dédié). */
+/** Ordre d'affichage de l'onglet Units (façon ws-stats : Travailleur /
+ *  Mêlée / À distance / Siège / Cavalerie / [Blindés] / Avions / Navires /
+ *  Faune / Autre — bâtiments exclus → onglet dédié). */
 export const UNIT_GROUP_ORDER: readonly UnitGroupId[] = [
   "eco",
   "melee",
   "ranged",
+  "siege",
   "cavalry",
   "vehicles",
   "air",
@@ -77,8 +88,14 @@ const byFicheId = new Map<string, UnitIndexEntry>(
   unitsIndex.units.map((u) => [u.id, u]),
 );
 
-function groupOfEntry(entry: UnitIndexEntry | undefined): UnitGroupId {
+/** Unités de siège — ids de fiche sans préfixe (cf. unit-siege.json). */
+const SIEGE_IDS: ReadonlySet<string> = new Set(siegeTable.units);
+
+function groupOfEntry(entry: UnitIndexEntry | undefined, ficheId: string): UnitGroupId {
   if (!entry) return "other";
+  // Siège en premier : les engins (trébuchet, bélier…) sont des DefBuild
+  // dans les données du jeu — ils ne doivent pas finir « Bâtiments ».
+  if (SIEGE_IDS.has(ficheId)) return "siege";
   const summary = entry.s ?? {};
   const category = typeof summary.category === "string" ? summary.category : "";
   const tags = new Set(summary.tags ?? []);
@@ -109,8 +126,8 @@ function groupOfEntry(entry: UnitIndexEntry | undefined): UnitGroupId {
 
 /** Groupe d'affichage d'une unité du jeu (gameId complet ou id de fiche). */
 export function unitGroupOf(gameId: string): UnitGroupId {
-  const entry = byFicheId.get(gameId.replace(/^WarSelection\//, ""));
-  return groupOfEntry(entry);
+  const ficheId = gameId.replace(/^WarSelection\//, "");
+  return groupOfEntry(byFicheId.get(ficheId), ficheId);
 }
 
 /** Regroupe des compteurs d'unités { gameId → nombre } par groupe
@@ -119,23 +136,48 @@ export function unitGroupOf(gameId: string): UnitGroupId {
 export function groupUnitCounts(
   counts: Iterable<[string, number]>,
 ): Map<UnitGroupId, Array<{ gameId: string; count: number }>> {
-  const merged = new Map<UnitGroupId, Map<string, number>>();
-  for (const [gameId, count] of counts) {
-    const group = unitGroupOf(gameId);
-    let byId = merged.get(group);
-    if (!byId) {
-      byId = new Map();
-      merged.set(group, byId);
-    }
-    byId.set(gameId, (byId.get(gameId) ?? 0) + count);
-  }
-  const result = new Map<UnitGroupId, Array<{ gameId: string; count: number }>>();
-  for (const [group, byId] of merged) {
-    result.set(
+  const grouped = groupUnitRows(
+    [...counts].map(([gameId, count]) => [gameId, gameId, count] as const),
+  );
+  // groupUnitRows ajoute rowKey (clé de ligne non fusionnée) — l'API
+  // historique { gameId, count } reste inchangée pour les usages existants.
+  const out = new Map<UnitGroupId, Array<{ gameId: string; count: number }>>();
+  for (const [group, rows] of grouped) {
+    const merged = new Map<string, number>();
+    for (const row of rows) merged.set(row.gameId, (merged.get(row.gameId) ?? 0) + row.count);
+    out.set(
       group,
-      [...byId.entries()]
+      [...merged.entries()]
         .map(([gameId, count]) => ({ gameId, count }))
         .sort((a, b) => b.count - a.count || a.gameId.localeCompare(b.gameId)),
+    );
+  }
+  return out;
+}
+
+/** Regroupe des LIGNES d'unités par groupe SANS fusionner les lignes de
+ *  même gameId (mission 06/11 : la référence ws-stats liste séparément les
+ *  mêmes unités tuées chez des factions différentes — « ne pas fusionner
+ *  ce que la référence ne fusionne pas »). `rowKey` distingue les lignes
+ *  (ex. faction victime), `gameId` porte l'icône et le nom. */
+export function groupUnitRows(
+  rows: Iterable<readonly [rowKey: string, gameId: string, count: number]>,
+): Map<UnitGroupId, Array<{ gameId: string; count: number; rowKey: string }>> {
+  const merged = new Map<UnitGroupId, Array<{ gameId: string; count: number; rowKey: string }>>();
+  for (const [rowKey, gameId, count] of rows) {
+    const group = unitGroupOf(gameId);
+    let list = merged.get(group);
+    if (!list) {
+      list = [];
+      merged.set(group, list);
+    }
+    list.push({ gameId, count, rowKey });
+  }
+  const result = new Map<UnitGroupId, Array<{ gameId: string; count: number; rowKey: string }>>();
+  for (const [group, list] of merged) {
+    result.set(
+      group,
+      list.sort((a, b) => b.count - a.count || a.gameId.localeCompare(b.gameId)),
     );
   }
   return result;
@@ -151,7 +193,9 @@ export function groupUnitCounts(
  *  - unitCategoryDefBuild → Défense (tours, murailles) ;
  *  - unitCategoryProdBuild → Militaire (caserne, écurie, champ de tir,
  *    pier) ;
- *  - unitCategoryGameplayBuild → Autre (forge, arsenal, radar, aéroport). */
+ *  - unitCategoryGameplayBuild → Autre (forge, arsenal, radar, aéroport).
+ *  Les engins de siège (DefBuild mobiles/à tourelle) sont exclus via
+ *  unitGroupOf → ils ne passent jamais par ici (groupe « siege »). */
 
 export type BuildingSubgroupId = "eco" | "population" | "defense" | "military" | "research" | "other";
 
@@ -188,8 +232,8 @@ function buildingSubgroupOfEntry(entry: UnitIndexEntry | undefined): BuildingSub
 
 /** Sous-catégorie d'affichage d'un bâtiment (gameId complet ou id de fiche). */
 export function buildingSubgroupOf(gameId: string): BuildingSubgroupId {
-  const entry = byFicheId.get(gameId.replace(/^WarSelection\//, ""));
-  return buildingSubgroupOfEntry(entry);
+  const ficheId = gameId.replace(/^WarSelection\//, "");
+  return buildingSubgroupOfEntry(byFicheId.get(ficheId));
 }
 
 /** Regroupe des compteurs de BÂTIMENTS par sous-catégorie. */

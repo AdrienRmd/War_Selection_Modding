@@ -171,3 +171,27 @@ export function composite(hexColor: string, bg: string, alpha: number): string {
 export function playerSeriesId(name: string, index: number): string {
   return `${name}#${index}`;
 }
+
+/* ------------------------------------------------------------------ */
+/* Graphe de population (mission 06/11) — la palette mesurée ci-dessus
+ *  est CYCLÉE pour plus de 10 joueurs : au 2e passage la même teinte
+ *  revient éclaircie de 12 % (mélange uniforme vers le blanc — même
+ *  teinte, même saturation relative, attribution stable par index). */
+
+/** Éclaircissement (+12 %) : mélange uniforme vers le blanc. */
+export function lightenColor(hex: string, amount: number): string {
+  const h = hex.replace("#", "");
+  const out = [0, 2, 4].map((i) => {
+    const v = parseInt(h.slice(i, i + 2), 16);
+    return Math.round(v + (255 - v) * amount);
+  });
+  return "#" + out.map((v) => v.toString(16).padStart(2, "0")).join("");
+}
+
+/** Couleur de la courbe population d'un joueur : PLAYER_COLORS cyclée,
+ *  +12 % de luminosité au 2e passage (14 joueurs = 10 teintes mesurées
+ *  + variantes claires). */
+export function populationPlayerColor(index: number): string {
+  const base = PLAYER_COLORS[index % PLAYER_COLORS.length];
+  return index < PLAYER_COLORS.length ? base : lightenColor(base, 0.12);
+}

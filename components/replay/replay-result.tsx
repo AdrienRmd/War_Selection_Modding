@@ -30,8 +30,10 @@ import {
   researchIconUrl,
 } from "@/lib/replay/wsva-view";
 import { PowerBalanceChart, TEAM_BLUE, TEAM_RED } from "./replay-charts";
+import { PopulationChartSection } from "./population-chart";
 import { PhaseImpactTable } from "./phase-impact-table";
 import { PlayerStatsTable } from "./player-stats-table";
+import { ResearchTimelineSection } from "./research-timeline";
 
 const MODE_LABELS: Record<string, { zh: string; en: string }> = {
   replayMatchTypeFFA: { zh: "混战", en: "Free for all" },
@@ -311,6 +313,10 @@ export function ReplayResult({
           ) : null}
         </CollapsibleSection>
 
+        {/* Évolution de population (mission 06/11) — Chart.js, une courbe
+            par joueur, estimation documentée (cf. population-chart.tsx). */}
+        <PopulationChartSection result={data} analysis={analysis} />
+
         {/* Tables par équipe. */}
         <div className="team-grid">
           {analysis.teams.map((team) => (
@@ -351,6 +357,12 @@ export function ReplayResult({
             />
           </CollapsibleSection>
         ) : null}
+
+        {/* Chronologie des recherches — temps horodatés + icônes (mission
+            05/11 : « un temps, par exemple 40:34, pour X »). */}
+        <CollapsibleSection title={l("研究列表", "Researches")} icon="/icons/sparkles.png">
+          <ResearchTimelineSection teams={analysis.teams} />
+        </CollapsibleSection>
 
         {/* Statistiques complètes par joueur — tableau triable. */}
         <CollapsibleSection title={l("玩家完整统计", "Full player statistics")} icon="/icons/report.png">
@@ -747,7 +759,6 @@ function TeamRow({
   );
 }
 
-
 /* ------------------------------------------------------------------ */
 /* Médailles — noms et raisons (i18n)                                  */
 /* ------------------------------------------------------------------ */
@@ -874,7 +885,6 @@ function compactNumberCurry(locale: string): (v: number) => string {
   });
   return (v: number) => fmt.format(Math.max(0, Math.round(v)));
 }
-
 
 /* Réexport pour la modale existante (obsolète : gardées pour compat). */
 export { TEAM_BLUE, TEAM_RED };

@@ -16,7 +16,8 @@ describe("unit-groups — classification du dataset réel", () => {
   it("cas nominaux (ids réels du dataset)", () => {
     expect(unitGroupOf("WarSelection/1/worker")).toBe("eco");
     expect(unitGroupOf("WarSelection/1/maceman")).toBe("melee");
-    expect(unitGroupOf("WarSelection/3/aw/ballista")).toBe("ranged");
+    expect(unitGroupOf("WarSelection/3/aw/ballista")).toBe("siege"); // frappe au sol
+    expect(unitGroupOf("WarSelection/3/ee/catapult")).toBe("siege");
     expect(unitGroupOf("WarSelection/3/ew/knight")).toBe("cavalry"); // Horseman avant mêlée
     expect(unitGroupOf("WarSelection/1/townhall")).toBe("buildings");
     expect(unitGroupOf("WarSelection/2/a/wall_big")).toBe("buildings");
@@ -24,6 +25,25 @@ describe("unit-groups — classification du dataset réel", () => {
     expect(unitGroupOf("WarSelection/4/aero/military")).toBe("air");
     expect(unitGroupOf("WarSelection/2/a/boat_archer")).toBe("fleet");
     expect(unitGroupOf("WarSelection/1/king")).toBe("other"); // sans arme
+  });
+
+  it("siège (mission 06/11) : engins et artillerie, PAS les chars ni les tours", () => {
+    // Heuristique unit-siege.json (attackGround / portée minimale).
+    expect(unitGroupOf("WarSelection/3/ee/catapult")).toBe("siege");
+    expect(unitGroupOf("WarSelection/3/ew/onager")).toBe("siege");
+    expect(unitGroupOf("WarSelection/3/ew/trebuchet")).toBe("siege"); // DefBuild mobile à tourelle
+    expect(unitGroupOf("WarSelection/3/ee/ram")).toBe("siege"); // DefBuild + movement + mêlée
+    expect(unitGroupOf("WarSelection/4/de/cannon/big_bertha")).toBe("siege");
+    expect(unitGroupOf("WarSelection/5/trench_mortar")).toBe("siege");
+    // Les chars (tag Heavy vehicle) restent Blindés même avec frappe au sol.
+    expect(unitGroupOf("WarSelection/4/de/tank_heavy")).toBe("vehicles");
+    expect(unitGroupOf("WarSelection/4/hu/tank")).toBe("vehicles");
+    // Les tours sans frappe au sol restent des bâtiments défensifs.
+    expect(unitGroupOf("WarSelection/1/tower")).toBe("buildings");
+    expect(buildingSubgroupOf("WarSelection/1/tower")).toBe("defense");
+    // L'ordre d'affichage place Siège entre À distance et Cavalerie.
+    expect(UNIT_GROUP_ORDER.indexOf("siege")).toBe(3);
+    expect(UNIT_GROUP_ORDER.indexOf("ranged")).toBe(2);
   });
 
   it("faune (V C 02/11) : animaux du dataset → groupe « fauna »", () => {
@@ -83,6 +103,7 @@ describe("unit-groups — classification du dataset réel", () => {
     const groups = new Set<string>([
       "buildings",
       "eco",
+      "siege",
       "cavalry",
       "vehicles",
       "air",

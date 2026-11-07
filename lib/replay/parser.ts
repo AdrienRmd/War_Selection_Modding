@@ -12,6 +12,14 @@
  *    (quirk assumé, conservé pour parité des métriques de récolte). */
 import getAgeNation, { type ResearchTimeLine } from "./age-nation";
 import {
+  armyPointsCreatedTotal,
+  armyPopulationCreated,
+  armyPopulationRatio,
+  ecoPopulation,
+  populationAtTick,
+  REPLAY_DATASET_POPULATION,
+} from "./population";
+import {
   DatasetContainer,
   DatasetGroup,
   MultiRowDatasetContainer,
@@ -594,6 +602,10 @@ export class ReplayInfoParser {
 
     const unitCreatePointsDatasetContainer = new DatasetContainer("replayDatasetUnitCreatePoints");
     const unitCreatePointsData = setupGroups(unitCreatePointsDatasetContainer);
+    // Population (estimation) par joueur — cf. lib/replay/population.ts pour
+    // la méthode et ses limites (éco exacte par tick + armée calibrée R).
+    const populationDatasetContainer = new DatasetContainer(REPLAY_DATASET_POPULATION);
+    const populationData = setupGroups(populationDatasetContainer);
     const unitKillPointsDatasetContainer = new DatasetContainer("replayDatasetUnitKillPoints");
     const unitKillPointsData = setupGroups(unitKillPointsDatasetContainer);
     const landPointsDatasetContainer = new DatasetContainer("replayDatasetLandPoints");
@@ -684,6 +696,23 @@ export class ReplayInfoParser {
       });
     }
 
+    // Relevés bruts par faction pour la série population : éco (unités de
+    // travail comptées par le jeu) et points d'armée courants + tués
+    // cumulés (calibration R). Collectés HORS des gardes « vivant » : les
+    // valeurs brutes retombent à 0 après élimination (repli abrupt voulu,
+    // comme la référence ws-stats). Un relevé PAR TICK ET PAR FACTION JOUEUR
+    // (clé absente → 0) : les trois tableaux restent alignés sur T ticks.
+    const playerFactionIds = new Set<number>();
+    const popEcoByFaction = new Map<number, number[]>();
+    const popArmyPointsByFaction = new Map<number, number[]>();
+    const popKilledPointsByFaction = new Map<number, number[]>();
+    for (const meta of metadata) playerFactionIds.add(meta.factionId);
+    for (const factionId of playerFactionIds) {
+      popEcoByFaction.set(factionId, []);
+      popArmyPointsByFaction.set(factionId, []);
+      popKilledPointsByFaction.set(factionId, []);
+    }
+
     for (let i = 0; i < this.timeLine!.length; i++) {
       const time = (i + 1) * ReplayInfoParser.timeLinePeriod;
       const startTime = i * ReplayInfoParser.timeLinePeriod;
@@ -693,6 +722,15 @@ export class ReplayInfoParser {
       const landInfo = tlEntry[2];
       const workerInfo = tlEntry[3];
       const resourceInfo = tlEntry[4];
+
+      for (const factionId of playerFactionIds) {
+        const workerCounts = workerInfo[factionId];
+        popEcoByFaction.get(factionId)!.push(
+          ecoPopulation(workerCounts?.[1], workerCounts?.[2], workerCounts?.[3]),
+        );
+        popArmyPointsByFaction.get(factionId)!.push(unitCreateInfo[factionId] ?? 0);
+        popKilledPointsByFaction.get(factionId)!.push(unitKillInfo[factionId] ?? 0);
+      }
 
       for (let playerId = 0; playerId < playersCount; playerId++) {
         const playerMetadata = metadata[playerId];
@@ -863,6 +901,70 @@ export class ReplayInfoParser {
       }
     }
 
+    // --- Population (estimation) : calibration R puis séries joueur/équipe
+    // (mission 06/11 — méthode et limites dans lib/replay/population.ts).
+    const populationRatioByFaction = new Map<number, number>();
+    for (const factionId of playerFactionIds) {
+      const armyPop = armyPopulationCreated(this.parsePlayerUnitsCreated(factionId));
+      const pointsTotal = armyPointsCreatedTotal(
+        popArmyPointsByFaction.get(factionId) ?? [],
+        popKilledPointsByFaction.get(factionId) ?? [],
+      );
+      populationRatioByFaction.set(factionId, armyPopulationRatio(armyPop, pointsTotal));
+    }
+    const populationTickByFaction = new Map<number, number[]>();
+    const populationTickByTeam = new Map<number, number[]>();
+    const populationTickBySquad = new Map<number, number[]>();
+    for (const factionId of playerFactionIds) {
+      const ratio = populationRatioByFaction.get(factionId) ?? 0;
+      const eco = popEcoByFaction.get(factionId) ?? [];
+      const army = popArmyPointsByFaction.get(factionId) ?? [];
+      populationTickByFaction.set(
+        factionId,
+        eco.map((value, i) => populationAtTick(value, army[i] ?? 0, ratio)),
+      );
+    }
+    const populationTickCount = this.timeLine!.length;
+    const ensureTickArray = (store: Map<number, number[]>, key: number): number[] => {
+      let arr = store.get(key);
+      if (!arr) {
+        arr = new Array<number>(populationTickCount).fill(0);
+        store.set(key, arr);
+      }
+      return arr;
+    };
+    for (let i = 0; i < populationTickCount; i++) {
+      for (let playerId = 0; playerId < playersCount; playerId++) {
+        const factionId = metadata[playerId].factionId;
+        const pop = populationTickByFaction.get(factionId)?.[i] ?? 0;
+        const teamId = metadata[playerId].teamId;
+        const squadId = metadata[playerId].squadId;
+        if (teamId !== undefined) ensureTickArray(populationTickByTeam, teamId)[i] += pop;
+        if (squadId != null) ensureTickArray(populationTickBySquad, squadId)[i] += pop;
+      }
+    }
+    for (let playerId = 0; playerId < playersCount; playerId++) {
+      const factionId = metadata[playerId].factionId;
+      const values = populationTickByFaction.get(factionId) ?? [];
+      values.forEach((value, i) => {
+        num(populationData.players[playerId]).push(value, (i + 1) * ReplayInfoParser.timeLinePeriod);
+      });
+    }
+    populationTickByTeam.forEach((values, teamId) => {
+      values.forEach((value, i) => {
+        if (this.isTeamAlive(teamId, i * ReplayInfoParser.timeLinePeriod)) {
+          num(populationData.teams[teamId]).computeSum(i, value);
+        }
+      });
+    });
+    populationTickBySquad.forEach((values, squadId) => {
+      values.forEach((value, i) => {
+        if (this.isSquadAlive(squadId, i * ReplayInfoParser.timeLinePeriod)) {
+          num(populationData.squads[squadId]).computeSum(i, value);
+        }
+      });
+    });
+
     const timeLineMvpScoreStructure: Array<Record<string, unknown>> = [];
     for (let playerId = 0; playerId < playersCount; playerId++) {
       timeLineMvpScoreStructure.push({
@@ -877,6 +979,7 @@ export class ReplayInfoParser {
 
     const resultFull = [
       unitCreatePointsDatasetContainer,
+      populationDatasetContainer,
       unitKillPointsDatasetContainer,
       landPointsDatasetContainer,
       workerPointsDatasetContainer,

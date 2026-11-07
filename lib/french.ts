@@ -1,6 +1,60 @@
 // Traductions françaises de l'interface et des archives. Les clés canoniques restent inchangées.
 export const french: Record<string, string> = {
 
+  // Mission 06/11 — clés propres aux listes replay (évitent les collisions).
+  劳作单位: "Travailleurs",
+  野生生物: "Autre · faune",
+  其余单位: "Autre",
+  经济类建筑: "Économie",
+  防御类建筑: "Défense",
+  "搜索玩家们…": "Rechercher des joueurs…",
+
+  // Mission 06/11 — compteur de recherches (bloc joueur).
+  "研究 ${n} 项": "${n} recherches",
+
+  // Mission 06/11 — complément FR des écrans replay (tests ui-strings).
+  全部收起: "Tout replier",
+  全部展开: "Tout déplier",
+  阶段影响力: "Impact par phase",
+  "对局按全体玩家的中位数时间划分：到达中世纪（前期结束）与首次进入工业时代（中期结束），之后为后期。表中百分比为该玩家在此阶段内占全队影响力的份额，按总影响力排序。": "La partie est découpée en trois phases selon les dates médianes d'accès au Moyen Âge (fin du début de partie) et à l'ère industrielle (fin du milieu de partie). Chaque pourcentage est la part de l'impact de l'équipe portée par le joueur durant la phase, triée par impact total.",
+  玩家完整统计: "Statistiques complètes des joueurs",
+  "点击列标题排序。“最大军队”为军队点数峰值：回放时间线不含存活单位数，故以游戏自己的军队价值（点）计量。": "Cliquez un en-tête de colonne pour trier. « Armée max » est le pic de valeur d'armée en points : la timeline du replay ne contient pas le nombre d'unités vivantes, la valeur d'armée du jeu (points) est donc utilisée.",
+  "各玩家在前期、中期、后期占本队影响力的份额，按总影响力排序。": "Part de l'impact de son équipe portée par chaque joueur en début, milieu et fin de partie, triée par impact total.",
+  "前期 ${a} · 中期 ${b} · 后期 ${c} — 每个阶段从零开始计算": "Début ${a} · Milieu ${b} · Fin ${c} — chaque phase repart de zéro",
+  总影响力: "Impact total",
+  "MVP 分": "Score MVP",
+  "全体玩家的完整统计，点击列标题排序。": "Statistiques complètes de tous les joueurs ; cliquez un en-tête de colonne pour trier.",
+  "最大军队（点）": "Armée max (pts)",
+  最高时代: "Ère maximale",
+  存活到对局结束: "A survécu jusqu'à la fin de la partie",
+  歼灭单位: "Unités tuées",
+
+  // Mission 06/11 — population, groupes d'unités (siège), bâtiments, recherches.
+  近战单位: "Mêlée",
+  远程单位: "À distance",
+  攻城单位: "Siège",
+  骑兵单位: "Cavalerie",
+  装甲单位: "Blindés",
+  战机单位: "Avions de guerre",
+  战舰单位: "Navires de guerre",
+  人口建筑: "Population",
+  军事建筑: "Militaire",
+  研究建筑: "Recherche",
+  其他建筑: "Autres",
+  建造的建筑: "Bâtiments construits",
+  摧毁的建筑: "Bâtiments détruits",
+  生产单位: "Unités produites",
+  "人口曲线（估算）": "Population dans le temps (estimation)",
+  "每个玩家一条曲线。村民/渔船/拖拉机为逐时段精确值，军队按玩家实际生产校准估算；被淘汰后回落到 0。": "Une courbe par joueur. Travailleurs, bateaux de pêche et tracteurs sont exacts à chaque relevé ; l'armée est estimée par calibration sur la production réelle du joueur ; retour à 0 après élimination.",
+  "各玩家人口随时间变化的折线图（估算）": "Courbes de population de chaque joueur dans le temps (estimation)",
+  全选: "Tout sélectionner",
+  玩家曲线: "Courbes des joueurs",
+  "纵轴 0–600（超出时自动扩展）· 横轴每 1:30 一格 · 数值为估算": "Axe Y 0–600 (étendu automatiquement au-delà) · une graduation toutes les 1:30 · valeurs estimées",
+  玩家与队伍: "Joueurs & équipes",
+  研究列表: "Recherches",
+  "展开每位玩家，按完成时间先后查看其研究（图标 · 名称 · 时刻）。": "Dépliez un joueur pour voir ses recherches dans l'ordre chronologique (icône · nom · heure).",
+  "每位玩家一节，可展开。": "Une section par joueur, dépliable.",
+
   // Player statistics — onglets du détail joueur.
   玩家统计: "Statistiques du joueur",
   近战: "Mêlée",
