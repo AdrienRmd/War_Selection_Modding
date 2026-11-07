@@ -32,6 +32,8 @@ export interface ReplayRecord {
   mode_key: string;
   owner_id: string;
   status: string;
+  /** 'user' (soumission manuelle) | 'auto' (récolte nocturne, 0016). */
+  source: string;
   created_at: string;
   moderated_at: string | null;
   note: string | null;
@@ -42,6 +44,8 @@ export interface ReplayRecentItem {
   teamSize: number;
   mvpName: string | null;
   modeKey: string;
+  /** Badge « auto » dans la liste récente (mission récolte 07/11). */
+  source: "user" | "auto";
 }
 
 export interface ReplaySubmissionView extends ReplayRecentItem {
@@ -131,7 +135,7 @@ export async function submitReplay(
     if (changed.meta.changes !== 1)
       throw new HttpError(429, "投稿频率已达上限（24 小时内 5 个，或已有 3 个待审核）。 / Submission limit reached (5 per 24h, or 3 pending).");
     if (digest) await upsertReplayResult(code, teamSize, modeKey, digest, now);
-    return { item: { code, teamSize, mvpName, modeKey, status: "pending", createdAt: now, moderatedAt: null, note: null, mine: true } };
+    return { item: { code, teamSize, mvpName, modeKey, source: "user", status: "pending", createdAt: now, moderatedAt: null, note: null, mine: true } };
   }
 
   // Verrou atomique : les quotas sont relus AU MOMENT de l'écriture.
@@ -144,7 +148,7 @@ export async function submitReplay(
   if (inserted.meta.changes !== 1)
     throw new HttpError(429, "投稿频率已达上限（24 小时内 5 个，或已有 3 个待审核）。 / Submission limit reached (5 per 24h, or 3 pending).");
   if (digest) await upsertReplayResult(code, teamSize, modeKey, digest, now);
-  return { item: { code, teamSize, mvpName, modeKey, status: "pending", createdAt: now, moderatedAt: null, note: null, mine: true } };
+  return { item: { code, teamSize, mvpName, modeKey, source: "user", status: "pending", createdAt: now, moderatedAt: null, note: null, mine: true } };
 }
 
 const toView = (r: ReplayRecord, mine = false): ReplaySubmissionView => ({
@@ -152,6 +156,7 @@ const toView = (r: ReplayRecord, mine = false): ReplaySubmissionView => ({
   teamSize: r.team_size,
   mvpName: r.mvp_name,
   modeKey: r.mode_key,
+  source: r.source === "auto" ? "auto" : "user",
   status: r.status,
   createdAt: r.created_at,
   moderatedAt: r.moderated_at,
@@ -171,6 +176,7 @@ export async function recentReplays(limitRaw: string | null): Promise<ReplayRece
     teamSize: r.team_size,
     mvpName: r.mvp_name,
     modeKey: r.mode_key,
+    source: r.source === "auto" ? ("auto" as const) : ("user" as const),
   }));
 }
 
@@ -262,4 +268,84 @@ export async function moderateWithdrawReplay(code: string): Promise<ReplayRecord
   const row = await db.prepare("SELECT * FROM replays WHERE code = ?").bind(code).first<ReplayRecord>();
   if (!row) throw new HttpError(404, "回放不存在。 / Replay not found.");
   return row;
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Récolte automatique (mission 07/11, option B de l'étude ws-data) —
+ * POST /api/replay/ingest : le crawler nocturne (scripts/replay-nightly)
+ * pousse les replays découverts via l'index public de ws-stats.pl et
+ * résolus sur l'API officielle games-api. Données 100 % officielles →
+ * PUBLIÉ D'OFFICE (aucune modération humaine, aucun texte libre : le
+ * corps est validé par cleanReplayBody/cleanDigest, SQL paramétré).
+ * Idempotence STRICTE par code : la ligne existe (tout statut, y compris
+ * retirée/refusée par la modération = kill-switch) → 409, AUCUNE
+ * réécriture. owner_id sentinel 'ws-atlas-auto' (jamais un compte réel).
+ * Le digest alimente replay_results puis applyReplayStats() agrège le
+ * classement incrémentalement (rebuildPlayerStats reste le recalcul
+ * défensif admin). */
+export const AUTO_INGEST_OWNER = "ws-atlas-auto";
+
+export async function ingestAutoReplay(body: unknown): Promise<{
+  item: ReplaySubmissionView;
+  created: true;
+}> {
+  const cleaned = cleanReplayBody(body);
+  if (!cleaned)
+    throw new HttpError(400, "回放采集载荷无效：需要代码、模式与队伍规模。 / Invalid ingest payload: replay code, mode and team size required.");
+  if ((body as Record<string, unknown> | null)?.source !== "auto")
+    throw new HttpError(400, "回放采集必须声明 source=auto。 / Ingest payload must declare source=auto.");
+  const digest = cleanDigest((body as Record<string, unknown>).digest);
+  if (!digest)
+    throw new HttpError(400, "回放采集必须携带统计摘要（digest）。 / Ingest payload must carry a stats digest.");
+  const { code, teamSize, mvpName, modeKey } = cleaned;
+  const db = bindings().DB;
+
+  const now = new Date().toISOString();
+  // Idempotence stricte + course concurrente (revue 07/11) : la vérification
+  // d'existence VIT dans l'INSERT (patron submitReplay) — deux ingests
+  // concurrents du même code donnent exactement UN insert, le perdant
+  // reçoit 409 propre (jamais de 500/503 sur contrainte).
+  const inserted = await db
+    .prepare(
+      "INSERT INTO replays (code, team_size, mvp_name, mode_key, owner_id, status, source, created_at) SELECT ?, ?, ?, ?, ?, 'published', 'auto', ? WHERE NOT EXISTS (SELECT 1 FROM replays WHERE code = ?)",
+    )
+    .bind(code, teamSize, mvpName, modeKey, AUTO_INGEST_OWNER, now, code)
+    .run();
+  if (inserted.meta.changes !== 1)
+    throw new HttpError(409, "这个回放已经入库。 / This replay is already ingested.");
+  await upsertReplayResult(code, teamSize, modeKey, digest, now);
+  // Assainissement (revue 07/11) : un échec d'agrégation APRÈS l'insert ne
+  // doit ni 500 ni laisser un replay publié invisible au classement pour
+  // toujours. replay_results est déjà écrit avec aggregated_at = NULL →
+  // applyReplayStats est idempotent : le prochain ingest/rebuild
+  // (rebuildPlayerStats admin) le rattrape. On journalise et on renvoie le
+  // replay publié avec l'avertissement (le crawler le compte en erreur
+  // non consommante et le code reste pending pour reprise).
+  let statsWarning: string | null = null;
+  try {
+    await applyReplayStats(code);
+  } catch (e) {
+    statsWarning = "stats-pending";
+    console.error(
+      `[replay-ingest] ${code}: agrégation stats échouée après publication (replay_results reste aggregated_at=NULL, rattrapé au prochain passage) :`,
+      e instanceof Error ? e.message : String(e),
+    );
+  }
+  return {
+    item: {
+      code,
+      teamSize,
+      mvpName,
+      modeKey,
+      source: "auto",
+      status: "published",
+      createdAt: now,
+      moderatedAt: null,
+      note: null,
+      mine: false,
+    },
+    created: true,
+    ...(statsWarning ? { warning: statsWarning } : {}),
+  };
 }

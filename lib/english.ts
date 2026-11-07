@@ -1,6 +1,14 @@
 // Source-backed English UI and archived-content translations. Canonical data keys stay unchanged.
 export const english: Record<string, string> = {
 
+  自动入库: "auto-ingested",
+  "ws-stats 已存对局索引": "ws-stats.pl saved-games index",
+
+  // Mission 07/11 — récolte automatique (badge auto, mention classement).
+  "由夜间采集自动入库（ws-stats 索引发现）": "Ingested automatically by the nightly crawl (discovered via the ws-stats index)",
+  "部分对局由夜间采集自动入库：代码发现自 ws-stats.pl 的公开索引。": "Some games are ingested automatically each night: codes are discovered via the ws-stats.pl public index.",
+  "该索引只覆盖 ws-stats 已知的对局，未必是全部——榜单反映的是被收录的范围。": "The index only covers games known to ws-stats, not necessarily all of them — the ladder reflects that collected scope.",
+
   // Revue 07/11 — avertissement photo candidature.
   "申请已提交（头像未保存：只接受 PNG 或 JPEG，最大 2 MB）。": "Application submitted (photo not saved: PNG or JPEG only, max 2 MB).",
 

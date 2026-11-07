@@ -29,6 +29,8 @@ interface RecentReplay {
   teamSize: number;
   mvpName: string | null;
   modeKey: string;
+  /** Récolte automatique (badge) — absence = soumission manuelle. */
+  source?: "user" | "auto";
 }
 
 /** Cache mémoire des replays analysés, par code (rafraîchi à la session). */
@@ -416,6 +418,11 @@ export function ReplayPortal({
                     ? `${item.teamSize}v${item.teamSize}`
                     : modeLabel(item.modeKey)}
                 </span>
+                {item.source === "auto" ? (
+                  <span className="rp-recent-auto" title={l("由夜间采集自动入库（ws-stats 索引发现）", "Ingested automatically by the nightly crawl (discovered via the ws-stats index)")}>
+                    {l("自动入库", "auto-ingested")}
+                  </span>
+                ) : null}
                 <span className="rp-recent-author">· {item.mvpName ?? "—"}</span>
               </li>
             ))}

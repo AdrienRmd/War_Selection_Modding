@@ -85,6 +85,7 @@ function makeDb(state: State) {
               mode_key: modeKey as string,
               owner_id: ownerPending as string,
               status: "pending",
+              source: "user",
               created_at: now,
               moderated_at: null,
               note: null,
@@ -272,9 +273,9 @@ describe("POST /api/replay/submit", () => {
 describe("GET /api/replay/recent", () => {
   it("ne liste que les publiés, tri récent d'abord, limite par défaut 5", async () => {
     const rows: ReplayRecord[] = [
-      { code: "AAAAAAAAAAA", team_size: 8, mvp_name: "a", mode_key: "replayMatchTypeTeamMatch", owner_id: AUTHOR, status: "published", created_at: "2026-10-31T10:00:00Z", moderated_at: null, note: null },
-      { code: "BBBBBBBBBBB", team_size: 7, mvp_name: "b", mode_key: "replayMatchTypeTeamMatch", owner_id: AUTHOR, status: "pending", created_at: "2026-10-31T11:00:00Z", moderated_at: null, note: null },
-      { code: "CCCCCCCCCCC", team_size: 6, mvp_name: "c", mode_key: "replayMatchTypeTeamMatch", owner_id: AUTHOR, status: "published", created_at: "2026-10-31T09:00:00Z", moderated_at: null, note: null },
+      { code: "AAAAAAAAAAA", team_size: 8, mvp_name: "a", mode_key: "replayMatchTypeTeamMatch", owner_id: AUTHOR, status: "published", source: "user", created_at: "2026-10-31T10:00:00Z", moderated_at: null, note: null },
+      { code: "BBBBBBBBBBB", team_size: 7, mvp_name: "b", mode_key: "replayMatchTypeTeamMatch", owner_id: AUTHOR, status: "pending", source: "user", created_at: "2026-10-31T11:00:00Z", moderated_at: null, note: null },
+      { code: "CCCCCCCCCCC", team_size: 6, mvp_name: "c", mode_key: "replayMatchTypeTeamMatch", owner_id: AUTHOR, status: "published", source: "auto", created_at: "2026-10-31T09:00:00Z", moderated_at: null, note: null },
     ];
     state.replays.push(...rows);
     const r = await get("/api/replay/recent", null);

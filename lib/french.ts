@@ -1,6 +1,14 @@
 // Traductions françaises de l'interface et des archives. Les clés canoniques restent inchangées.
 export const french: Record<string, string> = {
 
+  自动入库: "auto",
+  "ws-stats 已存对局索引": "index public des parties enregistrées (ws-stats.pl)",
+
+  // Mission 07/11 — récolte automatique (badge auto, mention classement).
+  "由夜间采集自动入库（ws-stats 索引发现）": "Ingesté automatiquement par la récolte nocturne (découvert via l'index ws-stats)",
+  "部分对局由夜间采集自动入库：代码发现自 ws-stats.pl 的公开索引。": "Certaines parties sont ingérées automatiquement chaque nuit : les codes sont découverts via l'index public de ws-stats.pl.",
+  "该索引只覆盖 ws-stats 已知的对局，未必是全部——榜单反映的是被收录的范围。": "Cet index ne couvre que les parties connues de ws-stats, pas nécessairement toutes — le classement reflète ce périmètre collecté.",
+
   // Revue 07/11 — avertissement photo candidature.
   "申请已提交（头像未保存：只接受 PNG 或 JPEG，最大 2 MB）。": "Candidature envoyée (photo non enregistrée : PNG ou JPEG uniquement, 2 Mo max).",
 

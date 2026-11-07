@@ -62,6 +62,23 @@ export default async function Players({
           title="玩家排行榜"
           text="每赛季的玩家积分榜：参赛、胜利、MVP 与击杀都折算成积分。数据来自已公开的回放。"
         />
+        {/* Mission 07/11 — mention honnête : une partie des parties est
+            récoltée automatiquement via l'index public de ws-stats.pl, avec
+            la note de biais (l'index couvre les parties connues de ws-stats,
+            pas nécessairement toutes). */}
+        <p className="ladder-method note-text">
+          <T text="部分对局由夜间采集自动入库：代码发现自 ws-stats.pl 的公开索引。" />{" "}
+          <a
+            href="https://ws-stats.pl/saves"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="name-link"
+          >
+            <T text="ws-stats 已存对局索引" />
+          </a>
+          {" — "}
+          <T text="该索引只覆盖 ws-stats 已知的对局，未必是全部——榜单反映的是被收录的范围。" />
+        </p>
         <div className="ladder-layout">
           <aside className="ladder-side">
             <p className="site-footer-title">

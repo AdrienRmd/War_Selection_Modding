@@ -267,6 +267,11 @@ export const replays = sqliteTable(
     modeKey: text("mode_key").notNull(),
     ownerId: text("owner_id").notNull(),
     status: text("status").notNull().default("pending"),
+    // Récolte automatique (0016, additive) : 'user' = soumission manuelle
+    // (défaut historique), 'auto' = ingéré par le crawler nocturne via
+    // POST /api/replay/ingest (données officielles games-api → publié
+    // d'office, badge « auto » dans la liste récente).
+    source: text("source").notNull().default("user"),
     createdAt: text("created_at").notNull(),
     moderatedAt: text("moderated_at"),
     note: text("note"),
@@ -274,6 +279,7 @@ export const replays = sqliteTable(
   (t) => [
     index("idx_replays_status_created").on(t.status, t.createdAt),
     index("idx_replays_owner_created").on(t.ownerId, t.createdAt),
+    index("idx_replays_source_created").on(t.source, t.createdAt),
   ],
 );
 

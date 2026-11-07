@@ -455,3 +455,11 @@
   padding-top: 12px;
   padding-bottom: 12px;
 }
+
+/* Badge « auto » — replays récoltés automatiquement (mission 07/11) :
+   pilule discrète, même encre que les tags, jamais collée au code. */
+.rp-recent-auto{display:inline-block;margin-left:6px;padding:1px 8px;border:1px solid var(--edge,#ffffff2e);border-radius:999px;font-size:11px;line-height:1.5;color:var(--text-muted,#aab3a0);text-transform:uppercase;letter-spacing:.04em;vertical-align:1px}
+
+/* Mention méthodologique du classement (mission 07/11) : discrète, lisible,
+   lien externe distingué. */
+.ladder-method{margin:0 0 var(--space-4,16px);font-size:var(--text-body,15px);color:var(--text-muted);max-width:90ch;overflow-wrap:break-word}

@@ -262,3 +262,19 @@ Automatisez avec un cron root, par exemple quotidien à 4 h :
 - **Performances** : wrangler ajoute une surcouche par rapport à un déploiement
   Cloudflare natif ; suffisant pour ce trafic, mais pas dimensionné pour des
   pics massifs.
+
+## Récolte automatique des replays — INGEST_SECRET (07/11)
+
+`POST /api/replay/ingest` (crawler `scripts/replay-nightly.sh`, cron ws-data)
+s'authentifie par le header `X-Ingest-Secret` :
+
+1. Générer un secret : `openssl rand -hex 32`
+2. L'ajouter à `~/war_selecion/.dev.vars` (même canal que ADMIN_EMAILS — le
+   build le copie vers `dist/server/.dev.vars`) :
+   `INGEST_SECRET=<valeur>`
+3. `sudo systemctl restart ws-atlas.service`
+4. Le crawler lit la même valeur (variable d'environnement `INGEST_SECRET`
+   de son propre processus, cf. scripts/replay-nightly.sh).
+
+Retirer la variable = kill-switch (l'endpoint répond 503, le crawler
+s'arrête proprement). Aucune valeur par défaut, jamais dans git.

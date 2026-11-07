@@ -1,4 +1,12 @@
-import { identity, json, sameOrigin, limitedBody, HttpError } from "@/lib/atlas-server";
+import {
+  identity,
+  ingestSecret,
+  json,
+  sameOrigin,
+  limitedBody,
+  HttpError,
+  timingSafeEqualSecrets,
+} from "@/lib/atlas-server";
 import { parseReplayCode } from "@/lib/replay";
 import {
   listReplaySubmissions,
@@ -14,9 +22,18 @@ import {
   replayFeedbackView,
   submitReplayFeedback,
 } from "@/lib/replay-feedback";
+import { ingestAutoReplay } from "@/lib/replay-submissions";
 export const dynamic = "force-dynamic";
 
-/** API Replay (Chantier B) :
+/** API Replay :
+ *  POST /api/replay/ingest — récolte automatique (mission 07/11) :
+ *  réservé au crawler localhost (secret X-Ingest-Secret ≥ 16 caractères,
+ *  variable d'env INGEST_SECRET — absent → 503 ; invalide → 403
+ *  journalisé). Corps { code, source:'auto', teamSize, modeKey, mvpName,
+ *  digest } validé serveur (cleanReplayBody/cleanDigest) → 201 publié
+ *  d'office + stats agrégées ; 409 si le code est déjà connu
+ *  (idempotence stricte, tout statut — un replay modéré ne revient pas).
+ *  POST /api/replay/submit (Chantier B) :
  *  GET  /api/replay/recent?limit=5        — listing public (publiés) ;
  *  GET  /api/replay/submissions[?scope=admin] — mes soumissions / file admin ;
  *  POST /api/replay/submit                — soumission (auth, quotas, digest
@@ -64,6 +81,37 @@ async function route(req: Request, ctx: { params: Promise<{ path?: string[] }> }
         throw new HttpError(400, "提交内容不是有效 JSON。 / Submission is not valid JSON.");
       }
       return json(await submitReplay(user.userId, body), 201);
+    }
+
+    if (req.method === "POST" && action === "ingest") {
+      // Le corps est borné avant toute vérification (drain).
+      const bytes = await limitedBody(req, 512 * 1024);
+      const secret = ingestSecret();
+      if (!secret) {
+        console.warn("[replay-ingest] refus : INGEST_SECRET non configuré (503)");
+        return json(
+          { error: "回放采集未启用：缺少 INGEST_SECRET。 / Replay ingest disabled: INGEST_SECRET missing." },
+          503,
+        );
+      }
+      const provided = req.headers.get("X-Ingest-Secret");
+      // Temps constant sur digests de longueur fixe (revue 07/11) : aucune
+      // early-return sur la longueur/le préfixe du secret fourni.
+      if (typeof provided !== "string" || !(await timingSafeEqualSecrets(provided, secret))) {
+        console.warn("[replay-ingest] refus : secret invalide (403)");
+        return json({ error: "回放采集密钥无效。 / Invalid ingest secret." }, 403);
+      }
+      // Appel réservé localhost en pratique : la vérification d'origine ne
+      // s'applique pas (le crawler ne partage pas la session navigateur),
+      // le secret longue durée EST l'authentification.
+      let body: unknown = null;
+      try {
+        body = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+      } catch {
+        return json({ error: "提交内容不是有效 JSON。 / Body is not valid JSON." }, 400);
+      }
+      const result = await ingestAutoReplay(body);
+      return json(result, 201);
     }
 
     if (req.method === "POST" && action === "feedback") {

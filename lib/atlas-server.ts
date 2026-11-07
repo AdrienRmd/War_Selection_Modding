@@ -32,12 +32,41 @@ export type MapRecord = {
   test_notes: string;
   author_verified: number;
 };
-type Bindings = { DB: D1Database; BUCKET: R2Bucket; ADMIN_EMAILS?: string };
+type Bindings = { DB: D1Database; BUCKET: R2Bucket; ADMIN_EMAILS?: string; INGEST_SECRET?: string };
 export function bindings() {
   const e = env as unknown as Bindings;
   if (!e.DB || !e.BUCKET) throw new Error("Storage bindings unavailable");
   return e;
 }
+/** Secret d'ingestion de la récolte automatique (POST /api/replay/ingest) —
+ *  posé via la variable d'environnement INGEST_SECRET du runtime. VPS : la
+ *  valeur vit dans ~/war_selecion/.dev.vars (canal fonctionnel — le build
+ *  la copie vers dist/server/.dev.vars, cf. deploy/vps/README.md), JAMAIS
+ *  de valeur en dur ni de repli. Absent → l'endpoint répond 503
+ *  (fonctionnalité éteinte : retirer la variable sert de kill-switch). */
+export function ingestSecret(): string | null {
+  const value = (env as unknown as Bindings).INGEST_SECRET;
+  return typeof value === "string" && value.length >= 16 ? value : null;
+}
+
+/** Comparaison de secrets EN TEMPS CONSTANT (revue 07/11) : les deux côtés
+ *  sont hachés en SHA-256 (digests de LONGUEUR FIXE — la longueur du secret
+ *  fourni ne fuit plus, le préavis `length < 16` sur l'entrée brute est
+ *  retiré de la route) puis comparés par XOR accumulé sans branchement
+ *  précoce. WebCrypto n'expose pas timingSafeEqual : cette boucle sur 32
+ *  octets fixes en est l'équivalent sûr. */
+export async function timingSafeEqualSecrets(
+  provided: string,
+  secret: string,
+): Promise<boolean> {
+  const digest = async (value: string) =>
+    new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)));
+  const [a, b] = await Promise.all([digest(provided), digest(secret)]);
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
 export function isAdmin(u: ChatGPTUser | null) {
   return (
     !!u &&
