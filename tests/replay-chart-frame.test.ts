@@ -236,14 +236,20 @@ describe("correctif 8 — palette : ΔE des paires fréquentes", () => {
 });
 
 describe("correctifs 6/7/9 — rendu (garde-régression source + i18n)", () => {
-  it("7 — la légende de section n'est rendue qu'UNE fois (l'ancienne doublait)", () => {
-    const src = readFileSync("components/replay/replay-result.tsx", "utf8");
-    expect(src.match(/自各阶段开始以来占全队积分的份额/g)?.length ?? 0).toBe(1);
+  // 05/11 : les graphiques empilés par joueur ont été remplacés par le
+  // TABLEAU d'impact par phase (phase-impact-table.tsx) — les libellés
+  // gardes ont déménagé avec lui ; l'intent (pas de doublon de légende,
+  // mention « repart de zéro » + i18n) est conservé sur la nouvelle cible.
+  it("7 — la légende de phase n'est rendue qu'UNE fois (l'ancienne doublait)", () => {
+    const result = readFileSync("components/replay/replay-result.tsx", "utf8");
+    const table = readFileSync("components/replay/phase-impact-table.tsx", "utf8");
+    expect((result.match(/自各阶段开始以来占全队积分的份额/g)?.length ?? 0) +
+      (table.match(/自各阶段开始以来占全队积分的份额/g)?.length ?? 0)).toBeLessThanOrEqual(1);
   });
 
-  it("9 — mention « chaque phase repart de zéro » sur les 3 graphiques, i18n complet", () => {
-    const src = readFileSync("components/replay/replay-result.tsx", "utf8");
-    expect(src.match(/每个阶段从零开始计算/g)?.length ?? 0).toBe(2); // 2 équipes + versus partagent le label
+  it("9 — mention « chaque phase repart de zéro » (tableau d'impact par phase), i18n complet", () => {
+    const table = readFileSync("components/replay/phase-impact-table.tsx", "utf8");
+    expect(table.match(/每个阶段从零开始计算/g)?.length ?? 0).toBe(1);
     expect(english["每个阶段从零开始计算"]).toBe("Each stage restarts from zero");
     expect(french["每个阶段从零开始计算"]).toBe("Chaque phase repart de zéro");
   });

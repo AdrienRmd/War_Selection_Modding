@@ -175,6 +175,14 @@ export interface PlayerImpact {
   lost: number;
   /** K/D brut (tués/perdus, nombre d'unités), undefined si aucune perte. */
   kd?: number;
+  /** Parts de l'impact de l'ÉQUIPE pendant chaque phase (early/mid/late) :
+   *  chaque phase est mesurée seule (« repart de zéro », même modèle que
+   *  l'ancien stageShares des graphiques) ; Σ des joueurs = 1 par phase. */
+  phaseWeights: { early: number; mid: number; late: number };
+  /** Valeur d'armée maximale atteinte (POINTS, série courante unitCreate —
+   *  le décompte d'unités vivantes par tranche n'existe pas dans la
+   *  timeline du replay, cf. rapport : métrique honnête en points). */
+  armyMax: number;
   /** Taux d'impact par tranche de timeline (cleanup appliqué), à l'échelle
    *  du score MVP : Σ impactRate = mvpScore. */
   impactRate: number[];
@@ -331,6 +339,7 @@ export function buildReplayAnalysis(result: ReplayParseSuccess): ReplayAnalysis 
     impact.sort((a, b) => (b.player.mvpScore ?? 0) - (a.player.mvpScore ?? 0));
     const totalMvp = sum(impact.map((i) => i.player.mvpScore ?? 0));
     for (const i of impact) i.share = totalMvp > 0 ? (i.player.mvpScore ?? 0) / totalMvp : 1 / impact.length;
+    assignPhaseWeights(impact, stages, period);
     const ratings = players.map((p) => p.rating).filter((r): r is number => typeof r === "number");
     return {
       id: team.id,
@@ -373,6 +382,38 @@ export function buildReplayAnalysis(result: ReplayParseSuccess): ReplayAnalysis 
 /* ------------------------------------------------------------------ */
 /* Impact joueur                                                       */
 /* ------------------------------------------------------------------ */
+
+/** Parts de l'impact de l'équipe PAR PHASE — chaque phase est mesurée
+ *  seule (elle « repart de zéro », comme l'ancien stageShares des
+ *  graphiques empilés) : part du joueur = Σ impactRate de la phase ÷ Σ de
+ *  l'équipe sur la phase. Repli équiparti pour une phase sans impact. */
+function assignPhaseWeights(
+  impact: PlayerImpact[],
+  stages: StagesInfo | null,
+  period: number,
+): void {
+  const n = impact.length;
+  if (!stages || n === 0) {
+    for (const p of impact) p.phaseWeights = { early: 1 / n, mid: 1 / n, late: 1 / n };
+    return;
+  }
+  const sums = impact.map(() => [0, 0, 0]);
+  impact.forEach((p, k) => {
+    for (let i = 0; i < p.impactRate.length; i++) {
+      const t = i * period;
+      const stage = t < stages.earlyEndMs ? 0 : t < stages.midEndMs ? 1 : 2;
+      sums[k][stage] += p.impactRate[i];
+    }
+  });
+  const teamSums = [0, 1, 2].map((s) => sum(sums.map((x) => x[s])));
+  for (let k = 0; k < n; k++) {
+    impact[k].phaseWeights = {
+      early: teamSums[0] > 0 ? sums[k][0] / teamSums[0] : 1 / n,
+      mid: teamSums[1] > 0 ? sums[k][1] / teamSums[1] : 1 / n,
+      late: teamSums[2] > 0 ? sums[k][2] / teamSums[2] : 1 / n,
+    };
+  }
+}
 
 /** Somme des lignes d'une série multi-lignes équipe (cumulative). */
 function teamSeriesTotal(rows: number[][] | null): number[] {
@@ -489,6 +530,11 @@ function buildPlayerImpact(
   const killed = countUnits(player.unitsKilledPlain as never);
   const lost = countUnits(player.unitsLostPlain as never);
 
+  // Valeur d'armée maximale (points) : la série « unit create points » est
+  // un STOCK courant (elle décroît quand les unités meurent, se stabilise
+  // quand rien ne change) — son max = pic d'armée vivante du joueur.
+  const armyMax = create.length > 1 ? Math.max(...create) : 0;
+
   // « Last age reached » : mort → instant de mort ; sinon 1re merveille.
   const dead = player.isDead === true && player.survivalTime !== undefined;
   const lastAgeTimeMs = dead
@@ -514,6 +560,8 @@ function buildPlayerImpact(
     created,
     lost,
     kd: lost > 0 ? killed / lost : undefined,
+    phaseWeights: { early: 1 / 3, mid: 1 / 3, late: 1 / 3 },
+    armyMax,
     impactRate,
   };
 }

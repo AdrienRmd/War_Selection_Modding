@@ -14,7 +14,6 @@ import { ChevronDown } from "lucide-react";
 import Link from "@/components/site-link";
 import { useBilingual, useI18n } from "@/components/i18n";
 import type { PlayerImpact, ReplayAnalysis, Side, TeamImpact } from "@/lib/replay/analysis";
-import { playerSeries } from "@/lib/replay/analysis";
 import type { TransfersAnalysis } from "@/lib/replay/transfers";
 import { TransfersPanel } from "./replay-transfers";
 import { PlayerStatsTabs } from "./player-stats-tabs";
@@ -26,20 +25,13 @@ import {
   type MedalAward,
 } from "@/lib/replay/medals";
 import {
-  TIMELINE_METRICS,
   formatClock,
   researchDisplayName,
   researchIconUrl,
 } from "@/lib/replay/wsva-view";
-import {
-  PowerBalanceChart,
-  StageShareChart,
-  VersusChart,
-  PLAYER_COLORS,
-  TEAM_BLUE,
-  TEAM_RED,
-} from "./replay-charts";
-import { playerSeriesId } from "./chart-theme";
+import { PowerBalanceChart, TEAM_BLUE, TEAM_RED } from "./replay-charts";
+import { PhaseImpactTable } from "./phase-impact-table";
+import { PlayerStatsTable } from "./player-stats-table";
 
 const MODE_LABELS: Record<string, { zh: string; en: string }> = {
   replayMatchTypeFFA: { zh: "混战", en: "Free for all" },
@@ -86,7 +78,6 @@ export function ReplayResult({
     [locale],
   );
 
-  const [metric, setMetric] = useState("impact");
   const match = data.match;
   const modeLabel = MODE_LABELS[match.mode] ?? { zh: match.mode, en: match.mode };
   const teamLabel = (side: Side) => (side === 0 ? l("蓝队", "Blue") : l("红队", "Red"));
@@ -115,12 +106,6 @@ export function ReplayResult({
           .replace("${mode}", l(modeLabel.zh, modeLabel.en));
 
   const medals = useMemo(() => computeMedals(data, analysis), [data, analysis]);
-
-  const stageLabels: [string, string, string] = [
-    l("前期", "Early"),
-    l("中期", "Mid"),
-    l("后期", "Late"),
-  ];
 
   return (
     <div className="rp page-backdrop">
@@ -344,70 +329,39 @@ export function ReplayResult({
             section omise si aucune transaction détectée. */}
         {transfers ? <TransfersPanel transfers={transfers} players={data.players} /> : null}
 
-        {/* Timeline à métriques + phases — section repliable ws-stats. */}
+        {/* Impact par phase — TABLEAU dense (mission 05/11 : « des DONNÉES,
+            pas de graphique ») : une ligne par joueur, deux équipes
+            fusionnées ; remplace les trois graphiques empilés par joueur. */}
         {analysis.stages && analysis.power ? (
-          <CollapsibleSection title={l("前中后期时间线", "Early / mid / late timeline")} icon="/icons/stopwatch.png">
-            <header className="timeline-header">
-              <div className="chip-group">
-                {TIMELINE_METRICS.map((m) => (
-                  <button
-                    type="button"
-                    key={m.key}
-                    className={`chip chip-with-icon${metric === m.key ? " chip-active" : ""}`}
-                    aria-pressed={metric === m.key}
-                    onClick={() => setMetric(m.key)}
-                  >
-                    <img className="icon icon-sm" src={m.icon} alt="" aria-hidden="true" />
-                    {metricLabel(m.key, l)}
-                  </button>
-                ))}
-              </div>
-            </header>
-            <div className="tab-panel">
-              <h3 className="heading-3 insight-heading timeline-description">
-                <img className="icon icon-sm" src="/icons/crown.png" alt="" aria-hidden="true" />
-                {l("前中后期谁起到了作用", "Who mattered in the early, mid and late game")}
-              </h3>
-              <p className="label-text timeline-reading-hint">
-                {l(
-                  "对局按全体玩家的中位数时间划分：到达中世纪（前期结束）与首次进入工业时代（中期结束），之后为后期。每条色带是一名玩家自本阶段开始以来占全队积分的份额。",
-                  "The game is split in three stages by when the median player reached Middle Ages (end of Early) and the first Industrial age (end of Mid); Late is the rest. Each coloured band is the share of the team's points a player earned since the start of the stage.",
-                )}
-              </p>
-              <div className="timeline-grid">
-                {analysis.teams.map((team) => (
-                  <TimelineTeam
-                    key={team.id}
-                    team={team}
-                    data={data}
-                    metric={metric}
-                    stages={analysis.stages!}
-                    stageLabels={stageLabels}
-                    teamLabel={teamLabel(team.side)}
-                  />
-                ))}
-                <section className="timeline-team timeline-versus">
-                  <header className="timeline-team-header">
-                    {teamLabel(0)} {l("对阵", "against")} {teamLabel(1)}
-                  </header>
-                  <div className="timeline-chart-row">
-                    <VersusChart
-                      blue={teamRate(analysis.teams[0]?.players ?? [])}
-                      red={teamRate(analysis.teams[1]?.players ?? [])}
-                      stages={analysis.stages}
-                      periodMs={data.timeLinePeriod}
-                      caption={l("两队积分占比", "Share of each team's points")}
-                      phaseNote={l("每个阶段从零开始计算", "Each stage restarts from zero")}
-                      stageLabels={stageLabels}
-                      decidedLabel={l("对局已定", "Game decided")}
-                      labels={{ blue: teamLabel(0), red: teamLabel(1) }}
-                    />
-                  </div>
-                </section>
-              </div>
-            </div>
+          <CollapsibleSection title={l("阶段影响力", "Impact by phase")} icon="/icons/stopwatch.png">
+            <h3 className="heading-3 insight-heading">
+              <img className="icon icon-sm" src="/icons/crown.png" alt="" aria-hidden="true" />
+              {l("前中后期谁起到了作用", "Who mattered in the early, mid and late game")}
+            </h3>
+            <p className="label-text">
+              {l(
+                "对局按全体玩家的中位数时间划分：到达中世纪（前期结束）与首次进入工业时代（中期结束），之后为后期。表中百分比为该玩家在此阶段内占全队影响力的份额，按总影响力排序。",
+                "The game is split in three stages by when the median player reached Middle Ages (end of Early) and the first Industrial age (end of Mid); Late is the rest. Each percentage is the player's share of their team's impact during that stage, sorted by total impact.",
+              )}
+            </p>
+            <PhaseImpactTable
+              teams={analysis.teams}
+              stages={analysis.stages}
+              durationMs={match.duration}
+            />
           </CollapsibleSection>
         ) : null}
+
+        {/* Statistiques complètes par joueur — tableau triable. */}
+        <CollapsibleSection title={l("玩家完整统计", "Full player statistics")} icon="/icons/report.png">
+          <p className="label-text">
+            {l(
+              "点击列标题排序。“最大军队”为军队点数峰值：回放时间线不含存活单位数，故以游戏自己的军队价值（点）计量。",
+              "Click a column header to sort. “Max army” is the peak army value in points: the replay timeline has no living-unit count, so the game's own army value (points) is used.",
+            )}
+          </p>
+          <PlayerStatsTable teams={analysis.teams} />
+        </CollapsibleSection>
       </main>
     </div>
   );
@@ -453,31 +407,6 @@ function CollapsibleSection({
       {open ? <div className="rp-section-body">{children}</div> : null}
     </section>
   );
-}
-
-function metricLabel(key: string, l: ReturnType<typeof useBilingual>): string {
-  switch (key) {
-    case "impact":
-      return l("影响力", "Impact");
-    case "kills":
-      return l("歼灭", "Kills");
-    case "army":
-      return l("军队", "Army");
-    case "production":
-      return l("生产", "Production");
-    case "stockpile":
-      return l("储备", "Stockpile");
-    case "workers":
-      return l("村民", "Workers");
-    case "gatherEfficiency":
-      return l("采集效率", "Gather efficiency");
-    case "researches":
-      return l("研究", "Researches");
-    case "territory":
-      return l("领土", "Territory");
-    default:
-      return key;
-  }
 }
 
 function Fact({ icon, label, value }: { icon: string; label: string; value: string }) {
@@ -818,67 +747,6 @@ function TeamRow({
   );
 }
 
-function TimelineTeam({
-  team,
-  data,
-  metric,
-  stages,
-  stageLabels,
-  teamLabel,
-}: {
-  team: TeamImpact;
-  data: Extract<ReplayParseResult, { error: 0 }>;
-  metric: string;
-  stages: NonNullable<ReplayAnalysis["stages"]>;
-  stageLabels: [string, string, string];
-  teamLabel: string;
-}) {
-  const l = useBilingual();
-  const series = useMemo(() => {
-    const meta = TIMELINE_METRICS.find((m) => m.key === metric)!;
-    return team.players.map((p, i) => ({
-      id: playerSeriesId(p.player.nickname, i),
-      name: p.player.nickname,
-      color: PLAYER_COLORS[i % PLAYER_COLORS.length],
-      rate: meta.impact
-        ? p.impactRate
-        : (playerSeries(data, meta.dataset!, p.player) ?? []).map((v) => Math.max(0, v)),
-    }));
-  }, [team, data, metric]);
-  return (
-    <section className="timeline-team stage-running">
-      <header className="timeline-team-header">{teamLabel}</header>
-      {/* La légende « part des points de l'équipe depuis le début de chaque
-          phase » est rendue UNE seule fois, en figcaption du graphique
-          (retour visuel n° 7 : elle apparaissait en double, au-dessus ET
-          au-dessous). */}
-      <div className="timeline-chart-row">
-        <StageShareChart
-          players={series}
-          stages={stages}
-          periodMs={data.timeLinePeriod}
-          caption={l("自各阶段开始以来占全队积分的份额", "Share of the team's points since the start of each stage")}
-          stageLabels={stageLabels}
-          decidedLabel={l("对局已定", "Game decided")}
-          decidedCaption={l("灰色区域不计入积分", "Grey zone scores no points")}
-          phaseNote={l("每个阶段从零开始计算", "Each stage restarts from zero")}
-        />
-      </div>
-      <p className="label-text stage-weights">
-        {l(
-          "前期 ${t1} = ${w1}% · 中期 ${t2} = ${w2}% · 后期 ${t3} = ${w3}%（占全队影响力）",
-          "Early ${t1} = ${w1}% · Mid ${t2} = ${w2}% · Late ${t3} = ${w3}% of the team's impact",
-        )
-          .replace("${t1}", `0:00–${formatClock(stages.earlyEndMs)}`)
-          .replace("${w1}", String(Math.round(team.weights.early * 100)))
-          .replace("${t2}", `${formatClock(stages.earlyEndMs)}–${formatClock(stages.midEndMs)}`)
-          .replace("${w2}", String(Math.round(team.weights.mid * 100)))
-          .replace("${t3}", `${formatClock(stages.midEndMs)}–${formatClock(data.match.duration)}`)
-          .replace("${w3}", String(Math.round(team.weights.late * 100)))}
-      </p>
-    </section>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /* Médailles — noms et raisons (i18n)                                  */
@@ -1007,12 +875,6 @@ function compactNumberCurry(locale: string): (v: number) => string {
   return (v: number) => fmt.format(Math.max(0, Math.round(v)));
 }
 
-function teamRate(players: PlayerImpact[]): number[] {
-  const len = Math.max(...players.map((p) => p.impactRate.length), 0);
-  return Array.from({ length: len }, (_, i) =>
-    players.reduce((a, p) => a + (p.impactRate[i] ?? 0), 0),
-  );
-}
 
 /* Réexport pour la modale existante (obsolète : gardées pour compat). */
 export { TEAM_BLUE, TEAM_RED };
