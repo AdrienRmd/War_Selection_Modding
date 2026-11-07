@@ -6,6 +6,7 @@ import { AtlasHeader, AtlasFooter, PageTitle } from "@/components/atlas-shell";
 import { SubmissionDashboard } from "@/components/submission-dashboard";
 import { MapCapturesModeration } from "@/components/map-captures-moderation";
 import { CreatorFeatured } from "@/components/creator-featured";
+import { CreatorsModeration } from "@/components/creators-moderation";
 import { ModDashboard } from "@/components/mod-dashboard";
 import { ReplayModeration } from "@/components/replay/replay-moderation";
 import { CreationTabs } from "@/components/creation-tabs";
@@ -29,6 +30,7 @@ export default async function Admin() {
           <CreationTabs
             maps={
               <>
+                <CreatorsModeration />
                 <CreatorFeatured />
                 <SubmissionDashboard admin />
                 <MapCapturesModeration />

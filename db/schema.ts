@@ -178,8 +178,12 @@ export const authAttempts = sqliteTable(
   },
   (t) => [index("idx_auth_attempts_window").on(t.windowStart)],
 );
-// Site creators shown in the homepage banner. Photos live in R2; rows are
-// managed exclusively by administrators.
+// Site creators shown in the homepage banner. Photos live in R2. Historically
+// admin-managed only; the « Créateurs de contenu » feature (07/11/2026,
+// migration 0015 additive) extends the same table with user applications
+// (user_id + status pending/published/rejected/withdrawn — legacy rows keep
+// the 'published' default so the banner is unchanged), a short bio and
+// moderation metadata.
 export const creators = sqliteTable(
   "creators",
   {
@@ -190,8 +194,62 @@ export const creators = sqliteTable(
     photoType: text("photo_type"),
     position: integer("position").notNull().default(0),
     createdAt: text("created_at").notNull(),
+    // 0015 (additif) : candidature utilisateur — NULL = ligne bannière
+    // historique créée par un admin.
+    userId: text("user_id"),
+    bio: text("bio").notNull().default(""),
+    status: text("status").notNull().default("published"),
+    moderatedAt: text("moderated_at"),
+    note: text("note"),
+    updatedAt: text("updated_at"),
   },
-  (t) => [index("idx_creators_position").on(t.position, t.createdAt)],
+  (t) => [
+    index("idx_creators_position").on(t.position, t.createdAt),
+    index("idx_creators_status_position").on(t.status, t.position, t.createdAt),
+    index("idx_creators_user_status").on(t.userId, t.status),
+    // Unicité du nom public, hors candidatures retirées (COLLATE NOCASE) :
+    // l'index porte l'unicité de bout en bout — la course concurrente entre
+    // la vérification applicative et l'INSERT tombe sur la contrainte
+    // (gérée en 409 clair côté serveur, cf. lib/creators-server.ts).
+    uniqueIndex("idx_creators_name_nocase")
+      .on(sql`${t.name} COLLATE NOCASE`)
+      .where(sql`status != 'withdrawn'`),
+  ],
+);
+// 0015 — réseaux sociaux d'un créateur : plateforme en whitelist
+// (lib/creators-server.ts CREATOR_PLATFORMS), URL https stricte validée à
+// l'écriture. Une ligne par lien, ordre d'affichage `position`.
+export const creatorLinks = sqliteTable(
+  "creator_links",
+  {
+    id: text("id").primaryKey(),
+    creatorId: text("creator_id").notNull(),
+    platform: text("platform").notNull(),
+    url: text("url").notNull(),
+    position: integer("position").notNull().default(0),
+    createdAt: text("created_at").notNull(),
+  },
+  (t) => [index("idx_creator_links_creator").on(t.creatorId, t.position)],
+);
+// 0015 — association MANUELLE de mods/cartes à un créateur (mise en avant) :
+// complément du rapprochement AUTOMATIQUE par compte propriétaire
+// (maps.owner_id / community_mods.owner_id = creators.user_id, fiable).
+// kind ∈ {'map','mod'} ; item_id référence maps.id ou community_mods.id —
+// l'existence et le statut publié sont revérifiés au rendu du profil.
+export const creatorItems = sqliteTable(
+  "creator_items",
+  {
+    id: text("id").primaryKey(),
+    creatorId: text("creator_id").notNull(),
+    kind: text("kind").notNull(),
+    itemId: text("item_id").notNull(),
+    position: integer("position").notNull().default(0),
+    createdAt: text("created_at").notNull(),
+  },
+  (t) => [
+    index("idx_creator_items_creator").on(t.creatorId, t.kind, t.position),
+    uniqueIndex("idx_creator_items_unique").on(t.creatorId, t.kind, t.itemId),
+  ],
 );
 // Chantier B (31/10/2026) — replays « récemment soumis » : un ligne par code
 // de replay soumis après analyse. Le code est nu (11 caractères, sans le

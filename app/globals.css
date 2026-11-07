@@ -828,6 +828,18 @@ h1 em {
     min-width: 44px;
   }
 }
+@media (max-width: 400px) {
+  /* Mission 07/11 — l'entrée « Créateurs » ajoute ~70 px à la nav FR : la
+     rangée nowrap (≈ 361 px) déborderait à 375 px. On applique dès 400 px
+     la même réduction que le garde-fou < 340 px (13/12 px, gap 10). */
+  html[lang] header.header nav {
+    font-size: 13px;
+    gap: 10px;
+  }
+  html[lang] header.header .nav-menu-trigger {
+    font-size: 13px;
+  }
+}
 @media (max-width: 340px) {
   /* Réorg 10/11 — garde-fou très petits écrans (< iPhone SE 320 px) : sans
      ceci, la nav FR nowrap (291 px min) et la rangée 1 (291 px) débordent

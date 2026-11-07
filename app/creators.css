@@ -1,0 +1,77 @@
+/* ============================================================
+   Créateurs de contenu (mission 07/11) — annuaire /createurs,
+   profil /createurs/<id>, candidature, file de modération.
+   Réutilise les tokens du site (panneaux, chips, boutons) et
+   l'avatar .creator-avatar/.creator-initial de la bannière
+   (styles dans command.css).
+   ============================================================ */
+.creators-toolbar{display:flex;justify-content:flex-end;margin-bottom:var(--space-4)}
+.creators-directory{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--space-4)}
+.creators-card{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
+.creators-card-head{display:flex;align-items:center;gap:var(--space-3);min-width:0;color:inherit;text-decoration:none}
+.creators-card-head:hover strong{color:var(--gold,var(--accent))}
+.creators-card-name{display:flex;flex-direction:column;min-width:0;overflow-wrap:break-word}
+.creators-card-name small{color:var(--text-muted)}
+.creators-card-bio{margin:0;color:var(--text-muted);overflow-wrap:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.creators-card-counts{margin-top:auto}
+.creators-links{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.creators-link-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--edge,var(--border));border-radius:999px;font-size:13px;color:var(--text-muted);text-decoration:none;background:var(--panel-raised,var(--panel))}
+.creators-link-chip:hover{border-color:var(--gold,var(--accent));color:var(--text-primary)}
+
+/* Profil */
+.creator-avatar-lg{width:112px;height:112px;font-size:34px}
+.creator-profile-head{display:flex;gap:var(--space-4);align-items:flex-start;margin-bottom:var(--space-4);min-width:0}
+.creator-profile-id{min-width:0;display:flex;flex-direction:column;gap:var(--space-1)}
+.creator-profile-id h1{margin:0;overflow-wrap:break-word}
+.creator-profile-bio{margin:0;max-width:70ch;overflow-wrap:break-word}
+.creator-profile-section{margin-bottom:var(--space-4);min-width:0}
+.heading-flex{display:flex;align-items:center;gap:var(--space-2);margin-top:0}
+.creator-items{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:var(--space-2)}
+.creator-item{display:flex;flex-direction:column;gap:2px;padding:var(--space-2) var(--space-3);border:1px solid var(--edge,var(--border));border-radius:8px;text-decoration:none;color:inherit;min-width:0}
+.creator-item:hover{border-color:var(--gold,var(--accent))}
+.creator-item strong{overflow-wrap:break-word}
+.creator-profile-meta{display:flex;align-items:center;gap:6px}
+
+/* Candidature */
+.creator-apply-form{display:grid;gap:var(--space-4)}
+.creator-apply-form label{display:grid;gap:6px;font-weight:600}
+.creator-bio-input{font:inherit;font-size:16px;padding:8px 12px;border:1px solid var(--edge,var(--border));border-radius:8px;background:var(--panel-raised,var(--panel));color:inherit;resize:vertical}
+.creator-bio-input:focus-visible{outline:2px solid var(--focus-ring,var(--accent));outline-offset:-2px}
+.creator-links-editor{border:1px solid var(--edge,var(--border));border-radius:8px;padding:var(--space-3);display:grid;gap:var(--space-2)}
+.creator-links-editor legend{font-weight:600;padding:0 6px}
+.creator-link-row{display:grid;grid-template-columns:170px minmax(0,1fr) auto;gap:var(--space-2);align-items:center}
+.creator-link-row select{font:inherit;font-size:16px;padding:8px;border:1px solid var(--edge,var(--border));border-radius:8px;background:var(--panel-raised,var(--panel));color:inherit}
+.creator-claims{border:1px solid var(--edge,var(--border));border-radius:8px;padding:var(--space-3);display:grid;gap:var(--space-3)}
+.creator-claims legend{font-weight:600;padding:0 6px}
+.creator-claims-group>span{display:block;margin-bottom:6px}
+.creator-claims-group ul{list-style:none;margin:0;padding:0;display:grid;gap:4px;max-height:260px;overflow-y:auto}
+.creator-claims-group label{display:flex;align-items:center;gap:var(--space-2);font-weight:400;min-width:0}
+.creator-claims-group label span{min-width:0;overflow-wrap:break-word}
+.creator-my-applications{margin-top:var(--space-4);display:grid;gap:var(--space-2)}
+.creator-my-applications ul{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-2)}
+.creator-my-applications li{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);border:1px solid var(--edge,var(--border));border-radius:8px;padding:var(--space-2) var(--space-3)}
+.creator-status-pending{color:var(--warning,var(--text-muted))}
+.creator-status-published{color:var(--ok,#29d36a)}
+.creator-status-rejected{color:var(--danger,#ff5c5c)}
+
+/* File de modération admin */
+.creators-queue{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-3)}
+.creators-queue-item{display:grid;gap:var(--space-2);min-width:0}
+.creators-queue-head{display:flex;gap:var(--space-3);align-items:center;min-width:0}
+.creators-queue-bio{margin:0;overflow-wrap:break-word}
+.creators-queue-claims ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:4px}
+.creators-queue-claims label{display:flex;align-items:center;gap:var(--space-2);font-weight:400;min-width:0;overflow-wrap:break-word}
+.creators-queue-actions{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+.creators-queue-actions .input-wrap,.creators-queue-actions input{flex:1 1 220px;min-width:0}
+.creators-queue-rest summary{cursor:pointer;font-weight:600}
+.creators-queue-rest ul{list-style:none;margin:var(--space-2) 0 0;padding:0;display:grid;gap:var(--space-2)}
+.creators-queue-rest li{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2)}
+
+@media (max-width:700px){
+  .creators-directory{grid-template-columns:minmax(0,1fr)}
+  .creator-profile-head{flex-direction:column}
+  .creator-link-row{grid-template-columns:minmax(0,1fr)}
+  .creator-items{grid-template-columns:minmax(0,1fr)}
+  .creators-toolbar{justify-content:stretch}
+  .creators-toolbar .button{width:100%;justify-content:center}
+}

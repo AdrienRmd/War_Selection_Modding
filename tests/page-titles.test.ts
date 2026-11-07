@@ -71,6 +71,7 @@ describe("registre des titres lib/page-titles", () => {
   it("traduit chaque meta description en EN et FR", () => {
     const described = Object.entries(pageRoutes).filter(([, r]) => r.meta.description);
     expect(described.map(([k]) => k).sort()).toEqual([
+      "creators",
       "home",
       "players",
       "seasonStats",

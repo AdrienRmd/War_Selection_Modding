@@ -50,6 +50,24 @@ export const pageRoutes: Record<string, PageRoute> = {
     },
   },
   modding: { path: /^\/modding$/, meta: { title: "参数档案 | WS ATLAS" } },
+  creators: {
+    path: /^\/createurs$/,
+    meta: {
+      title: "内容创作者 | WS ATLAS",
+      description:
+        "制作地图与 Mod 的创作者们：作品、频道与社区，一站呈现。",
+    },
+  },
+  // Ordre : la route STATIQUE candidature doit précéder le profil
+  // dynamique [^/]+ (résolution par première correspondance).
+  creatorApply: {
+    path: /^\/createurs\/candidature$/,
+    meta: { title: "申请成为创作者 | WS ATLAS" },
+  },
+  creatorProfile: {
+    path: /^\/createurs\/[^/]+$/,
+    meta: { title: "创作者档案 | WS ATLAS" },
+  },
   maps: { path: /^\/maps$/, meta: { title: "地图档案 | WS ATLAS" } },
   mapsStalingrad: {
     path: /^\/maps\/stalingrad$/,

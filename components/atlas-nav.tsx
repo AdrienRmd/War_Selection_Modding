@@ -51,6 +51,14 @@ export function AtlasNav() {
       >
         {t("玩家排行榜")}
       </Link>
+      {/* Mission 07/11 : annuaire des créateurs de contenu — entre le
+          classement et les mods. */}
+      <Link
+        href="/createurs"
+        aria-current={isActive("/createurs") ? "page" : undefined}
+      >
+        {t("内容创作者")}
+      </Link>
       <HeaderMenu
         ariaLabel="Mod"
         trigger={<span className="nav-menu-label">{t("Mod")}</span>}
