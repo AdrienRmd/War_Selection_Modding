@@ -1,5 +1,6 @@
 // Traductions françaises de l'interface et des archives. Les clés canoniques restent inchangées.
 export const french: Record<string, string> = {
+  "击杀 ${name}": "tués à ${name}",
 
   // Mission 08/11 (lot) — candidature créateur anonyme.
   "两步即可申请": "Candidater en 2 étapes",

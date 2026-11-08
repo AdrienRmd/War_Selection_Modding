@@ -159,21 +159,23 @@ export function groupUnitCounts(
  *  même gameId (mission 06/11 : la référence ws-stats liste séparément les
  *  mêmes unités tuées chez des factions différentes — « ne pas fusionner
  *  ce que la référence ne fusionne pas »). `rowKey` distingue les lignes
- *  (ex. faction victime), `gameId` porte l'icône et le nom. */
+ *  (ex. faction victime), `gameId` porte l'icône et le nom. `victimName`
+ *  (08/11, retour utilisateur « mets le nom de la personne tuée ») :
+ *  pseudo du joueur vaincu quand la ligne est ventilée par victime. */
 export function groupUnitRows(
-  rows: Iterable<readonly [rowKey: string, gameId: string, count: number]>,
-): Map<UnitGroupId, Array<{ gameId: string; count: number; rowKey: string }>> {
-  const merged = new Map<UnitGroupId, Array<{ gameId: string; count: number; rowKey: string }>>();
-  for (const [rowKey, gameId, count] of rows) {
+  rows: Iterable<readonly [rowKey: string, gameId: string, count: number, victimName?: string | null]>,
+): Map<UnitGroupId, Array<{ gameId: string; count: number; rowKey: string; victimName: string | null }>> {
+  const merged = new Map<UnitGroupId, Array<{ gameId: string; count: number; rowKey: string; victimName: string | null }>>();
+  for (const [rowKey, gameId, count, victimName] of rows) {
     const group = unitGroupOf(gameId);
     let list = merged.get(group);
     if (!list) {
       list = [];
       merged.set(group, list);
     }
-    list.push({ gameId, count, rowKey });
+    list.push({ gameId, count, rowKey, victimName: victimName ?? null });
   }
-  const result = new Map<UnitGroupId, Array<{ gameId: string; count: number; rowKey: string }>>();
+  const result = new Map<UnitGroupId, Array<{ gameId: string; count: number; rowKey: string; victimName: string | null }>>();
   for (const [group, list] of merged) {
     result.set(
       group,

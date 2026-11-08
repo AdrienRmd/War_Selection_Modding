@@ -1,5 +1,6 @@
 // Source-backed English UI and archived-content translations. Canonical data keys stay unchanged.
 export const english: Record<string, string> = {
+  "击杀 ${name}": "killed from ${name}",
 
   // Mission 08/11 (lot) — candidature créateur anonyme.
   "两步即可申请": "Apply in 2 steps",

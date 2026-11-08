@@ -93,18 +93,21 @@ function countUnits(map?: Map<string, PlayerUnitStat[]>): Map<string, number> {
  *  faction est absente (anciens replays). */
 function killedRows(
   player: Player,
-): Array<readonly [rowKey: string, gameId: string, count: number]> {
-  const rows: Array<readonly [string, string, number]> = [];
+): Array<readonly [rowKey: string, gameId: string, count: number, victimName: string | null]> {
+  // victimName = pseudo du joueur vaincu (retour utilisateur 08/11 :
+  // « mets le nom de la personne tuée ») — une ligne PAR VICTIME, pas de
+  // fusion ; null sur le repli fusionné (anciens replays sans ventilation).
+  const rows: Array<readonly [string, string, number, string | null]> = [];
   if (player.unitsKilledByFaction && player.unitsKilledByFaction.length > 0) {
     for (const [entryIndex, entry] of player.unitsKilledByFaction.entries()) {
       for (const [gameId, count] of countUnits(entry.units)) {
-        if (count > 0) rows.push([`${entryIndex}:${gameId}`, gameId, count]);
+        if (count > 0) rows.push([`${entryIndex}:${gameId}`, gameId, count, entry.name ?? null]);
       }
     }
     if (rows.length > 0) return rows;
   }
   for (const [gameId, count] of countUnits(player.unitsKilledPlain)) {
-    if (count > 0) rows.push([gameId, gameId, count]);
+    if (count > 0) rows.push([gameId, gameId, count, null]);
   }
   return rows;
 }
@@ -402,8 +405,15 @@ function UnitGroupSections({
                       title={unitDisplayName(unit.gameId, locale)}
                       loading="lazy"
                     />
-                    <span className="player-stats-unit-name" title={unitDisplayName(unit.gameId, locale)}>
-                      {unitDisplayName(unit.gameId, locale)}
+                    <span className="player-stats-unit-line">
+                      <span className="player-stats-unit-name" title={unitDisplayName(unit.gameId, locale)}>
+                        {unitDisplayName(unit.gameId, locale)}
+                      </span>
+                      {"victimName" in unit && typeof unit.victimName === "string" ? (
+                        <span className="player-stats-unit-victim label-text">
+                          {l("击杀 ${name}", "killed from ${name}").replace("${name}", unit.victimName as string)}
+                        </span>
+                      ) : null}
                     </span>
                     <span className="player-stats-unit-count cell-strong">{unit.count}</span>
                   </li>
