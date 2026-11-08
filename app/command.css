@@ -32,10 +32,19 @@ des color-mix de jetons pour les teintes — harmonisation sans rupture, la
   white-space: nowrap;
   font-size: 14px;
 }
-.header nav a[aria-current="page"] {
+/* Scoping (fix 07/11, rapport utilisateur) : `nav > a` — liens DIRECTS de
+   la barre uniquement. Sans l'enfant direct, le ::after absolu (bottom:
+   -29px) s'appliquait AUSSI aux items des menus déroulants (a.nav-menu-item
+   dans .nav-menu-panel sont des `a` du nav) : le trait orange de l'item
+   actif « Analyse de replay » se projetait 29 px plus bas et traversait le
+   texte de l'élément suivant du dropdown (« Archive de modding »). Le
+   texte actif du dropdown reste orange (règle dédiée globals.css
+   .nav-menu-item[aria-current="page"]). Position/couleur/épaisseur du
+   soulignement de la barre : inchangés. */
+.header nav > a[aria-current="page"] {
   color: var(--primary);
 }
-.header nav a[aria-current="page"]::after {
+.header nav > a[aria-current="page"]::after {
   content: "";
   position: absolute;
   bottom: -29px;
@@ -1058,7 +1067,7 @@ des color-mix de jetons pour les teintes — harmonisation sans rupture, la
     width: 100%;
     gap: 28px;
   }
-  .header nav a[aria-current="page"]::after {
+  .header nav > a[aria-current="page"]::after {
     bottom: -17px;
   }
   .header-actions {
@@ -1140,7 +1149,7 @@ des color-mix de jetons pour les teintes — harmonisation sans rupture, la
     gap: 20px;
     justify-content: flex-start;
   }
-  .header nav a[aria-current="page"]::after {
+  .header nav > a[aria-current="page"]::after {
     bottom: -8px;
   }
   .command-feature {

@@ -9,7 +9,6 @@
  *  gardent, eux, leurs groupes). Données : player.researches (parser) —
  *  aucune nouvelle donnée, aucun fetch. */
 import { useMemo } from "react";
-import { FlaskConical } from "lucide-react";
 import SiteLink from "@/components/site-link";
 import { useBilingual, useI18n } from "@/components/i18n";
 import type { Locale } from "@/lib/i18n";
@@ -38,10 +37,10 @@ export function ResearchTimelineSection({ teams }: { teams: TeamImpact[] }) {
 
   return (
     <div className="research-chronology" data-testid="research-chronology">
-      <h3 className="heading-3 insight-heading">
-        <FlaskConical className="icon icon-md" aria-hidden="true" />
-        {l("研究列表", "Researches")}
-      </h3>
+      {/* Le titre « Recherches » est porté par la section repliable qui
+          enveloppe ce composant (replay-result.tsx) — pas de h3 interne :
+          la refonte « dépliée d'office » l'avait laissé et le titre
+          apparaissait deux fois (fix 07/11). La description suit directement. */}
       <p className="label-text">
         {l(
           "每位玩家的研究，按完成时间先后（图标 · 名称 · 时刻）。",
