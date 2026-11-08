@@ -14,7 +14,7 @@ export const french: Record<string, string> = {
   银: "argent",
 
   // Mission 08/11 — page méthodologie (/methodologie).
-  "回放统计方法 | WS ATLAS": "Comment sont calculées les statistiques de replay | WS ATLAS",
+  "War Selection 统计方法：MVP 怎么算 | WS ATLAS": "Méthode des stats War Selection — Comment est calculé le MVP | WS ATLAS",
   "MVP 分数怎么算、人口曲线为什么是估算、奖章条件、排行榜积分——本页逐项公开每个数字背后的公式。": "Formule du score MVP, pourquoi la courbe de population est une estimation, conditions des médailles, points du classement — cette page publie la formule derrière chaque chiffre.",
   统计方法: "Méthodologie",
   统计方法与公式: "Méthode et formules",

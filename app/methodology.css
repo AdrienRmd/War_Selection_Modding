@@ -10,6 +10,7 @@
 .methodology-dl{display:grid;gap:12px;margin:12px 0}
 .methodology-dl dt{font-weight:600;margin-bottom:4px}
 .methodology-dl dd{margin:0;color:var(--muted-foreground)}
+.methodology-table img{width:22px;height:33px;/* ratio 2:3 des médailles refondues — pas de déformation */object-fit:contain;flex:none}
 .methodology-table{width:100%;border-collapse:collapse;font-size:14px}
 .methodology-table th,.methodology-table td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
 .methodology-table th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-foreground)}

@@ -666,7 +666,7 @@
 .rp .medal-list{gap:2px;display:grid}
 .rp .medal-list .medal-row{align-items:center;gap:var(--space-2);padding:3px var(--space-1);transition:background-color .16s var(--ease-out);border-radius:8px;display:flex}
 .rp .medal-list .medal-row:hover{background:var(--row-hover)}
-.rp .medal-list .medal-row img{flex:none;width:45px;height:45px}
+.rp .medal-list .medal-row img{flex:none;width:45px;height:45px;object-fit:contain}
 .rp .recent-medals img{width:36px;height:36px}
 .rp .medal-list .medal-row-name{min-width:0;color:var(--text-primary);text-overflow:ellipsis;white-space:nowrap;flex:0 auto;font-size:13px;overflow:hidden}
 .rp .medal-list .medal-row-count{text-align:right;min-width:28px;color:var(--text-primary);font-variant-numeric:tabular-nums;flex:none;font-size:13px;font-weight:600}

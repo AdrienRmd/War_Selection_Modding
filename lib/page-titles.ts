@@ -82,7 +82,7 @@ export const pageRoutes: Record<string, PageRoute> = {
     canonical: "/methodologie",
     path: /^\/methodologie$/,
     meta: {
-      title: "回放统计方法 | WS ATLAS",
+      title: "War Selection 统计方法：MVP 怎么算 | WS ATLAS",
       description:
         "MVP 分数怎么算、人口曲线为什么是估算、奖章条件、排行榜积分——本页逐项公开每个数字背后的公式。",
     },

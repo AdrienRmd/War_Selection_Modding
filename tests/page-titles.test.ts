@@ -99,6 +99,17 @@ describe("registre des titres lib/page-titles", () => {
     expect(localizePageMeta(meta, "fr").title).toBe("Unités War Selection — stats complètes | WS ATLAS"); // SEO 08/11
   });
 
+  it("methodology porte « War Selection » dans son title (micro-fix SEO 08/11)", () => {
+    const meta = pageRoutes.methodology.meta;
+    expect(localizePageMeta(meta, "fr").title).toBe(
+      "Méthode des stats War Selection — Comment est calculé le MVP | WS ATLAS",
+    );
+    expect(localizePageMeta(meta, "en").title).toBe(
+      "War Selection Stats Method — How the MVP Score Is Computed | WS ATLAS",
+    );
+    expect(localizePageMeta(meta, "zh").title).toContain("War Selection");
+  });
+
   it("toutes les clés du registre existent dans les dictionnaires en/fr", () => {
     const keys = Object.values(pageRoutes).flatMap((r) =>
       r.meta.description ? [r.meta.title, r.meta.description] : [r.meta.title],
