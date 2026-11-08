@@ -69,6 +69,30 @@ export function PopulationChartSection({
   /** Panneau repliable sous le graphe en petit écran (≥ 821 px : toujours
    *  visible à côté, le bouton disparaît). */
   const [panelOpen, setPanelOpen] = useState(false);
+  // Info ⓘ du graphe population (décision utilisateur 08/11 : le paragraphe
+  // descriptif permanent « prend trop de place » → replié par défaut,
+  // affichable au choix, fermeture Échap/clic extérieur).
+  const [infoOpen, setInfoOpen] = useState(false);
+  const infoRef = useRef<HTMLDivElement | null>(null);
+
+  // Fermeture par Échap / clic extérieur (accessibilité, mobile inclus).
+  useEffect(() => {
+    if (!infoOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setInfoOpen(false);
+    };
+    const onPointer = (e: PointerEvent) => {
+      if (infoRef.current && !infoRef.current.contains(e.target as Node)) {
+        setInfoOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointer);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointer);
+    };
+  }, [infoOpen]);
 
   /** Joueurs avec série population (id, nom, équipe, points {x:s, y:pop}). */
   const players = useMemo(() => {
@@ -256,15 +280,38 @@ export function PopulationChartSection({
   return (
     <section className="rp-population panel rp-section" data-testid="population-chart">
       <header className="chart-heading rp-population-heading">
-        <h3 className="heading-3">
-          {l("人口曲线（估算）", "Population over time (estimate)")}
-        </h3>
-        <p className="label-text rp-population-note">
-          {l(
-            "每个玩家一条曲线。村民/渔船/拖拉机为逐时段精确值，军队按玩家实际生产校准估算；被淘汰后回落到 0。",
-            "One line per player. Workers, fishing boats and tractors are exact per tick; the army part is calibrated on each player's actual production. Eliminated players fold back to 0.",
-          )}
-        </p>
+        <div className="rp-population-title-row">
+          <h3 className="heading-3">
+            {l("人口曲线（估算）", "Population over time (estimate)")}
+          </h3>
+          <button
+            type="button"
+            className="rp-population-info-toggle"
+            aria-expanded={infoOpen}
+            aria-controls="rp-population-info"
+            aria-label={l(
+              "显示人口曲线说明",
+              "Show population chart explanation",
+            )}
+            title={l("显示人口曲线说明", "Show population chart explanation")}
+            onClick={() => setInfoOpen((v) => !v)}
+          >
+            ⓘ
+          </button>
+        </div>
+        <div
+          id="rp-population-info"
+          ref={infoRef}
+          className={`rp-population-info${infoOpen ? " rp-population-info-open" : ""}`}
+          hidden={!infoOpen}
+        >
+          <p className="label-text rp-population-note">
+            {l(
+              "每个玩家一条曲线。村民/渔船/拖拉机为逐时段精确值，军队按玩家实际生产校准估算；被淘汰后回落到 0。",
+              "One line per player. Workers, fishing boats and tractors are exact per tick; the army part is calibrated on each player's actual production. Eliminated players fold back to 0.",
+            )}
+          </p>
+        </div>
       </header>
       <div className="rp-population-body">
         <div className="rp-population-chart-frame">

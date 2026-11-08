@@ -1,6 +1,24 @@
 // Source-backed English UI and archived-content translations. Canonical data keys stay unchanged.
 export const english: Record<string, string> = {
 
+  // Mission 08/11 (lot) — candidature créateur anonyme.
+  "两步即可申请": "Apply in 2 steps",
+  "创建账号或登录": "Create an account or sign in",
+  "需要一个 WS ATLAS 账号来提交和管理你的创作者档案。": "A WS ATLAS account is needed to submit and manage your creator profile.",
+  "填写并提交申请": "Fill in and submit your application",
+  "管理员会审核名称、简介、社交链接与作品，通过后你的公开页面随即上线。": "Administrators review the name, bio, social links and works; once approved, your public page goes live.",
+  "所有申请都由人工审核，通常需要几天时间。": "Every application is reviewed by a human — usually within a few days.",
+
+  // Mission 08/11 (lot) — page contact + lien Steam footer.
+  "联系我们 — 开发者 | WS ATLAS": "Contact us — Developers | WS ATLAS",
+  "WS ATLAS 的开发者与联系方式：GitHub 与电子邮件。": "WS ATLAS developers and how to reach them: GitHub and e-mail.",
+  "有问题、建议或想参与项目？以下是本站的开发者。": "A question, a suggestion, or want to help? Here are the site's developers.",
+  "开发者": "Developers",
+  "开发": "Developer",
+  "本站为非商业社区项目，详见法律信息页。": "This site is a non-commercial community project — see the legal information page.",
+  "War Selection 在 Steam 上": "War Selection on Steam",
+  "显示人口曲线说明": "Show population chart explanation",
+
   // Mission 08/11 — SEO : titles/descriptions ciblés.
   "War Selection 玩家排行榜 | WS ATLAS": "War Selection Leaderboard — Player Rankings | WS ATLAS",
   "War Selection 单位档案 | WS ATLAS": "War Selection Units — Complete Stats | WS ATLAS",

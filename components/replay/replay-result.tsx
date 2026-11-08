@@ -33,7 +33,6 @@ import { PowerBalanceChart, TEAM_BLUE, TEAM_RED } from "./replay-charts";
 import { PopulationChartSection } from "./population-chart";
 import { PhaseImpactTable } from "./phase-impact-table";
 import { PlayerStatsTable } from "./player-stats-table";
-import { ResearchTimelineSection } from "./research-timeline";
 
 const MODE_LABELS: Record<string, { zh: string; en: string }> = {
   replayMatchTypeFFA: { zh: "混战", en: "Free for all" },
@@ -358,11 +357,10 @@ export function ReplayResult({
           </CollapsibleSection>
         ) : null}
 
-        {/* Chronologie des recherches — temps horodatés + icônes (mission
-            05/11 : « un temps, par exemple 40:34, pour X »). */}
-        <CollapsibleSection title={l("研究列表", "Researches")} icon="/icons/sparkles.png">
-          <ResearchTimelineSection teams={analysis.teams} />
-        </CollapsibleSection>
+        {/* Section « Recherches » autonome retirée (décision utilisateur
+            08/11 : « prend trop de place ») — les recherches restent
+            détaillées dans l'onglet « Recherches » du profil joueur
+            (player-stats-tabs), inchangé. */}
 
         {/* Statistiques complètes par joueur — tableau triable. */}
         <CollapsibleSection title={l("玩家完整统计", "Full player statistics")} icon="/icons/report.png">

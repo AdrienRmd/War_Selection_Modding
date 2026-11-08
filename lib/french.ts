@@ -1,6 +1,24 @@
 // Traductions françaises de l'interface et des archives. Les clés canoniques restent inchangées.
 export const french: Record<string, string> = {
 
+  // Mission 08/11 (lot) — candidature créateur anonyme.
+  "两步即可申请": "Candidater en 2 étapes",
+  "创建账号或登录": "Créer un compte ou se connecter",
+  "需要一个 WS ATLAS 账号来提交和管理你的创作者档案。": "Un compte WS ATLAS est nécessaire pour soumettre et gérer votre profil de créateur.",
+  "填写并提交申请": "Remplir et soumettre la candidature",
+  "管理员会审核名称、简介、社交链接与作品，通过后你的公开页面随即上线。": "Les administrateurs vérifient le nom, la présentation, les réseaux et les œuvres ; une fois validée, votre page publique est mise en ligne.",
+  "所有申请都由人工审核，通常需要几天时间。": "Chaque candidature est examinée par un humain — comptez généralement quelques jours.",
+
+  // Mission 08/11 (lot) — page contact + lien Steam footer.
+  "联系我们 — 开发者 | WS ATLAS": "Nous contacter — Développeurs | WS ATLAS",
+  "WS ATLAS 的开发者与联系方式：GitHub 与电子邮件。": "Les développeurs de WS ATLAS et leurs contacts : GitHub et e-mail.",
+  "有问题、建议或想参与项目？以下是本站的开发者。": "Une question, une suggestion, l'envie de contribuer ? Voici les développeurs du site.",
+  "开发者": "Développeurs",
+  "开发": "Développeur",
+  "本站为非商业社区项目，详见法律信息页。": "Ce site est un projet communautaire non commercial — voir la page d'informations légales.",
+  "War Selection 在 Steam 上": "War Selection sur Steam",
+  "显示人口曲线说明": "Afficher l'explication de la courbe de population",
+
   // Mission 08/11 — SEO : titles/descriptions ciblés.
   "War Selection 玩家排行榜 | WS ATLAS": "Classement War Selection — Leaderboard joueurs | WS ATLAS",
   "War Selection 单位档案 | WS ATLAS": "Unités War Selection — stats complètes | WS ATLAS",

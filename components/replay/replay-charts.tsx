@@ -3,7 +3,7 @@
  *  des DONNÉES, pas de graphique ») : SEUL graphique conservé, l'ÉQUILIBRE
  *  DE PUISSANCE (2 aires d'équipe + courbe de win chance) — vue d'ensemble
  *  lisible, les analyses par joueur sont désormais des TABLEAUX de données
- *  (phase-impact-table, player-stats-table, research-timeline).
+ *  (phase-impact-table, player-stats-table).
  *  Historique des correctifs conservés ici : axe Y juste (yFor partagé
  *  graduations/tracé), axe X couvrant toute la largeur (ticks ronds +
  *  repère de fin à la durée exacte), info-bulle au survol/tap, rendu 1:1

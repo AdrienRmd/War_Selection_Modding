@@ -162,6 +162,14 @@ export const pageRoutes: Record<string, PageRoute> = {
   submissions: { path: /^\/submissions$/, meta: { title: "我的创作 | WS ATLAS" } },
   admin: { path: /^\/admin$/, meta: { title: "管理员审核台 | WS ATLAS" } },
   legal: { path: /^\/legal$/, meta: { title: "法律声明 — WS ATLAS" } },
+  contact: {
+    canonical: "/contact",
+    path: /^\/contact$/,
+    meta: {
+      title: "联系我们 — 开发者 | WS ATLAS",
+      description: "WS ATLAS 的开发者与联系方式：GitHub 与电子邮件。",
+    },
+  },
   terms: { path: /^\/terms$/, meta: { title: "使用条款 — WS ATLAS" } },
   privacy: { path: /^\/privacy$/, meta: { title: "隐私政策 — WS ATLAS" } },
 };

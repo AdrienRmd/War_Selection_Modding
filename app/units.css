@@ -25,11 +25,17 @@
   align-items: center;
   margin-top: 18px;
 }
+/* Champ recherche pleine largeur de l'espace disponible (fix 08/11 : le
+   placeholder « Saisissez un identifiant ou un nom d'unité… » était tronqué
+   — l'input avait la largeur par défaut du navigateur, pas celle du
+   conteneur). Base généreuse : les filtres wrappent dessous si nécessaire. */
 .units-search {
-  flex: 1 1 260px;
+  flex: 1 1 420px;
   min-width: 0;
 }
 .units-search input {
+  width: 100%;
+  min-width: 0;
   font-size: 16px; /* anti-zoom iOS */
 }
 .units-factions {
@@ -470,6 +476,14 @@
    déploie en flex-wrap comme avant. Vérifié 375 px —
    test-units-filters-mobile.mjs (ligne unique ~48 px, scroll horizontal,
    chip active tappable via elementFromPoint, aucun débordement vertical). */
+@media (max-width: 420px) {
+  /* Fix 08/11 : à 375 px le placeholder FR (310 px en 16px) dépassait la
+     place utile (298 px) — police du placeholder réduite, la saisie reste
+     16px (anti-zoom iOS : seule la font-size de l'input compte au focus). */
+  .units-search input::placeholder {
+    font-size: 14px;
+  }
+}
 @media (max-width: 760px) {
   .units-toolbar {
     gap: 10px;

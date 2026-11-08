@@ -75,3 +75,14 @@
   .creators-toolbar{justify-content:stretch}
   .creators-toolbar .button{width:100%;justify-content:center}
 }
+
+/* ── Candidature — état visiteur non connecté (08/11) : parcours explicite
+   en 2 étapes, attractif (pas un message d'erreur sec). ── */
+.creator-apply-anon{max-width:560px;padding:var(--space-5)}
+.creator-apply-steps{list-style:none;margin:0 0 var(--space-3);padding:0;display:flex;flex-direction:column;gap:var(--space-3)}
+.creator-apply-steps li{display:flex;gap:var(--space-2);min-width:0}
+.creator-apply-step-num{flex:none;width:28px;height:28px;border-radius:9999px;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;border:1px solid var(--border);background:var(--row-hover,#ffffff08)}
+.creator-apply-step-body{min-width:0;overflow-wrap:break-word}
+.creator-apply-step-title{margin:2px 0 4px;font-weight:600}
+.creator-apply-moderation{display:flex;align-items:center;gap:6px;margin:0 0 var(--space-4)}
+.creator-apply-actions{display:flex;flex-wrap:wrap;gap:var(--space-2)}

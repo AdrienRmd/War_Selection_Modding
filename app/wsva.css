@@ -316,10 +316,10 @@
 .rp .medal-gold{--medal-glow:var(--line-gold);--medal-name:var(--gold);--medal-glow-small:4px;--medal-glow-large:10px}
 .rp .medal-silver{--medal-glow:var(--line-silver);--medal-name:var(--text-primary);--medal-glow-small:4px;--medal-glow-large:10px}
 .rp .medal-wood{--medal-glow:var(--line-rust);--medal-name:var(--rust);--medal-glow-small:4px;--medal-glow-large:10px}
-.rp .medal-image{object-fit:contain;width:35px;height:35px;filter:drop-shadow(0 0 var(--medal-glow-small) var(--medal-glow));display:block}
+.rp .medal-image{object-fit:contain;box-sizing:border-box;border-radius:12%;padding:7%;background:rgba(0,0,0,.55);width:35px;height:35px;filter:drop-shadow(0 0 var(--medal-glow-small) var(--medal-glow));display:block}
 .rp .hint-bubble.hint-bubble-medal{width:max-content;max-width:min(360px,80vw)}
 .rp .medal-card{align-items:center;gap:var(--space-3);display:flex}
-.rp .medal-card-image{object-fit:contain;width:120px;height:120px;filter:drop-shadow(0 0 var(--medal-glow-large) var(--medal-glow));flex:none}
+.rp .medal-card-image{object-fit:contain;box-sizing:border-box;border-radius:12%;padding:7%;background:rgba(0,0,0,.55);width:120px;height:120px;filter:drop-shadow(0 0 var(--medal-glow-large) var(--medal-glow));flex:none}
 .rp .medal-text{align-items:flex-start;gap:var(--space-1);text-align:left;flex-direction:column;min-width:0;display:flex}
 .rp .medal-name{font-family:var(--font-display);font-size:var(--text-small);letter-spacing:.08em;text-transform:uppercase;color:var(--medal-name);font-weight:700}
 .rp .medal-reason{font-size:var(--text-small);color:var(--text-muted);line-height:1.4}
@@ -666,7 +666,7 @@
 .rp .medal-list{gap:2px;display:grid}
 .rp .medal-list .medal-row{align-items:center;gap:var(--space-2);padding:3px var(--space-1);transition:background-color .16s var(--ease-out);border-radius:8px;display:flex}
 .rp .medal-list .medal-row:hover{background:var(--row-hover)}
-.rp .medal-list .medal-row img{flex:none;width:45px;height:45px;object-fit:contain}
+.rp .medal-list .medal-row img{flex:none;width:45px;height:45px;object-fit:contain;box-sizing:border-box;border-radius:12%;padding:7%;background:rgba(0,0,0,.55)}
 .rp .recent-medals img{width:36px;height:36px}
 .rp .medal-list .medal-row-name{min-width:0;color:var(--text-primary);text-overflow:ellipsis;white-space:nowrap;flex:0 auto;font-size:13px;overflow:hidden}
 .rp .medal-list .medal-row-count{text-align:right;min-width:28px;color:var(--text-primary);font-variant-numeric:tabular-nums;flex:none;font-size:13px;font-weight:600}
@@ -984,6 +984,12 @@
    texte gris clair — couleurs portées par Chart.js. */
 .rp .rp-population{border:1px solid var(--edge);border-radius:var(--radius-tile);background:var(--panel-raised);padding:var(--space-3);gap:var(--space-2);display:grid}
 .rp .rp-population-heading{min-width:0}
+/* Titre + bouton info ⓘ sur une ligne (décision 08/11 : description
+   repliable — le paragraphe permanent « prenait trop de place »). */
+.rp .rp-population-title-row{display:flex;align-items:center;gap:8px;min-width:0}
+.rp .rp-population-info-toggle{flex:none;width:24px;height:24px;border-radius:9999px;border:1px solid var(--border);background:transparent;color:var(--muted-foreground);font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color .16s var(--ease-out)}
+.rp .rp-population-info-toggle:hover,.rp .rp-population-info-toggle[aria-expanded="true"]{background:var(--row-hover);color:var(--text-muted)}
+.rp .rp-population-info{border-left:2px solid var(--border);padding-left:var(--space-2);margin-top:2px}
 .rp .rp-population-note{max-width:72ch}
 .rp .rp-population-body{align-items:stretch;gap:var(--space-3);min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 240px}
 .rp .rp-population-chart-frame{position:relative;background:#111827;border:1px solid #ffffff29;border-radius:8px;min-height:340px;height:46vh;max-height:520px;padding:8px}
@@ -1036,11 +1042,3 @@
 /* Joueurs éliminés : texte atténué (marqueur † conservé dans la cellule). */
 .rp .player-stats-table tr.rp-row-dead td{color:var(--text-muted)}
 .rp .player-stats-table tr.rp-row-dead .name-text{color:var(--text-muted)}
-/* Blocs Recherches : en-tête simple, liste rendue d'office (plus de
-   bouton de dépliage — retour utilisateur 07/11). */
-.rp .research-block-head{align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);background:var(--panel-raised);display:flex}
-.rp .research-block-count{margin-left:auto;white-space:nowrap}
-/* En-tête de bloc Recherches : le pseudo long ne doit jamais pousser le
-   compteur hors du panneau (flex shrink + retour à la ligne si besoin). */
-.rp .research-block-head{min-width:0;flex-wrap:wrap}
-.rp .research-block-head .name-link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}

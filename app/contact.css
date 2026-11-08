@@ -1,0 +1,66 @@
+/* Page /contact — « Nous contacter » (développeurs). Cohérent avec les
+   panneaux/cartes du site (.panel du design global, avatars initiales
+   .creator-avatar/.creator-initial de command.css — réutilisés). */
+
+.contact-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+  min-width: 0;
+}
+.contact-page h1 {
+  margin-bottom: 8px;
+}
+.contact-intro {
+  color: var(--muted-foreground);
+  margin-bottom: var(--space-5);
+  overflow-wrap: break-word;
+}
+.contact-page h2 {
+  margin: 0 0 12px;
+}
+.contact-dev-list {
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-3);
+}
+.contact-dev-card {
+  min-width: 0;
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel, 16px);
+  padding: var(--space-3);
+  background: var(--card, transparent);
+}
+.contact-dev-body {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+.contact-dev-name {
+  margin: 0;
+  font-weight: 600;
+}
+.contact-dev-role {
+  margin: 2px 0 6px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+.contact-dev-links {
+  margin: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.contact-dev-links a {
+  color: var(--accent, #4cc9f0);
+}
+.contact-legal {
+  overflow-wrap: break-word;
+}
+.contact-legal a {
+  margin-left: 6px;
+}

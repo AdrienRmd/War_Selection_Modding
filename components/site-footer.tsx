@@ -78,8 +78,15 @@ export function SiteFooter() {
               </a>
             </li>
             <li>
-              <a href="https://www.warselection.com" target="_blank" rel="noreferrer">
-                <T text="War Selection 官方网站" /> <ArrowUpRight size={13} />
+              {/* warselection.com ne répond pas (vérifié 08/11, 4 variantes
+                  000) : l'ancienne cible était en réalité la fiche Steam —
+                  étiquette corrigée, href réel. */}
+              <a
+                href="https://store.steampowered.com/app/1022450"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <T text="War Selection 在 Steam 上" /> <ArrowUpRight size={13} />
               </a>
             </li>
             <li>
@@ -92,9 +99,9 @@ export function SiteFooter() {
               </a>
             </li>
             <li>
-              <a href="mailto:adrien.remond@protonmail.com">
+              <Link href="/contact">
                 <T text="联系我们" />
-              </a>
+              </Link>
             </li>
           </ul>
         </nav>

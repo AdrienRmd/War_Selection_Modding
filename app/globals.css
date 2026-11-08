@@ -62,7 +62,7 @@
      Décor du jeu en toile de fond (assombri, vignetté) + voile dégradé +
      trame cartographique très discrète. Teintes « carte d'état-major » :
      olive profond pour fonds secondaires/badges, sépia pour accents. */
-  --atlas-archive-image: url("/field-archive-bg.webp");
+  --atlas-archive-image: url("/field-archive-bg-v2.webp");
   --atlas-archive-veil: linear-gradient(
     180deg,
     rgb(8 11 10 / 0.46) 0%,
