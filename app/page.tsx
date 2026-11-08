@@ -260,6 +260,36 @@ export default async function Home() {
         </div>
       </main>
       <AtlasFooter />
-    </>
+          {/* SEO 08/11 — données structurées schema.org : WebSite + WebApplication. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "WS ATLAS — War Selection Stats",
+            alternateName: "WS ATLAS",
+            url: "https://ws.aremond.ovh",
+            inLanguage: "fr",
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            name: "WS ATLAS — War Selection Stats",
+            url: "https://ws.aremond.ovh",
+            applicationCategory: "GameApplication",
+            operatingSystem: "Web",
+            description:
+              "Stats, unités, cartes, mods et analyse de replay pour War Selection.",
+            inLanguage: "fr",
+          }),
+        }}
+      />
+</>
   );
 }

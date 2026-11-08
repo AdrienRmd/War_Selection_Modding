@@ -60,6 +60,11 @@ export function SiteFooter() {
                 <T text="使用条款" />
               </Link>
             </li>
+            <li>
+              <Link href="/methodologie">
+                <T text="统计方法" />
+              </Link>
+            </li>
           </ul>
         </nav>
         <nav className="site-footer-col" aria-label={t("社区")}>

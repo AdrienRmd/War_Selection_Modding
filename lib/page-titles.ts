@@ -14,6 +14,9 @@ export interface PageMeta {
 }
 
 export interface PageRoute {
+  /** Chemin canonique absolu du site (SEO 08/11) — vide pour la racine,
+   *  absent pour les routes à paramètres (passé par la page). */
+  canonical?: string;
   /** Route exacte ou expression régulière (segments dynamiques). */
   path: RegExp;
   meta: PageMeta;
@@ -23,6 +26,7 @@ export interface PageRoute {
 // (/maps/stalingrad avant /maps/[slug]).
 export const pageRoutes: Record<string, PageRoute> = {
   home: {
+    canonical: "/",
     path: /^\/$/,
     meta: {
       title: "WS ATLAS · 战场档案",
@@ -30,18 +34,42 @@ export const pageRoutes: Record<string, PageRoute> = {
         "War Selection 玩家地图与 Mod 社区档案。探索斯大林格勒战场，查阅配置、平衡数值与审核后的社区地图。",
     },
   },
-  units: { path: /^\/units$/, meta: { title: "单位档案 | WS ATLAS" } },
-  researches: { path: /^\/researches$/, meta: { title: "科技档案 | WS ATLAS" } },
-  replay: { path: /^\/replay$/, meta: { title: "回放分析 | WS ATLAS" } },
+  units: {
+    canonical: "/units",
+    path: /^\/units$/,
+    meta: {
+      title: "War Selection 单位档案 | WS ATLAS",
+      description: "War Selection 全部单位的档案：属性、时代、克制与数据图鉴。",
+    },
+  },
+  researches: {
+    canonical: "/researches",
+    path: /^\/researches$/,
+    meta: {
+      title: "War Selection 科技档案 | WS ATLAS",
+      description: "War Selection 全部科技树：名称、说明、解锁单位与数据。",
+    },
+  },
+  replay: {
+    canonical: "/replay",
+    path: /^\/replay$/,
+    meta: {
+      title: "War Selection 回放分析 | WS ATLAS",
+      description:
+        "粘贴回放代码，得到逐帧统计：人口曲线、MVP、奖章、K/D 与玩家排行数据。",
+    },
+  },
   players: {
+    canonical: "/players",
     path: /^\/players$/,
     meta: {
-      title: "玩家排行榜 | WS ATLAS",
+      title: "War Selection 玩家排行榜 | WS ATLAS",
       description:
         "每赛季的玩家积分榜：参赛、胜利、MVP 与击杀都折算成积分。数据来自已公开的回放。",
     },
   },
   seasonStats: {
+    canonical: "/season-statistics",
     path: /^\/season-statistics$/,
     meta: {
       title: "赛期统计 | WS ATLAS",
@@ -50,7 +78,17 @@ export const pageRoutes: Record<string, PageRoute> = {
     },
   },
   modding: { path: /^\/modding$/, meta: { title: "参数档案 | WS ATLAS" } },
+  methodology: {
+    canonical: "/methodologie",
+    path: /^\/methodologie$/,
+    meta: {
+      title: "回放统计方法 | WS ATLAS",
+      description:
+        "MVP 分数怎么算、人口曲线为什么是估算、奖章条件、排行榜积分——本页逐项公开每个数字背后的公式。",
+    },
+  },
   creators: {
+    canonical: "/createurs",
     path: /^\/createurs$/,
     meta: {
       title: "内容创作者 | WS ATLAS",
@@ -61,6 +99,7 @@ export const pageRoutes: Record<string, PageRoute> = {
   // Ordre : la route STATIQUE candidature doit précéder le profil
   // dynamique [^/]+ (résolution par première correspondance).
   creatorApply: {
+    canonical: "/createurs/candidature",
     path: /^\/createurs\/candidature$/,
     meta: { title: "申请成为创作者 | WS ATLAS" },
   },
@@ -94,6 +133,7 @@ export const pageRoutes: Record<string, PageRoute> = {
   submit: { path: /^\/submit$/, meta: { title: "提交地图 | WS ATLAS" } },
   submitMod: { path: /^\/submit\/mod$/, meta: { title: "提交 Mod | WS ATLAS" } },
   workbench: {
+    canonical: "/workbench",
     path: /^\/workbench$/,
     meta: {
       title: "Mod 工作台 | WS ATLAS",
@@ -102,6 +142,7 @@ export const pageRoutes: Record<string, PageRoute> = {
     },
   },
   workbenchSimple: {
+    canonical: "/workbench/simple",
     path: /^\/workbench\/simple$/,
     meta: {
       title: "简易 Mod 工作台 | WS ATLAS",
@@ -110,6 +151,7 @@ export const pageRoutes: Record<string, PageRoute> = {
     },
   },
   reference: {
+    canonical: "/reference",
     path: /^\/reference$/,
     meta: { title: "斯大林格勒完整技术档案 | WS ATLAS" },
   },

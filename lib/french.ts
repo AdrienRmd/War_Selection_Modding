@@ -1,6 +1,67 @@
 // Traductions françaises de l'interface et des archives. Les clés canoniques restent inchangées.
 export const french: Record<string, string> = {
 
+  // Mission 08/11 — SEO : titles/descriptions ciblés.
+  "War Selection 玩家排行榜 | WS ATLAS": "Classement War Selection — Leaderboard joueurs | WS ATLAS",
+  "War Selection 单位档案 | WS ATLAS": "Unités War Selection — stats complètes | WS ATLAS",
+  "War Selection 全部单位的档案：属性、时代、克制与数据图鉴。": "Toutes les unités de War Selection : caractéristiques, ères, forces et faiblesses, avec les données du jeu.",
+  "War Selection 科技档案 | WS ATLAS": "Recherches War Selection — arbre complet | WS ATLAS",
+  "War Selection 全部科技树：名称、说明、解锁单位与数据。": "Toutes les recherches de War Selection : noms, effets, unités débloquées et données.",
+  "War Selection 回放分析 | WS ATLAS": "Analyse de replay War Selection | WS ATLAS",
+  "粘贴回放代码，得到逐帧统计：人口曲线、MVP、奖章、K/D 与玩家排行数据。": "Collez un code de replay : courbe de population, score MVP, médailles, K/D et points de classement.",
+
+  金: "or",
+  银: "argent",
+
+  // Mission 08/11 — page méthodologie (/methodologie).
+  "回放统计方法 | WS ATLAS": "Comment sont calculées les statistiques de replay | WS ATLAS",
+  "MVP 分数怎么算、人口曲线为什么是估算、奖章条件、排行榜积分——本页逐项公开每个数字背后的公式。": "Formule du score MVP, pourquoi la courbe de population est une estimation, conditions des médailles, points du classement — cette page publie la formule derrière chaque chiffre.",
+  统计方法: "Méthodologie",
+  统计方法与公式: "Méthode et formules",
+  "How stats are computed": "Méthode",
+  "回放统计是怎么算的？": "Comment sont calculées les statistiques de replay ?",
+  "本页逐项说明回放页与排行榜上每个数字的来源：哪些是精确值，哪些是估算，公式与权重原样来自代码。统计基于游戏官方回放接口的数据；我们的模型（胜负概率、人口估算等）凡有近似处都明确标注。": "Cette page explique, chiffre par chiffre, d'où viennent les nombres des pages replay et du classement : ce qui est exact, ce qui est estimé, avec les formules et pondérations telles qu'elles sont dans le code. Les données viennent de l'API officielle de replay du jeu ; nos modèles (probabilité de victoire, estimation de population…) sont explicitement signalés dès qu'ils approchent.",
+  "MVP 分数与 MVP 称号": "Score MVP et titre de MVP",
+  "MVP 分数由三组加分构成，全部来自回放时间线（每 30 秒一帧）：": "Le score MVP est la somme de trois groupes de points, tous issus de la timeline du replay (une mesure toutes les 30 s) :",
+  "直接分（战斗）": "Points directs (combat)",
+  "消灭玩家积分：击杀敌方玩家时，按受害者的 MVP 分、击杀者占全队的军队/分数份额与击杀次序折算（越晚越低；开局 4 分钟内退出不计）；战斗分 = √(击杀点数曲线下面积) × 1.2；单位击杀分 = Σ(单位击杀点 × 数量) × 0.8。": "Éliminations de joueurs : à chaque joueur adverse éliminé, des points fondés sur le score MVP de la victime, la part d'armée/score du tueur dans son équipe et le rang de l'élimination (décroissant ; les départs dans les 4 premières minutes ne comptent pas). Points de combat = √(aire sous la courbe des points de combat) × 1,2. Points d'unités tuées = Σ(points de l'unité × nombre) × 0,8.",
+  "间接分（经济与领土）": "Points indirects (économie et territoire)",
+  "领土分 = 领土点数总和 × 0.000025，乘以随存活时间衰减的系数；经济分 = 平均资源消耗 × 0.25，乘以同款系数的五次方（长期存活者收益递增）。": "Territoire = somme des points de territoire × 0,000025, pondérée par un coefficient qui se dégrade avec le temps de survie ; économie = dépenses moyennes de ressources × 0,25, pondérée par la même puissance cinquième (rendement croissant pour les survivants longs).",
+  加成分: "Points bonus",
+  "军队规模平均值 × 0.2；每项研究 +1 分；奇观分：建造奇观 +150，胜利奇观 +250，全场首座奇观最高 600 分并随时间指数衰减（参考点 26.5 分钟）。总分乘以队伍系数（胜方 1.07），再按比赛时长折算（×1000 ÷ 秒数）。": "Taille moyenne d'armée × 0,2 ; +1 point par recherche accomplie ; merveilles : +150 construite, +250 si elle fait gagner, jusqu'à 600 pour la première du match avec décroissance exponentielle (point de référence 26,5 min). Le total est multiplié par le coefficient d'équipe (vainqueur 1,07) puis normalisé par la durée (×1000 ÷ secondes).",
+  "一局的 MVP 是 MVP 分数最高的玩家（代码逐个比较取最大），获得金质「战争冠军」奖章；表格中的「影响力 %」= 该玩家 MVP 分 ÷ 全队 MVP 分之和。": "Le MVP d'une partie est le joueur au score MVP le plus élevé (comparaison explicite dans le code) ; il reçoit la médaille d'or « Champion de la guerre ». La colonne « Impact % » = score MVP du joueur ÷ somme des scores MVP de son équipe.",
+  "官方回放接口没有「存活单位数」这个字段，所以人口曲线是一项文档化的估算，由两部分组成：": "L'API officielle de replay n'expose aucun « nombre d'unités vivantes » : la courbe de population est donc une estimation documentée, en deux parties :",
+  "经济人口（逐帧精确）：回放按 30 秒一帧记录每方的村民、渔船与拖拉机数量，按各自人口成本（1 / 2 / 3）求和；不同时代的成本差异最多影响 1 点/单位。": "Population économique (exacte à chaque mesure) : le replay enregistre toutes les 30 s le nombre de villageois, bateaux de pêche et tracteurs de chaque camp, sommés selon leurs coûts de population (1 / 2 / 3) ; les variations selon l'âge affectent au plus 1 point par unité.",
+  "军队人口（估算）：军队(t) = R × 当前军队点数(t)，其中 R = Σ(该玩家生产单位数 × 人口成本，不含村民) ÷ Σ(生产单位贡献的军队点数)。曲线形状来自游戏逐帧的真实军队点数，只有比例是按该玩家全部生产内容校准的常数——军队构成随时间变化时会带来误差。被淘汰后曲线回落到 0（游戏清零该方数据；个别帧可能残留少量幸存单位）。": "Population d'armée (estimée) : armée(t) = R × points d'armée courants(t), où R = Σ(unités produites × coût de population, hors villageois) ÷ Σ(points d'armée contribués par les productions). La forme de la courbe vient des points d'armée réels du jeu, image par image ; seule l'échelle est une constante calibrée sur l'ensemble des productions du joueur — un changement de composition d'armée introduit une erreur. Après élimination la courbe retombe à 0 (le jeu met la faction à zéro ; quelques unités survivantes peuvent subsister sur une mesure).",
+  "纵轴默认 0–600（游戏常规上限），超出时自动扩展。": "L'axe Y démarre à 0–600 (plafond usuel du jeu) et s'étend automatiquement au-delà si besoin.",
+  "「最大军队（点）」": "« Armée max (pts) »",
+  "这是游戏自己的军队价值（点数）曲线的峰值——该曲线是一个随时间升降的存量（单位死亡时下降），不是存活单位个数：回放时间线里根本没有这个字段，所以我们用游戏原生点数并如实标注单位。": "C'est le pic de la courbe de valeur d'armée (en points) DU JEU — un stock qui monte et descend (il baisse quand les unités meurent), pas un nombre d'unités vivantes : ce champ n'existe pas dans la timeline du replay ; nous utilisons donc les points natifs du jeu et l'unité est indiquée.",
+  "K/D、生产 / 歼灭 / 损失": "K/D, produites / tuées / perdues",
+  "生产、歼灭、损失是回放附带的逐单位计数（玩家统计表按类别列出）。K/D = 单位击杀数 ÷ 单位损失数；没有损失时直接等于击杀数；旧回放缺少击杀/损失数据时显示「–」。还有一个隐藏的「价值 K/D」（按每单位战斗价值加权），用于奖章判定。": "Produites, tuées et perdues sont les dénombrements par unité fournis par le replay (le tableau du joueur les détaille par catégorie). K/D = unités tuées ÷ unités perdues ; sans pertes il vaut le nombre de tuées ; les vieux replays sans données de tués/perdus affichent « – ». Il existe aussi un K/D « pondéré par la valeur » (chaque unité pesée par sa valeur de combat), utilisé pour les médailles.",
+  "奖章（10 种 · 金/银/木）": "Médailles (10 types · or/argent/bois)",
+  "每局结束后自动颁发，条件如下（与代码一致）：": "Attribuées automatiquement après chaque partie, conditions exactes (identiques au code) :",
+  奖章: "Médaille",
+  等级: "Rang",
+  条件: "Condition",
+  "奖章条件：本局 MVP（影响力份额最高的玩家）。": "MVP de la partie (joueur à la plus grande part d'impact).",
+  "奖章条件：完成全场第一次真正淘汰（主动退出不计）的击杀者。": "Auteur de la première vraie élimination du match (les départs volontaires ne comptent pas).",
+  "奖章条件：全场第一个被淘汰的玩家（含主动退出）。": "Premier joueur éliminé du match (départs volontaires inclus).",
+  "奖章条件：全场采集资源总量最高的玩家。": "Plus gros total de ressources récoltées du match.",
+  "奖章条件：某一时刻占有本队领土 ≥ 50%（每局至多一次）。": "A détenu à un instant ≥ 50 % du territoire de son équipe (au plus une fois par partie).",
+  "奖章条件：损失 ≥ 15 个单位且 K/D < 1。": "≥ 15 unités perdues et K/D < 1.",
+  "奖章条件：属于某个小队时主动退出对局。": "A quitté la partie volontairement en appartenant à une escouade.",
+  "奖章条件：不属于任何小队时主动退出对局。": "A quitté la partie volontairement sans escouade.",
+  "奖章条件：采集 ≥ 5000 资源且每千资源击杀 < 0.5。": "≥ 5000 ressources récoltées et moins de 0,5 unité tuée par millier de ressources.",
+  "奖章条件：败方最后一名被淘汰者，且比倒数第二名晚至少 5 分钟。": "Dernier éliminé de l'équipe perdante, au moins 5 minutes après l'avant-dernier.",
+  "力量对比与胜率（近似模型）": "Équilibre de puissance et probabilité de victoire (modèle approximatif)",
+  "「力量对比」图是标注过版本号的近似模型（v1）：每帧的力量 = 军队、收入、领土三份占比的平均——军队 = 存活军队点数（累计生产点数 − 0.7 × 被击杀点数），收入 = 约 5 分钟滚动平均的资源采集，领土 = 当前领地。胜率曲线 = 以 20 为斜率的 S 型函数，作用于约 10 分钟指数平滑后的力量差；仅按已知胜方做过定性校准。分页上的「决定性事件」也由此模型推导。": "Le graphe « Équilibre de puissance » est un modèle approximatif versionné (v1) : à chaque mesure, puissance = moyenne de trois parts — armée, revenu, territoire. Armée = points d'armée vivants (points produits cumulés − 0,7 × points détruits par l'adversaire) ; revenu = moyenne glissante (~5 min) des ressources récoltées ; territoire = terre actuelle. La courbe de probabilité de victoire est une sigmoïde de pente 20 appliquée à la différence de puissance lissée (EMA ~10 min) ; calibrage qualitatif uniquement. Les « événements décisifs » de la page dérivent aussi de ce modèle.",
+  "积分 = 参赛场次 + 胜场 × 2 + MVP × 2 + ⌊总击杀 ÷ 100⌋。赛季按比赛开始时间（游戏数据）取年-月；按队伍规模分两组：大部队（3v3 及以上）与单/双人。数据来自所有已公开回放：玩家手动提交（人工审核）与夜间自动采集（发现自 ws-stats.pl 的公开索引）——该索引只覆盖 ws-stats 已知的对局，未必是全部，榜单反映的是被收录的范围。": "Points = matchs joués + victoires × 2 + MVP × 2 + ⌊unités tuées ÷ 100⌋. Les saisons suivent l'année-mois du début de partie (donnée du jeu) ; deux catégories par taille d'équipe : grand format (3v3 et plus) et petit format. Les données proviennent de tous les replays publiés : soumissions manuelles (modérées humainement) et récolte automatique nocturne (codes découverts via l'index public de ws-stats.pl) — cet index ne couvre que les parties connues de ws-stats, pas nécessairement toutes ; le classement reflète ce périmètre collecté.",
+  "想看一局的实际数字？": "Envie de voir ces chiffres sur une vraie partie ?",
+  打开回放分析: "Ouvrir l'analyse de replay",
+
+  // Mission 08/11 — panneau population : stats compactes par joueur.
+  "分数 ${score} · 生产 ${created} · 歼灭 ${killed} · 研究 ${researches}": "Score ${score} · Prod ${created} · Tués ${killed} · Rech. ${researches}",
+
   自动入库: "auto",
   "ws-stats 已存对局索引": "index public des parties enregistrées (ws-stats.pl)",
 
@@ -2144,7 +2205,6 @@ export const french: Record<string, string> = {
   "SOURCE ARCHIVE / AS OF 2026.09.09": "ARCHIVE DES SOURCES / ÉTAT AU 2026.09.09",
   "YOUR CONTRIBUTIONS": "VOS CONTRIBUTIONS",
   "CURATOR / MAP COLLECTION": "CURATEUR / COLLECTION DE CARTES",
-  // Compléments : libellés EN des tables de statuts (lib/mod-types.ts) et
   // options de filtre rendues via t(labels[1]) / l(zh, en).
   Retained: "Conservé",
   Testing: "En test",
@@ -2452,9 +2512,9 @@ export const french: Record<string, string> = {
     "${count} modification(s) portent sur des paramètres absents des nouvelles données ; elles sont ignorées.",
   "数据 ${version} · ${count} 个可修改单位": "Données ${version} · ${count} unités modifiables",
   // --- <title> / meta description localisés par page (lib/page-titles) ---
-  "WS ATLAS · 战场档案": "WS ATLAS · Archives du champ de bataille",
+  "WS ATLAS · 战场档案": "War Selection — Stats, unités, cartes & replays | WS ATLAS",
   "War Selection 玩家地图与 Mod 社区档案。探索斯大林格勒战场，查阅配置、平衡数值与审核后的社区地图。":
-    "Archive communautaire des cartes et mods de War Selection. Explorez le champ de bataille de Stalingrad : configurations, valeurs d'équilibrage et cartes communautaires modérées.",
+    "Stats, unités, cartes et replays de War Selection : fiche de chaque unité, arbres de recherche, cartes communautaires et analyse de replay.",
   "单位档案 | WS ATLAS": "Archives des unités | WS ATLAS",
   "科技档案 | WS ATLAS": "Archive des recherches | WS ATLAS",
   "参数档案 | WS ATLAS": "Archive de modding | WS ATLAS",

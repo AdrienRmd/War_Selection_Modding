@@ -78,12 +78,25 @@ export function PopulationChartSection({
       .map((player, index) => {
         const series = playerSeries(result, REPLAY_DATASET_POPULATION, player) ?? [];
         const stepSec = Math.max(1, Math.round(result.timeLinePeriod / 1000));
+        // Stats secondaires compactes (mission 08/11) — MÊMES sources et
+        // formats que le tableau « Statistiques complètes » : score MVP
+        // (entier), unités produites / tuées (dénombrements bruts),
+        // recherches accomplies. Aucun calcul nouveau.
+        const impact = analysis.teams
+          .flatMap((t) => t.players)
+          .find((p) => p.player.id === player.id);
         return {
           id: player.id,
           index,
           name: player.nickname,
           side: sideOf(player),
           points: series.map((value, i) => ({ x: i * stepSec, y: value })),
+          stats: {
+            score: Math.round(impact?.player.mvpScore ?? 0),
+            created: impact?.created ?? 0,
+            killed: impact?.killed ?? 0,
+            researches: (player.researches ?? []).length,
+          },
         };
       })
       .filter((p) => p.points.length > 1);
@@ -316,7 +329,16 @@ export function PopulationChartSection({
                         onChange={() => togglePlayer(p.id)}
                       />
                       <span className="rp-population-swatch" style={{ background: playerColor(p.index) }} aria-hidden="true" />
-                      <span className="rp-population-name" title={p.name}>{p.name}</span>
+                      <span className="rp-population-ident">
+                        <span className="rp-population-name" title={p.name}>{p.name}</span>
+                        <span className="rp-population-player-stats label-text">
+                          {l("分数 ${score} · 生产 ${created} · 歼灭 ${killed} · 研究 ${researches}", "Score ${score} · Built ${created} · Kills ${killed} · Res. ${researches}")
+                            .replace("${score}", String(p.stats.score))
+                            .replace("${created}", String(p.stats.created))
+                            .replace("${killed}", String(p.stats.killed))
+                            .replace("${researches}", String(p.stats.researches))}
+                        </span>
+                      </span>
                     </label>
                   ))}
                 </div>

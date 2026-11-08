@@ -370,7 +370,10 @@ export function ReplayResult({
             {l(
               "点击列标题排序。“最大军队”为军队点数峰值：回放时间线不含存活单位数，故以游戏自己的军队价值（点）计量。",
               "Click a column header to sort. “Max army” is the peak army value in points: the replay timeline has no living-unit count, so the game's own army value (points) is used.",
-            )}
+            )}{" "}
+            <Link className="name-link" href="/methodologie">
+              {l("统计方法", "How stats are computed")}
+            </Link>
           </p>
           <PlayerStatsTable teams={analysis.teams} />
         </CollapsibleSection>

@@ -463,3 +463,9 @@
 /* Mention méthodologique du classement (mission 07/11) : discrète, lisible,
    lien externe distingué. */
 .ladder-method{margin:0 0 var(--space-4,16px);font-size:var(--text-body,15px);color:var(--text-muted);max-width:90ch;overflow-wrap:break-word}
+
+/* Panneau population (08/11) : identité sur 2 lignes — pseudo + stats
+   compactes secondaires (mêmes valeurs que le tableau stats, texte
+   atténué ≥12 px, chiffres tabulaires). La coche reste la cible tactile. */
+.rp .rp-population-ident{display:flex;flex-direction:column;min-width:0}
+.rp-population-player-stats{font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;padding-top:1px}

@@ -78,6 +78,10 @@ export default async function Players({
           </a>
           {" — "}
           <T text="该索引只覆盖 ws-stats 已知的对局，未必是全部——榜单反映的是被收录的范围。" />
+          {" "}
+          <Link className="name-link" href="/methodologie">
+            <T text="统计方法与公式" />
+          </Link>
         </p>
         <div className="ladder-layout">
           <aside className="ladder-side">

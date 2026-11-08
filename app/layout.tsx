@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { LocaleProvider } from "@/components/i18n";
 import { UpdateBanner } from "@/components/update-banner";
-import { requestLocale } from "@/lib/page-metadata";
-import { localizePageMeta, pageRoutes } from "@/lib/page-titles";
+import { pageMetadata, requestLocale } from "@/lib/page-metadata";
 import "./globals.css";
 import "./atlas.css";
 import "./command.css";
@@ -17,8 +16,10 @@ import "./simple.css";
 
 // Title/description localisés (cookie > Accept-Language > fr, voir
 // lib/page-metadata) pour l'accueil et toutes les pages sans metadata propre.
+// SEO 08/11 : la racine passe par pageMetadata("home") → title ciblé
+// « War Selection — … » + canonical/og:url/og:locale.
 export async function generateMetadata(): Promise<Metadata> {
-  const meta = localizePageMeta(pageRoutes.home.meta, await requestLocale());
+  const meta = await pageMetadata("home");
   return {
     ...meta,
     icons: {
@@ -30,9 +31,11 @@ export async function generateMetadata(): Promise<Metadata> {
       apple: "/atlas-emblem-192.png",
     },
     openGraph: {
+      // SEO 08/11 : pageMetadata fournit title/description/url/locale/images
+      // localisés — le layout ne garde que les champs de site.
+      ...meta.openGraph,
       siteName: "WS ATLAS",
       type: "website",
-      images: [{ url: "/og-cover.jpg", width: 1200, height: 630, alt: "WS ATLAS" }],
     },
     twitter: { card: "summary_large_image" },
   };

@@ -1,0 +1,23 @@
+/* Page /methodologie (mission 08/11) — lisible, responsive, tableaux denses
+   dans le thème du site. */
+.methodology-page{max-width:860px}
+.methodology-page h1{margin-bottom:8px}
+.methodology-lead{margin-bottom:28px}
+.methodology-page section{margin-bottom:34px;min-width:0}
+.methodology-page h2{margin:0 0 10px}
+.methodology-page ul{margin:8px 0;padding-left:20px}
+.methodology-page li{margin:6px 0}
+.methodology-dl{display:grid;gap:12px;margin:12px 0}
+.methodology-dl dt{font-weight:600;margin-bottom:4px}
+.methodology-dl dd{margin:0;color:var(--muted-foreground)}
+.methodology-table{width:100%;border-collapse:collapse;font-size:14px}
+.methodology-table th,.methodology-table td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+.methodology-table th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-foreground)}
+.methodology-table td:first-child{white-space:nowrap;display:flex;align-items:center;gap:8px;font-weight:600}
+.methodology-table td.cell-mono{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--muted-foreground)}
+.methodology-more{margin-top:8px}
+@media (max-width:640px){
+  .methodology-table{font-size:13px}
+  .methodology-table th,.methodology-table td{padding:7px 8px}
+  .methodology-table td:first-child{white-space:normal}
+}

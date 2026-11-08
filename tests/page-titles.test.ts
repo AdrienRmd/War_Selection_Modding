@@ -52,8 +52,8 @@ describe("registre des titres lib/page-titles", () => {
   });
 
   it("ignore les query strings et les routes inconnues", () => {
-    expect(resolvePageMeta("/units?unit=1/depot")?.title).toBe("单位档案 | WS ATLAS");
-    expect(resolvePageMeta("/researches?research=12")?.title).toBe("科技档案 | WS ATLAS");
+    expect(resolvePageMeta("/units?unit=1/depot")?.title).toBe("War Selection 单位档案 | WS ATLAS"); // SEO 08/11
+    expect(resolvePageMeta("/researches?research=12")?.title).toBe("War Selection 科技档案 | WS ATLAS"); // SEO 08/11
     expect(resolvePageMeta("/api/health")).toBeUndefined();
     expect(resolvePageMeta("/nimporte/quoi")).toBeUndefined();
     expect(resolvePageMeta(null)).toBeUndefined();
@@ -73,8 +73,12 @@ describe("registre des titres lib/page-titles", () => {
     expect(described.map(([k]) => k).sort()).toEqual([
       "creators",
       "home",
+      "methodology",
       "players",
+      "replay",
+      "researches",
       "seasonStats",
+      "units",
       "workbench",
       "workbenchSimple",
     ]);
@@ -90,9 +94,9 @@ describe("registre des titres lib/page-titles", () => {
 
   it("zh reste la langue source (identité)", () => {
     const meta = pageRoutes.units.meta;
-    expect(localizePageMeta(meta, "zh").title).toBe("单位档案 | WS ATLAS");
-    expect(localizePageMeta(meta, "en").title).toBe("Unit Archive | WS ATLAS");
-    expect(localizePageMeta(meta, "fr").title).toBe("Archives des unités | WS ATLAS");
+    expect(localizePageMeta(meta, "zh").title).toBe("War Selection 单位档案 | WS ATLAS"); // SEO 08/11
+    expect(localizePageMeta(meta, "en").title).toBe("War Selection Units — Complete Stats | WS ATLAS"); // SEO 08/11
+    expect(localizePageMeta(meta, "fr").title).toBe("Unités War Selection — stats complètes | WS ATLAS"); // SEO 08/11
   });
 
   it("toutes les clés du registre existent dans les dictionnaires en/fr", () => {
